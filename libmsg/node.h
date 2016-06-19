@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#include "mem.h"
+#include "update.h"
+
 
 /*
  * names a specific recieving process
@@ -46,22 +49,19 @@ struct node_tree {
 
 
 struct node_buffer {
-    struct node_dest   *dest_buf;
-    struct node_src    *src_buf;
-    struct node_tree   *tree_buf;
-    int64_t             dest_count;
-    int64_t             src_count;
-    int64_t             tree_count;
-    int64_t             max_index;
+    struct node_update_buffer   update_buf;
+    struct mem_block            dest_buf;
+    struct mem_block            src_buf;
+    struct mem_block            tree_buf;
 };
 
 
-
-void init_node_buffer(struct node_buffer *buf, int64_t size);
+void init_node_buffer(struct node_buffer *buf);
 void free_node_buffer(struct node_buffer *buf);
-void resize_node_buffer(struct node_buffer *buf, int64_t size);
 
-void register_node(struct node_buffer *buf);
+void update_node_buffer(struct node_buffer *buf);
+
+void register_node_src(struct node_buffer *buf, struct node_src *src);
 
 
 #endif
