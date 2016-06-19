@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-#include <node.h>
+#include "node.h"
 #include "peer.h"
 #include "update.h"
 

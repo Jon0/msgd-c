@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-shared -fPIC
 LDFLAGS=
-SOURCES=log.c mem.c node.c peer.c update.c
+SOURCES=msgd.c
 
 
 libmsg:
