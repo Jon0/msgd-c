@@ -1,6 +1,10 @@
+
+# directory of main library
+MSGDIR=libmsg
+
 CC=gcc
-CFLAGS=-I../libmsg
-LDFLAGS=-L../libmsg -lmsg
+CFLAGS=-I../$(MSGDIR)
+LDFLAGS=-L../$(MSGDIR) -lmsg -Wl,-rpath=$(MSGDIR)
 SOURCES=test.c
 
 
