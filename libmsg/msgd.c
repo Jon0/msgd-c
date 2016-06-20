@@ -6,7 +6,7 @@
 
 
 void md_init_node(struct node_state *ns, const char *name, int mode) {
-    ns->queue_id = mq_open("local_msgd", O_RDWR);
+    ns->queue_id = mq_open("/local_msgd", O_RDWR);
     if (ns->queue_id < 0) {
         perror("mq_open");
     }
@@ -18,9 +18,11 @@ void md_init_node(struct node_state *ns, const char *name, int mode) {
 
 
 void md_free_node(struct node_state *ns) {
-    int err = mq_close(ns->queue_id);
-    if (err) {
-        perror("mq_close");
+    if (ns->queue_id != -1) {
+        int err = mq_close(ns->queue_id);
+        if (err) {
+            perror("mq_close");
+        }
     }
 }
 

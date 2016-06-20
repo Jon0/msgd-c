@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "node.h"
-#include "peer.h"
 #include "update.h"
 
 void check(const char *msg) {
@@ -44,16 +43,11 @@ int update_outputs(struct node_base *result, const char *name) {
 
 void main_loop() {
     struct node_buffer nbuffer;
-    struct peer_buffer pbuffer;
     init_node_buffer(&nbuffer);
-    init_peer_buffer(&pbuffer);
-
     int64_t loop = 1;
     while (loop) {
         update_node_buffer(&nbuffer);
-        update_peer_buffer(&pbuffer, &nbuffer);
     }
-    free_peer_buffer(&pbuffer);
     free_node_buffer(&nbuffer);
 }
 

@@ -1,14 +1,14 @@
 CC=gcc
 CFLAGS=-shared -fPIC
 LDFLAGS=-lrt
-SOURCES=msgd.c queue.c route.c share.c
+SOURCES=mem.c msgd.c node.c queue.c route.c share.c update.c
 
 
 libmsg:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SOURCES) -o libmsg.so
 
 
-all: msg
+all: libmsg
 
 
 clean:

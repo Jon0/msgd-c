@@ -11,7 +11,7 @@ struct queue_state {
 };
 
 
-int init_queue(struct queue_state *state);
+int create_queue(struct queue_state *state);
 
 
 #endif

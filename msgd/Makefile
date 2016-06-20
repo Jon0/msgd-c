@@ -1,11 +1,12 @@
 
 # directory of main library
 MSGDIR=libmsg
+MSGREL=../$(MSGDIR)
 
 CC=gcc
-CFLAGS=-I../$(MSGDIR)
-LDFLAGS=-L../$(MSGDIR) -lmsg -Wl,-rpath=$(MSGDIR)
-SOURCES=log.c mem.c node.c peer.c update.c main.c
+CFLAGS=-I$(MSGREL)
+LDFLAGS=-L$(MSGREL) -lmsg -Wl,-rpath=$(MSGDIR)
+SOURCES=main.c
 
 
 msgd:
