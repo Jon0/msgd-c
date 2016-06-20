@@ -3,8 +3,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-#include "node.h"
-#include "update.h"
+#include <module.h>
+#include <node.h>
+#include <update.h>
+
 
 void check(const char *msg) {
     perror(msg);
@@ -41,17 +43,23 @@ int update_outputs(struct node_base *result, const char *name) {
 }
 
 
-void main_loop() {
+void main_loop(int modc, struct module_private *mod) {
     struct node_buffer nbuffer;
     init_node_buffer(&nbuffer);
     int64_t loop = 1;
     while (loop) {
         update_node_buffer(&nbuffer);
+        for (int i = 0; i < modc; ++i) {
+            mod[i].update(&mod[i].state);
+        }
     }
     free_node_buffer(&nbuffer);
 }
 
 
 int main(int argc, const char *argv[]) {
-    main_loop();
+    struct module_private mp;
+    open_msgd_module(&mp, argv[1]);
+    main_loop(1, &mp);
+    close_msgd_module(&mp);
 }

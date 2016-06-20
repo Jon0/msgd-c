@@ -11,7 +11,8 @@ struct queue_state {
 };
 
 
-int create_queue(struct queue_state *state);
-
+int open_queue(struct queue_state *state);
+int close_queue(struct queue_state *state);
+int check_queue(struct queue_state *state);
 
 #endif

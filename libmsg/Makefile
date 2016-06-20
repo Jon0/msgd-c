@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-shared -fPIC
-LDFLAGS=-lrt
-SOURCES=mem.c msgd.c node.c queue.c route.c share.c update.c
+LDFLAGS=-lrt -ldl
+SOURCES=mem.c module.c msgd.c node.c queue.c route.c share.c update.c
 
 
 libmsg:
