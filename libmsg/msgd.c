@@ -5,7 +5,7 @@
 #include "queue.h"
 
 
-void md_init_node(struct node_state *ns, const char *name, int mode) {
+void md_init_proc(struct node_state *ns, const char *name, int mode) {
     ns->queue_id = mq_open("/local_msgd", O_RDWR);
     if (ns->queue_id < 0) {
         perror("mq_open");
@@ -17,7 +17,7 @@ void md_init_node(struct node_state *ns, const char *name, int mode) {
 }
 
 
-void md_free_node(struct node_state *ns) {
+void md_free_proc(struct node_state *ns) {
     if (ns->queue_id != -1) {
         int err = mq_close(ns->queue_id);
         if (err) {
@@ -27,6 +27,6 @@ void md_free_node(struct node_state *ns) {
 }
 
 
-void md_init_pipe(const char *type, const char *name, int mode) {
-
+void md_update(struct node_state *ns) {
+    mq_send(ns->queue_id, ns->queue_name, 256, 0);
 }

@@ -13,3 +13,10 @@ clean:
 	$(MAKE) clean -C modules
 	$(MAKE) clean -C msgd
 	$(MAKE) clean -C tests
+
+pull:
+	git pull
+
+
+test:
+	./msgd/msgd modules/init/libmsgd-init.so

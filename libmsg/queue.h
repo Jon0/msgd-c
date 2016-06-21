@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <mqueue.h>
 
+#define QUEUE_NAME "/local_msgd"
+
 
 struct queue_state {
     mqd_t queue_id;
