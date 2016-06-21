@@ -9,18 +9,18 @@ void msgd_init_module(struct module_state *ms) {
     strcpy(ms->name, "msgd-init");
     ms->ptr = malloc(sizeof(struct init_state));
     struct init_state *is = (struct init_state *) ms->ptr;
-    open_queue(&is->queue);
+    mdu_ipc_server(&is->chan, ms->name);
 }
 
 
 void msgd_free_module(struct module_state *ms) {
     struct init_state *is = (struct init_state *) ms->ptr;
-    close_queue(&is->queue);
+    mdu_ipc_close(&is->chan);
     free(ms->ptr);
 }
 
 
 void msgd_update_module(struct module_state *ms) {
     struct init_state *is = (struct init_state *) ms->ptr;
-    check_queue(&is->queue);
+    mdu_ipc_recv(&is->chan);
 }

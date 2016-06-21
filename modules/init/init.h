@@ -1,12 +1,12 @@
 #ifndef INIT_H
 #define INIT_H
 
-#include <module.h>
-#include <queue.h>
+#include <libutil/ipc.h>
+#include <libutil/module.h>
 
 
 struct init_state {
-    struct queue_state queue;
+    struct ipc_channel chan;
 };
 
 

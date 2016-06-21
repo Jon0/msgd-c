@@ -1,8 +1,8 @@
 #ifndef HANDLER_H
 #define HANDLER_H
 
-#include "mem.h"
-#include "node.h"
+#include <libmsg/mem.h>
+#include <libmsg/node.h>
 
 
 struct peer {

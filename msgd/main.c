@@ -3,9 +3,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-#include <module.h>
-#include <node.h>
-#include <update.h>
+#include <libutil/module.h>
+#include <libmsg/node.h>
+#include <libmsg/update.h>
 
 
 void check(const char *msg) {
