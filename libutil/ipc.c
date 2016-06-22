@@ -23,10 +23,6 @@ void mdu_ipc_client(struct ipc_channel *c, const char *name) {
     if (c->queue_id < 0) {
         perror("mq_open");
     }
-    else {
-        strcpy(c->queue_name, name);
-        mq_send(c->queue_id, c->queue_name, 256, 0);
-    }
 }
 
 

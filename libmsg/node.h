@@ -48,6 +48,9 @@ struct node_tree {
 };
 
 
+/*
+ * complete server state
+ */
 struct node_buffer {
     struct node_update_buffer   update_buf;
     struct mem_block            dest_buf;

@@ -7,8 +7,8 @@ project("${PROJECT_NAME}")
 
 
 # lib names
-set(MSG_LIBRARY_NAME "libmsg")
-set(UTIL_LIBRARY_NAME "libutil")
+set(MSG_LIBRARY_NAME "msg")
+set(UTIL_LIBRARY_NAME "util")
 
 
 # dependencies
