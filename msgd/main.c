@@ -50,7 +50,7 @@ void main_loop(int modc, struct module_private *mod) {
     while (loop) {
         update_node_buffer(&nbuffer);
         for (int i = 0; i < modc; ++i) {
-            mod[i].update(&mod[i].state);
+            mod[i].update(&mod[i].state, &nbuffer);
         }
     }
     free_node_buffer(&nbuffer);
@@ -58,8 +58,21 @@ void main_loop(int modc, struct module_private *mod) {
 
 
 int main(int argc, const char *argv[]) {
-    struct module_private mp;
-    open_msgd_module(&mp, argv[1]);
-    main_loop(1, &mp);
-    close_msgd_module(&mp);
+
+    // open the required modules
+    int mod_count = argc - 1;
+    struct module_private *mp = malloc(sizeof(struct module_private) * mod_count);
+    for (int i = 0; i < mod_count; ++i) {
+        open_msgd_module(&mp[i], argv[i + 1]);
+        printf("loaded module %s\n", mp->state.name);
+    }
+
+    // run main loop until exit
+    main_loop(mod_count, mp);
+
+    // cleanup
+    for (int i = 0; i < mod_count; ++i) {
+        close_msgd_module(&mp[i]);
+    }
+    free(mp);
 }

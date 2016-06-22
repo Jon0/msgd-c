@@ -40,21 +40,25 @@ void mdu_ipc_close(struct ipc_channel *c) {
 }
 
 
-void mdu_ipc_send(struct ipc_channel *c) {
-    mq_send(c->queue_id, c->queue_name, 256, 0);
+ssize_t mdu_ipc_send(struct ipc_channel *c, char *buf, size_t count) {
+    if (c->queue_id < 0) {
+        return 0;
+    }
+    ssize_t sent = mq_send(c->queue_id, buf, count, 0);
+    if (sent < 0) {
+        perror("mq_send");
+    }
+    return sent;
 }
 
 
-void mdu_ipc_recv(struct ipc_channel *c) {
-    char msgbuf [1024];
+ssize_t mdu_ipc_recv(struct ipc_channel *c, char *buf, size_t count) {
     if (c->queue_id < 0) {
-        return;
+        return 0;
     }
-    ssize_t recv = mq_receive(c->queue_id, msgbuf, 1024, NULL);
-    if (recv > 0) {
-        printf("recv %d: %s\n", recv, msgbuf);
-    }
-    else {
+    ssize_t recv = mq_receive(c->queue_id, buf, count, NULL);
+    if (recv < 0) {
         perror("mq_receive");
     }
+    return recv;
 }

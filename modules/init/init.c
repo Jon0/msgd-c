@@ -20,7 +20,8 @@ void msgd_free_module(struct module_state *ms) {
 }
 
 
-void msgd_update_module(struct module_state *ms) {
+void msgd_update_module(struct module_state *ms, struct node_buffer *nb) {
+    char buffer [1024];
     struct init_state *is = (struct init_state *) ms->ptr;
-    mdu_ipc_recv(&is->chan);
+    mdu_ipc_recv(&is->chan, buffer, 1024);
 }

@@ -18,8 +18,8 @@ void mdu_ipc_server(struct ipc_channel *c, const char *name);
 void mdu_ipc_client(struct ipc_channel *c, const char *name);
 void mdu_ipc_close(struct ipc_channel *c);
 
-void mdu_ipc_send(struct ipc_channel *c);
-void mdu_ipc_recv(struct ipc_channel *c);
+ssize_t mdu_ipc_send(struct ipc_channel *c, char *buf, size_t count);
+ssize_t mdu_ipc_recv(struct ipc_channel *c, char *buf, size_t count);
 
 
 #endif

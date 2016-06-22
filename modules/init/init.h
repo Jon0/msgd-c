@@ -12,7 +12,7 @@ struct init_state {
 
 void msgd_init_module(struct module_state *ms);
 void msgd_free_module(struct module_state *ms);
-void msgd_update_module(struct module_state *ms);
+void msgd_update_module(struct module_state *ms, struct node_buffer *nb);
 
 
 #endif
