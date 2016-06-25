@@ -43,36 +43,35 @@ int update_outputs(struct node_base *result, const char *name) {
 }
 
 
-void main_loop(int modc, struct module_private *mod) {
+void main_loop(int modc, const char *modpath[]) {
     struct node_buffer nbuffer;
     init_node_buffer(&nbuffer);
+
+    // open the required modules
+    struct module_private *mp = malloc(sizeof(struct module_private) * modc);
+    for (int i = 0; i < modc; ++i) {
+        open_msgd_module(&mp[i], &nbuffer, modpath[i]);
+        printf("loaded module %s\n", mp->state.name);
+    }
+
+    // enter update loop
     int64_t loop = 1;
     while (loop) {
         update_node_buffer(&nbuffer);
-        for (int i = 0; i < modc; ++i) {
-            mod[i].update(&mod[i].state, &nbuffer);
-        }
     }
+
+
+    // cleanup
+    for (int i = 0; i < modc; ++i) {
+        close_msgd_module(&mp[i]);
+    }
+    free(mp);
     free_node_buffer(&nbuffer);
 }
 
 
 int main(int argc, const char *argv[]) {
 
-    // open the required modules
-    int mod_count = argc - 1;
-    struct module_private *mp = malloc(sizeof(struct module_private) * mod_count);
-    for (int i = 0; i < mod_count; ++i) {
-        open_msgd_module(&mp[i], argv[i + 1]);
-        printf("loaded module %s\n", mp->state.name);
-    }
-
     // run main loop until exit
-    main_loop(mod_count, mp);
-
-    // cleanup
-    for (int i = 0; i < mod_count; ++i) {
-        close_msgd_module(&mp[i]);
-    }
-    free(mp);
+    main_loop(argc - 1, &argv[1]);
 }

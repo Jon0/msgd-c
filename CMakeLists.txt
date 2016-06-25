@@ -29,3 +29,4 @@ add_subdirectory(msgd)
 
 #build tests
 add_subdirectory(tests)
+add_subdirectory(testutil)

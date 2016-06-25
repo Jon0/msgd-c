@@ -12,6 +12,7 @@
  */
 struct node_dest {
     char proc_name [256];
+    void (*update)();
 };
 
 
@@ -28,7 +29,7 @@ struct node_routes {
 struct node_base {
     int64_t   id;
     int64_t   mode;
-    char      node_name [256];
+    char      route_name [256];
 };
 
 
@@ -64,6 +65,9 @@ void free_node_buffer(struct node_buffer *buf);
 
 void update_node_buffer(struct node_buffer *buf);
 
+/*
+ * create a node
+ */
 void register_node_src(struct node_buffer *buf, struct node_src *src);
 
 

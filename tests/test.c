@@ -4,7 +4,7 @@
 
 int main() {
     struct client_state nstate;
-    struct node_set nds;
+    struct node_id_set nds;
     md_init_proc(&nstate, "test", 0);
 
     // get available nodes

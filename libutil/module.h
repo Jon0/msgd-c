@@ -14,9 +14,8 @@ struct module_state {
 /*
  * these specific function types can be moved into msgd
  */
-typedef void (*init_module)(struct module_state *ms);
+typedef void (*init_module)(struct module_state *ms, struct node_buffer *nb);
 typedef void (*free_module)(struct module_state *ms);
-typedef void (*update_module)(struct module_state *ms, struct node_buffer *nb);
 
 
 struct module_private {
@@ -24,11 +23,10 @@ struct module_private {
     void                 *dlm;
     init_module           init;
     free_module           free;
-    update_module         update;
 };
 
 
-void open_msgd_module(struct module_private *md, const char *path);
+void open_msgd_module(struct module_private *md, struct node_buffer *nb, const char *path);
 void close_msgd_module(struct module_private *md);
 
 #endif
