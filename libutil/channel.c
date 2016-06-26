@@ -27,7 +27,7 @@ void ch_array_free(struct ch_read_array *arr) {
 }
 
 
-void ch_array_insert(struct ch_read_array *arr, struct channel *c) {
+size_t ch_array_insert(struct ch_read_array *arr, struct channel *c) {
     size_t cspace = arr->cavail - arr->ccount;
     size_t espace = arr->eavail - arr->ecount;
     if (cspace < 1 || espace < c->count) {
@@ -46,6 +46,7 @@ void ch_array_insert(struct ch_read_array *arr, struct channel *c) {
         arr->ecount += c->count;
         ++arr->ccount;
     }
+    return arr->ccount;
 }
 
 

@@ -3,20 +3,13 @@
 
 #include <stdint.h>
 
+#include "endpoint.h"
+
 #define BUFFER_SIZE 4096
 #define QUEUE_DEFAULT 16
 
 
 typedef ssize_t (*transfer)(int, char *, size_t);
-
-
-// endpoint is local, module or network
-// local endpoints are file descriptors
-enum ep_mode {
-    local,
-    remote,
-    module
-};
 
 
 struct endpoint {
@@ -42,6 +35,10 @@ struct write_task {
 };
 
 
+/*
+ * a buffer of data read from an input,
+ * and the list of outputs to write to
+ */
 struct write_stat {
     struct write_task *tasks;
     size_t tcount;
@@ -54,6 +51,7 @@ struct write_stat {
  * arrays start at pointers
  */
 struct ch_read_array {
+    size_t *cid; // map ids to channels
     struct channel     *chanmem;
     struct endpoint    *epmem;
     size_t ccount;
@@ -87,7 +85,11 @@ ssize_t ep_write(struct endpoint *out, char *buffer, size_t count);
 
 void ch_array_init(struct ch_read_array *arr, size_t chanmax, size_t epmax);
 void ch_array_free(struct ch_read_array *arr);
-void ch_array_insert(struct ch_read_array *arr, struct channel *c);
+
+/*
+ * return the channel id
+ */
+size_t ch_array_insert(struct ch_read_array *arr, struct channel *c);
 void ch_array_remove(struct ch_read_array *arr, size_t index);
 
 
