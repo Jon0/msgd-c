@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -19,7 +20,7 @@ void sk_open(char *address) {
     unlink(address);
     int len = sizeof(saun.sun_family) + strlen(saun.sun_path);
 
-    if (bind(sd, &saun, len) < 0) {
+    if (bind(sd, (struct sockaddr *) &saun, len) < 0) {
         perror("server: bind");
         exit(1);
     }

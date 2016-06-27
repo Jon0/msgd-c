@@ -1,6 +1,8 @@
 #ifndef ENDPOINT_H
 #define ENDPOINT_H
 
+#include <stdlib.h>
+
 
 // endpoint is local, module or network
 // local endpoints are file descriptors
@@ -18,15 +20,38 @@ struct ep_attributes {
     char *name;
 };
 
+
 struct ep_packet {
     int epid;
     int size;
 };
 
 
-struct ep_table {
-
+/*
+ * a connected pair
+ */
+struct ep_pair {
+    int remote_addr;
+    int state;
 };
+
+
+struct ep_listener {
+    struct ep_pair *pair;
+    size_t count;
+    int state;
+};
+
+
+struct ep_table {
+    char *path;
+};
+
+
+/*
+ * init the table with a path to store socket data
+ */
+void ep_init(struct ep_table *t, char *path);
 
 
 /*
