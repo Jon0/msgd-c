@@ -7,6 +7,19 @@
 
 #include "socket.h"
 
+
+void sock_accept(int fd, struct ep_table_delta *dt) {
+    // when new connections are recieved
+}
+
+
+void sock_read(int fd, struct ep_table_delta *dt) {
+    // when input is available
+
+    // set delta if socket gets closed
+}
+
+
 void sk_open(char *address) {
     int sd;
     struct sockaddr_un saun, fsaun;
@@ -24,4 +37,9 @@ void sk_open(char *address) {
         perror("server: bind");
         exit(1);
     }
+}
+
+
+void socket_listen(struct ep_table *t) {
+
 }

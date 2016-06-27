@@ -1,14 +1,8 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include "channel.h"
+#include "endpoint.h"
 
-
-/*
- * what if the channel moves address?
- */
-struct socket_endpoint {
-    struct channel *ch;
-};
+void socket_listen(struct ep_table *t);
 
 #endif
