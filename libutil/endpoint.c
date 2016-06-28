@@ -46,8 +46,3 @@ void ep_poll(struct ep_table *t, struct thread_pool *p) {
 
     // restart loop (write tasks can continue working)
 }
-
-
-void ep_modify(struct ep_table *t, struct ep_table_delta *dt) {
-
-}

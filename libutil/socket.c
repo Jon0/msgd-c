@@ -1,3 +1,4 @@
+#include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -6,18 +7,6 @@
 #include <unistd.h>
 
 #include "socket.h"
-
-
-void sock_accept(int fd, struct ep_table_delta *dt) {
-    // when new connections are recieved
-}
-
-
-void sock_read(int fd, struct ep_table_delta *dt) {
-    // when input is available
-
-    // set delta if socket gets closed
-}
 
 
 void sk_open(char *address) {
@@ -40,6 +29,36 @@ void sk_open(char *address) {
 }
 
 
-void socket_listen(struct ep_table *t) {
+void *ep_socket_accept(void *p) {
+    struct ep_accept_data *ld = (struct ep_accept_data *) p;
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    while (1) {
+        // wait for events on the socket
+        int r = poll(&ld->event, 1, -1);
 
+        // add entry to endpoint table
+
+        // start new connection threads
+        // requires mem allocation for new thread
+        int fd = accept(ld->event.fd, (struct sockaddr *) &addr, &len);
+
+
+    }
+}
+
+
+void *ep_socket_read(void *p) {
+    struct ep_read_data *rd = (struct ep_read_data *) p;
+    char buf [1024];
+    while (1) {
+        // wait for events on the socket
+        int r = poll(&rd->event, 1, -1);
+
+        // start new connection threads
+        // requires mem allocation for new thread
+        ssize_t b = read(rd->event.fd, buf, 1024);
+
+
+    }
 }

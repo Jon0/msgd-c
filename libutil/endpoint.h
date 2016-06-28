@@ -34,6 +34,7 @@ struct ep_packet {
  * a connected pair
  */
 struct ep_pair {
+    struct pollfd poll;
     int remote_addr;
     int state;
 };
@@ -43,6 +44,7 @@ struct ep_pair {
  * the initialised listeners and all current connections
  */
 struct ep_listener {
+    struct pollfd    poll;
     struct ep_pair  *pair;
     size_t           count;
     int              state;
@@ -80,11 +82,6 @@ struct ep_table {
 };
 
 
-struct ep_table_delta {
-
-};
-
-
 void ep_trigger(struct ep_handler_map *map, int fd);
 
 /*
@@ -103,14 +100,6 @@ int ep_open(struct ep_table *t, int type);
  * thread safe, blocking read
  */
 void ep_poll(struct ep_table *t, struct thread_pool *p);
-
-
-/*
- * allows table to recieve changes
- */
-void ep_modify(struct ep_table *t, struct ep_table_delta *dt);
-
-
 
 
 #endif
