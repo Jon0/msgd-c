@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <unistd.h>
 
 #include "buffer.h"
@@ -41,6 +42,7 @@ void *ep_thread_read(void *p) {
 }
 
 
-void ep_create_reader(struct ep_table *t, int fd) {
+void ep_create_reader(struct ep_source *s, int fd, notify_fn_t fn) {
+    printf("creating endpoint reader\n");
 
 }

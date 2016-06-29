@@ -3,10 +3,9 @@
 
 #include <stdlib.h>
 #include <poll.h>
+#include <netinet/in.h>
 
 #include "thread.h"
-
-typedef void *(*notify_fn_t)(void *);
 
 
 // endpoint is local, module or network
@@ -27,13 +26,32 @@ struct ep_attributes {
 
 
 /*
- * a source of new events, with the function to notify
+ * a source of new events
  */
 struct ep_source {
-    pthread_t thread;
-    void *mem;
-    int type;
+    struct pollfd  ksrc;
+    char           addr [256];
+    socklen_t      addrlen;
+    pthread_t      thread;
+    int            state;
+    void          *mem;
 };
+
+
+/*
+ * writable endpoints
+ */
+struct ep_dest {
+    char           addr [256];
+    socklen_t      addrlen;
+    // either a function or a file descriptor
+};
+
+
+/*
+ * notify function type
+ */
+typedef void *(*notify_fn_t)(struct ep_source *);
 
 
 /*
@@ -67,11 +85,9 @@ void ep_table_free(struct ep_table *t);
  */
 void ep_table_join(struct ep_table *t);
 
-
 /*
- * open new endpoint and allocate memory
+ * create a new endpoint entry
  */
-int ep_open(struct ep_table *t, int type);
-
+struct ep_source *ep_table_add(struct ep_table *t);
 
 #endif

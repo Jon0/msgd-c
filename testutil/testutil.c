@@ -5,7 +5,14 @@
 #include <libutil/socket.h>
 
 
-void *recvnote(void *p) {
+void *on_accept(struct ep_source *s) {
+    printf("accept notify\n");
+    return NULL;
+}
+
+
+void *on_read(struct ep_source *s) {
+    printf("read notify\n");
     return NULL;
 }
 
@@ -13,7 +20,19 @@ void *recvnote(void *p) {
 void ep_test() {
     struct ep_table tb;
     ep_table_init(&tb, "");
-    ep_create_acceptor(tb.src, recvnote);
+
+    // create a listener
+    struct ep_source *s = ep_table_add(&tb);
+    ep_set_local(s, "testname");
+    ep_activate_acceptor(&tb, s, on_accept, on_read);
+
+    // create a connector
+    s = ep_table_add(&tb);
+    ep_set_local(s, "testname");
+    ep_activate_connector(s, on_read);
+
+    // wait until threads complete
+    ep_table_join(&tb);
     ep_table_free(&tb);
 }
 

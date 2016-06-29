@@ -18,12 +18,14 @@ void ep_table_free(struct ep_table *t) {
 }
 
 
-int ep_open(struct ep_table *t, int type) {
-    return 0;
-}
-
-
 void ep_table_join(struct ep_table *t) {
     // how many threads are running?
     pthread_join(t->src[0].thread, NULL);
+}
+
+struct ep_source *ep_table_add(struct ep_table *t) {
+    // fix running past end of array
+    struct ep_source *back = &t->src[t->src_count];
+    ++t->src_count;
+    return back;
 }

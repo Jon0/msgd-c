@@ -43,6 +43,6 @@ void ep_buffer_release(struct ep_buffer *b, size_t count);
 
 void *ep_thread_read(void *p);
 
-void ep_create_reader(struct ep_table *t, int fd);
+void ep_create_reader(struct ep_source *s, int fd, notify_fn_t fn);
 
 #endif
