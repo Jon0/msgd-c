@@ -3,25 +3,22 @@
 
 #include <poll.h>
 
+#include "buffer.h"
 #include "endpoint.h"
 #include "thread.h"
 
 
 struct ep_accept_data {
-    struct pollfd event;
-    struct thread_pool *pool;
-};
-
-
-struct ep_read_data {
-    struct pollfd event;
+    struct pollfd src;
+    notify_fn_t notify;
 };
 
 
 /*
  * a thread to handle input of a single file descriptor
  */
-void *ep_socket_accept(void *p);
-void *ep_socket_read(void *p);
+void *ep_thread_accept(void *p);
+
+void ep_create_acceptor(struct ep_source *s, notify_fn_t fn);
 
 #endif

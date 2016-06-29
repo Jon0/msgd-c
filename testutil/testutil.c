@@ -1,34 +1,23 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <libutil/thread.h>
+#include <libutil/endpoint.h>
+#include <libutil/socket.h>
 
 
-void *printtest(void *p) {
-    struct thread_task t;
-    t.fn = printtest;
-    struct thread_queue *q = (struct thread_queue *) p;
-    printf("thread test\n");
-    queue_ins(q, &t);
-    sleep(1);
+void *recvnote(void *p) {
+    return NULL;
 }
 
 
-void threadtest() {
-    struct thread_pool p;
-    struct thread_task t;
-    pool_init(&p, 8);
-
-    t.fn = printtest;
-    queue_ins(&p.queue, &t);
-    sleep(10);
-
-    queue_stop(&p.queue);
-    pool_join(&p);
-    printf("threads joined\n");
+void ep_test() {
+    struct ep_table tb;
+    ep_table_init(&tb, "");
+    ep_create_acceptor(tb.src, recvnote);
+    ep_table_free(&tb);
 }
 
 
 int main(int argc, char *argv[]) {
-    threadtest();
+    ep_test();
 }

@@ -6,6 +6,8 @@
 
 #include "thread.h"
 
+typedef void *(*notify_fn_t)(void *);
+
 
 // endpoint is local, module or network
 // local endpoints are file descriptors
@@ -24,41 +26,13 @@ struct ep_attributes {
 };
 
 
-struct ep_packet {
-    int epid;
-    int size;
-};
-
-
 /*
- * a connected pair
+ * a source of new events, with the function to notify
  */
-struct ep_pair {
-    struct pollfd poll;
-    int remote_addr;
-    int state;
-};
-
-
-/*
- * the initialised listeners and all current connections
- */
-struct ep_listener {
-    struct pollfd    poll;
-    struct ep_pair  *pair;
-    size_t           count;
-    int              state;
-};
-
-
-/*
- * action to occur when recieving input
- * must contain a readable file descriptor
- */
-struct ep_handler {
-    int fd;
+struct ep_source {
+    pthread_t thread;
+    void *mem;
     int type;
-    void (*fn)();
 };
 
 
@@ -72,34 +46,32 @@ struct ep_handler_map {
 
 
 /*
- * list of file descriptors
+ * list of source file descriptors
  */
 struct ep_table {
-    char *path;
-    struct pollfd *fds;
-    nfds_t fdcount;
-    struct ep_handler_map fdmap;
+    struct ep_source *src;
+    size_t src_avail;
+    size_t src_count;
+    char path [256];
 };
 
-
-void ep_trigger(struct ep_handler_map *map, int fd);
 
 /*
  * init the table with a path to store socket data
  */
-void ep_init(struct ep_table *t, char *path);
+void ep_table_init(struct ep_table *t, char *path);
+void ep_table_free(struct ep_table *t);
+
+/*
+ * wait for all source threads to complete
+ */
+void ep_table_join(struct ep_table *t);
 
 
 /*
- * open new socket
+ * open new endpoint and allocate memory
  */
 int ep_open(struct ep_table *t, int type);
-
-
-/*
- * thread safe, blocking read
- */
-void ep_poll(struct ep_table *t, struct thread_pool *p);
 
 
 #endif
