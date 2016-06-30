@@ -4,6 +4,27 @@
 #include <libmsg/channel.h>
 
 
+struct msg_mod_state {
+    struct msg_server_state *s;
+    void  *ptr;
+    char   name [256];
+};
+
+
+/*
+ * function for initialising a module
+ */
+typedef void (*msg_module_fn)(struct msg_mod_state *);
+
+
+struct msg_mod_private {
+    struct msg_mod_state state;
+    msg_module_fn enable;
+    msg_module_fn disable;
+};
+
+
+
 struct init_state {
 
 };

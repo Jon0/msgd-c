@@ -20,15 +20,16 @@ struct ep_accept_data {
 /*
  * set endpoint to listen for local connections
  */
-void ep_set_local(struct ep_source *src, const char *address);
+void ep_set_local(struct ep_address *a, const char *address);
+void ep_set_src(struct ep_source *s);
 
 /*
  * a thread to handle input of a single file descriptor
  */
 void *ep_thread_accept(void *p);
 
-void ep_activate_acceptor(struct ep_table *t, struct ep_source *s, notify_fn_t af, notify_fn_t rf);
+void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf);
 
-void ep_activate_connector(struct ep_source *s, notify_fn_t rf);
+void ep_activate_connector(struct ep_address *a, notify_fn_t rf);
 
 #endif

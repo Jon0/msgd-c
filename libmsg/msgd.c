@@ -1,47 +1,60 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libutil/socket.h>
+
 #include "msgd.h"
 
 
-void md_init_proc(struct client_state *cs, const char *name, int mode) {
-    struct message msg;
-    msg.id = init;
-    strcpy(msg.data, name);
-    printf("connecting to server\n");
-
-    // connect to local ipc
-    mdu_ipc_client(&cs->chan, "msgd-init");
-    mdu_ipc_send(&cs->chan, (char *) &msg, sizeof(msg));
-    printf("sent %d: %s\n", msg.id, msg.data);
+void *on_client_read(struct ep_source *s) {
+    printf("read notify\n");
+    return NULL;
 }
 
 
-void md_free_proc(struct client_state *cs) {
-    mdu_ipc_close(&cs->chan);
+void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
+    ep_table_init(&cs->tb, "");
+
+    // create a connector
+    struct ep_address *a = ep_new_addr(&cs->tb);
+    ep_set_local(a, "msgd-local");
+    struct ep_source *s = ep_new_src(&cs->tb, a->epid);
+    ep_set_src(s);
+    ep_activate_connector(a, on_client_read);
 }
 
 
-void md_publish(struct client_state *cs, const struct node_attr_set *ns) {}
-void md_subscribe(struct client_state *cs, const struct node_attr_set *ns) {}
+void msg_free_proc(struct msg_client_state *cs) {
 
-
-void md_available(struct client_state *cs, struct node_id_set *ns) {
-    struct message msg;
-    msg.id = avail;
-    mdu_ipc_send(&cs->chan, (char *) &msg, sizeof(msg));
-    printf("sent %d: %s\n", msg.id, msg.data);
-    mdu_ipc_recv(&cs->chan, (char *) &msg, sizeof(msg));
-    printf("recv %d: %s\n", msg.id, msg.data);
+    // wait until threads complete
+    ep_table_join(&cs->tb);
+    ep_table_free(&cs->tb);
 }
 
 
-void md_published(struct client_state *cs, struct node_id_set *ns) {
+void msg_publish(struct msg_client_state *cs, const struct node_attr_set *ns) {
 
 }
 
-void md_subscribed(struct client_state *cs, struct node_id_set *ns) {
+
+void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) {
 
 }
-void md_poll(struct client_state *cs) {}
-void md_push(struct client_state *cs) {}
+
+
+void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
+
+}
+
+
+void msg_published(struct msg_client_state *cs, struct node_id_set *ns) {
+
+}
+
+void msg_subscribed(struct msg_client_state *cs, struct node_id_set *ns) {
+
+}
+
+
+void msg_poll(struct msg_client_state *cs) {}
+void msg_push(struct msg_client_state *cs) {}

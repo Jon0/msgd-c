@@ -41,8 +41,22 @@ void ep_buffer_take(struct ep_buffer *b, int fd);
  */
 void ep_buffer_release(struct ep_buffer *b, size_t count);
 
+
+/*
+ * threaded component for the reader
+ */
 void *ep_thread_read(void *p);
 
-void ep_create_reader(struct ep_source *s, int fd, notify_fn_t fn);
+
+/*
+ * just create threads, the attributes should be initialised
+ */
+void ep_create_reader(struct ep_source *s, notify_fn_t fn);
+
+
+/*
+ *
+ */
+ssize_t ep_write(struct ep_dest *d, char *buf, size_t count);
 
 #endif

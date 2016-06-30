@@ -42,7 +42,12 @@ void *ep_thread_read(void *p) {
 }
 
 
-void ep_create_reader(struct ep_source *s, int fd, notify_fn_t fn) {
-    printf("creating endpoint reader\n");
+void ep_create_reader(struct ep_source *s, notify_fn_t fn) {
+    printf("starting endpoint thread\n");
+}
 
+
+ssize_t ep_write(struct ep_dest *d, char *buf, size_t count) {
+    // unistd.h
+    return write(d->fd, buf, count);
 }
