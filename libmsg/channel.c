@@ -21,8 +21,7 @@ void msg_channel_run(struct msg_server_state *s) {
     // create a listener
     struct ep_address *addr = ep_new_addr(&s->tb);
     ep_set_local(addr, "msgd-local");
-    struct ep_source *src = ep_new_src(&s->tb, addr->epid);
-    ep_set_src(src);
+    ep_add_pipe_endpoints(&s->tb, addr->epid);
     ep_activate_acceptor(&s->tb, addr->epid, on_accept, on_read);
 
     // wait until threads complete

@@ -1,6 +1,7 @@
 #ifndef MSGD_H
 #define MSGD_H
 
+#include <libutil/buffer.h>
 #include <libutil/endpoint.h>
 
 #include "set.h"
@@ -32,6 +33,7 @@ struct msg_block {
  */
 struct msg_client_state {
     struct ep_table  tb;
+    struct ep_buffer buf;
     char             proc_name [256];
 };
 

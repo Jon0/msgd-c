@@ -16,8 +16,8 @@ struct ep_buffer {
 
 
 struct ep_read_data {
-    struct pollfd event;
-    struct ep_buffer *buf;
+    struct ep_source *tbsrc;
+    struct ep_buffer  buf;
 };
 
 
@@ -25,6 +25,11 @@ struct ep_read_data {
  * give the buffer some memory
  */
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
+
+/*
+ * push data into the buffer
+ */
+void ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count);
 
 /*
  * write data to a file descriptor, make no changes to the buffer
@@ -57,6 +62,6 @@ void ep_create_reader(struct ep_source *s, notify_fn_t fn);
 /*
  *
  */
-ssize_t ep_write(struct ep_dest *d, char *buf, size_t count);
+ssize_t ep_write(struct ep_dest *d, struct ep_buffer *b, size_t begin, size_t end);
 
 #endif

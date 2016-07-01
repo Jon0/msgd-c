@@ -21,12 +21,14 @@ void ep_set_local(struct ep_address *a, const char *address) {
     saun->sun_family = AF_UNIX;
     strcpy(saun->sun_path, address);
     a->addrlen = sizeof(saun->sun_family) + strlen(saun->sun_path);
-    a->src = NULL;
-    a->dest = NULL;
 }
 
 
-void ep_set_src(struct ep_source *s) {
+void ep_add_pipe_endpoints(struct ep_table *t, int epid) {
+
+    // what if src or dest already exist?
+    struct ep_source *s = ep_new_src(t, epid);
+    struct ep_dest *d = ep_new_dest(t, epid);
 
     // create a unix socket
     s->ksrc.fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -35,6 +37,7 @@ void ep_set_src(struct ep_source *s) {
         perror("socket");
         return;
     }
+    d->fd = s->ksrc.fd;
 }
 
 
@@ -50,6 +53,7 @@ void *ep_thread_accept(void *p) {
         // wait for events on the socket
         int r = poll(&this_source->ksrc, 1, -1);
         int fd = accept(this_source->ksrc.fd, (struct sockaddr *) &addr, &len);
+        printf("accept %d\n", fd);
 
         // make a new table entry
         struct ep_address *a = ep_new_addr(ld->table);
@@ -62,7 +66,6 @@ void *ep_thread_accept(void *p) {
         s->ksrc.events = POLLIN;
         struct ep_dest *d = ep_new_dest(ld->table, a->epid);
         d->fd = fd;
-
 
         // start new thread
         ep_create_reader(s, ld->notify_read);
@@ -101,6 +104,9 @@ void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_f
         err = pthread_create(&s->thread, NULL, ep_thread_accept, s->mem);
         if (err) {
             perror("pthread_create");
+        }
+        else {
+            s->state = 1;
         }
     }
 }

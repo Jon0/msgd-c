@@ -18,8 +18,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     // create a connector
     struct ep_address *a = ep_new_addr(&cs->tb);
     ep_set_local(a, "msgd-local");
-    struct ep_source *s = ep_new_src(&cs->tb, a->epid);
-    ep_set_src(s);
+    ep_add_pipe_endpoints(&cs->tb, a->epid);
     ep_activate_connector(a, on_client_read);
 }
 

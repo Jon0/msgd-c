@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 
 #include "thread.h"
+#include "hashmap.h"
 
 
 // endpoint is local, module or network
@@ -69,14 +70,6 @@ typedef void *(*notify_fn_t)(struct ep_source *);
 
 
 /*
- * hash map attributes
- */
-struct ep_hash_map {
-    size_t array_max;
-};
-
-
-/*
  * list of source file descriptors
  * a hash map of epid to attributes
  * all epids have an address attribute
@@ -88,7 +81,7 @@ struct ep_table {
     size_t avail;
     size_t src_count;
     size_t dest_count;
-    size_t next_id;
+    int next_id;
     char path [256];
 };
 

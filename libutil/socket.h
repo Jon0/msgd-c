@@ -21,7 +21,7 @@ struct ep_accept_data {
  * set endpoint to listen for local connections
  */
 void ep_set_local(struct ep_address *a, const char *address);
-void ep_set_src(struct ep_source *s);
+void ep_add_pipe_endpoints(struct ep_table *t, int epid);
 
 /*
  * a thread to handle input of a single file descriptor
