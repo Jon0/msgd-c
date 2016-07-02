@@ -43,10 +43,7 @@ struct ep_source {
  */
 struct ep_dest {
     int epid;
-    char           addr [256];
-    socklen_t      addrlen;
-    // either a function or a file descriptor
-    int fd;
+    int fd; // either a function or a file descriptor
 };
 
 

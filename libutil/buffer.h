@@ -18,6 +18,7 @@ struct ep_buffer {
 struct ep_read_data {
     struct ep_source *tbsrc;
     struct ep_buffer  buf;
+    notify_fn_t       notify_read;
 };
 
 
@@ -27,41 +28,44 @@ struct ep_read_data {
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 
 /*
- * push data into the buffer
+ * the currently used space in buffer
  */
-void ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count);
+size_t ep_buffer_used(struct ep_buffer *b);
 
 /*
- * write data to a file descriptor, make no changes to the buffer
+ * available bytes that can be used past the end
  */
-ssize_t ep_buffer_write(const struct ep_buffer *b, int fd, size_t begin);
+size_t ep_buffer_continuous(struct ep_buffer *b);
+
+/*
+ * push data into the buffer
+ */
+ssize_t ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count);
 
 /*
  * take available data from a readable file descriptor
  */
-void ep_buffer_take(struct ep_buffer *b, int fd);
+ssize_t ep_buffer_take(struct ep_buffer *b, int fd);
+
+/*
+ * write data to a file descriptor, make no changes to the buffer
+ */
+ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin);
 
 /*
  * increment the buffer front, as data is no longer needed
  */
 void ep_buffer_release(struct ep_buffer *b, size_t count);
 
-
 /*
  * threaded component for the reader
  */
 void *ep_thread_read(void *p);
-
 
 /*
  * just create threads, the attributes should be initialised
  */
 void ep_create_reader(struct ep_source *s, notify_fn_t fn);
 
-
-/*
- *
- */
-ssize_t ep_write(struct ep_dest *d, struct ep_buffer *b, size_t begin, size_t end);
 
 #endif

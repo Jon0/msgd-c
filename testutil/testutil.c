@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <libutil/buffer.h>
 #include <libutil/endpoint.h>
 #include <libutil/socket.h>
 
@@ -61,6 +62,14 @@ void ep_test() {
     ep_set_local(addr, "testname");
     ep_add_pipe_endpoints(&tb, addr->epid);
     ep_activate_connector(addr, on_read);
+
+    // test write
+    struct ep_buffer buf;
+    char mem [1024];
+    ep_buffer_init(&buf, mem, 1024);
+    ep_buffer_insert(&buf, "test\n", 6);
+    ssize_t r = ep_buffer_write(&buf, ep_table_dest(&tb, addr->epid), 0);
+    printf("write %d\n", r);
 
     // wait until threads complete
     ep_table_join(&tb);
