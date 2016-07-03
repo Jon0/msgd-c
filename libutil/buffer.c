@@ -36,26 +36,21 @@ size_t ep_buffer_continuous(struct ep_buffer *b) {
 
 ssize_t ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count) {
     size_t cs = ep_buffer_continuous(b);
-    size_t copied = 0;
-    char *back = &b->ptr[b->end];
     if (count < cs) {
-        memcpy(back, inbuf, count);
-        copied = count;
+        cs = count;
     }
-    else {
-        memcpy(back, inbuf, cs);
-        copied = cs;
+    char *back = &b->ptr[b->end];
+    memcpy(back, inbuf, cs);
 
+    if (count > cs && b->begin < b->end) {
         // how much more memory is available?
-        size_t memfree = 0;
+        size_t memfree = b->begin;
         if (count - cs < memfree) {
             memcpy(b->ptr, &inbuf[cs], count - cs);
         }
-
     }
-
-    b->end = (b->end + copied) % b->avail;
-    return copied;
+    b->end = (b->end + cs) % b->avail;
+    return cs;
 }
 
 
