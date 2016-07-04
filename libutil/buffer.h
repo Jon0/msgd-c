@@ -11,7 +11,7 @@ struct ep_buffer {
     char *ptr;
     size_t avail;
     size_t begin;
-    size_t end;
+    size_t size;
 };
 
 
@@ -28,14 +28,9 @@ struct ep_read_data {
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 
 /*
- * the currently used space in buffer
- */
-size_t ep_buffer_used(struct ep_buffer *b);
-
-/*
  * available bytes that can be used past the end
  */
-size_t ep_buffer_continuous(struct ep_buffer *b);
+size_t ep_buffer_endmem(struct ep_buffer *b);
 
 /*
  * push data into the buffer

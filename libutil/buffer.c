@@ -10,79 +10,97 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
     b->ptr = mem;
     b->avail = count;
     b->begin = 0;
-    b->end = 0;
+    b->size = 0;
 }
 
 
-size_t ep_buffer_used(struct ep_buffer *b) {
-    if (b->end < b->begin) {
-        return (b->avail + b->end) - b->begin;
+size_t ep_buffer_endmem(struct ep_buffer *b) {
+    size_t end = b->begin + b->size;
+    if (end < b->avail) {
+        return b->avail - end;
     }
     else {
-        return b->end - b->begin;
-    }
-}
-
-
-size_t ep_buffer_continuous(struct ep_buffer *b) {
-    if (b->end < b->begin) {
-        return b->begin - b->end;
-    }
-    else {
-        return b->avail - b->end;
+        return b->avail - b->size;
     }
 }
 
 
 ssize_t ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count) {
-    size_t cs = ep_buffer_continuous(b);
-    if (count < cs) {
-        cs = count;
-    }
-    char *back = &b->ptr[b->end];
-    memcpy(back, inbuf, cs);
+    size_t end = b->begin + b->size;
 
-    if (count > cs && b->begin < b->end) {
-        // how much more memory is available?
-        size_t memfree = b->begin;
-        if (count - cs < memfree) {
+    // check if insert will exceed capacity
+    if (count < (b->avail - b->size)) {
+        count = b->avail - b->size;
+    }
+
+    if (end < b->avail) {
+        char *back = &b->ptr[end];
+        size_t cs = b->avail - end;
+        if (count > cs) {
+            memcpy(back, inbuf, cs);
             memcpy(b->ptr, &inbuf[cs], count - cs);
         }
+        else {
+            memcpy(back, inbuf, count);
+        }
     }
-    b->end = (b->end + cs) % b->avail;
-    return cs;
+    else {
+        char *back = &b->ptr[end - b->avail];
+        memcpy(back, inbuf, count);
+    }
+    b->size += count;
+    return count;
 }
 
 
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
-    size_t maxread = b->avail - b->end;
-    ssize_t r = read(fd, &b->ptr[b->end], maxread);
-    if (r > 0) {
-        b->end += r;
+    size_t end = (b->begin + b->size) % b->avail;
+    size_t maxread = ep_buffer_endmem(b);
+    ssize_t r = read(fd, &b->ptr[end], maxread);
+    if (r < 0) {
+        return 0;
     }
 
     // wrap around to beginning
     if (r == maxread && b->begin > 0) {
         size_t rs = read(fd, b->ptr, b->begin);
         if (rs > 0) {
-            b->end = rs;
             r += rs;
         }
     }
-    printf("buffer read %d, (%d / %d used)\n", r, ep_buffer_used(b), b->avail);
+    b->size += r;
+    printf("buffer read %d, (%d / %d used)\n", r, b->size, b->avail);
     return r;
 }
 
 
 ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin) {
+
     // write as much as possible from begin
-    // fix wrap past end of array
-    return write(d->fd, &b->ptr[begin], b->end - begin);
+    size_t end = b->begin + b->size;
+    if (end < b->avail) {
+        return write(d->fd, &b->ptr[begin], end - begin);
+    }
+    else if (begin < (end - b->avail)) {
+        return write(d->fd, &b->ptr[begin], (end - b->avail) - begin);
+    }
+    else {
+        ssize_t w = write(d->fd, &b->ptr[begin], (b->begin - b->avail));
+        w += write(d->fd, b->ptr, (end - b->avail));
+        return w;
+    }
 }
 
 
 void ep_buffer_release(struct ep_buffer *b, size_t count) {
-    b->begin += count;
+    if (count < b->size) {
+        b->begin += count;
+        b->size -= count;
+    }
+    else {
+        b->begin = 0;
+        b->size = 0;
+    }
 }
 
 
