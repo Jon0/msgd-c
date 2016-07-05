@@ -12,6 +12,14 @@ void *on_client_read(struct ep_source *s) {
 }
 
 
+void write_str(struct msg_client_state *cs, int id, const char *str) {
+    ep_buffer_insert(&cs->buf, str, strlen(str));
+    struct ep_dest *d = ep_table_dest(&cs->tb, id);
+    size_t r = ep_buffer_write_inc(&cs->buf, d, &cs->writes);
+    printf("write %d remain\n", r);
+}
+
+
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     ep_table_init(&cs->tb, "");
 
@@ -25,9 +33,8 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     ep_activate_connector(a, on_client_read);
 
     // send connect request
-    struct ep_dest *d = ep_table_dest(&cs->tb, a->epid);
-    size_t r = ep_buffer_write_inc(&cs->buf, d, &cs->writes);
-    printf("write %d remain\n", r);
+    cs->writes = 0;
+    write_str(cs, a->epid, "connect");
 }
 
 

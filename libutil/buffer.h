@@ -35,7 +35,7 @@ size_t ep_buffer_endmem(struct ep_buffer *b);
 /*
  * push data into the buffer
  */
-ssize_t ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count);
+ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
 
 /*
  * take available data from a readable file descriptor
