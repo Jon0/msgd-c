@@ -11,11 +11,13 @@ void *on_accept(struct ep_source *s) {
 
 void *on_read(struct ep_source *s) {
     printf("read notify\n");
+
+    // recieving requests to the local server
     return NULL;
 }
 
 
-void msg_channel_run(struct msg_server_state *s) {
+void msg_server_run(struct msg_server_state *s) {
     ep_table_init(&s->tb, "");
 
     // create a listener

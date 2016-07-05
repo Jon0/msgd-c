@@ -9,6 +9,6 @@ struct msg_server_state {
 };
 
 
-void msg_channel_run(struct msg_server_state *s);
+void msg_server_run(struct msg_server_state *s);
 
 #endif

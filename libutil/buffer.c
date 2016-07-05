@@ -54,21 +54,29 @@ ssize_t ep_buffer_insert(struct ep_buffer *b, char *inbuf, size_t count) {
 
 
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
-    size_t end = (b->begin + b->size) % b->avail;
-    size_t maxread = ep_buffer_endmem(b);
-    ssize_t r = read(fd, &b->ptr[end], maxread);
-    if (r < 0) {
-        return 0;
+    size_t end = b->begin + b->size;
+    char *back;
+    size_t space = 0;
+
+    // find back and available space
+    if (end < b->avail) {
+        back = &b->ptr[end];
+        space = b->avail - end;
+    }
+    else {
+        end -= b->avail;
+        back = &b->ptr[end];
+        space = b->begin - end;
     }
 
-    // wrap around to beginning
-    if (r == maxread && b->begin > 0) {
-        size_t rs = read(fd, b->ptr, b->begin);
-        if (rs > 0) {
-            r += rs;
-        }
+    // try read from file descriptor
+    ssize_t r = read(fd, back, space);
+    if (r < 0) {
+        perror("read");
     }
-    b->size += r;
+    else {
+        b->size += r;
+    }
     printf("buffer read %d, (%d / %d used)\n", r, b->size, b->avail);
     return r;
 }
@@ -82,19 +90,30 @@ ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin) {
         return write(d->fd, &b->ptr[begin], end - begin);
     }
     else if (begin < (end - b->avail)) {
+        // begin is positioned before end, only one write is required
         return write(d->fd, &b->ptr[begin], (end - b->avail) - begin);
     }
     else {
-        ssize_t w = write(d->fd, &b->ptr[begin], (b->begin - b->avail));
-        w += write(d->fd, b->ptr, (end - b->avail));
-        return w;
+        // begin is positioned after end, not all can be written
+        return write(d->fd, &b->ptr[begin], (b->begin - b->avail));
     }
+}
+
+
+size_t ep_buffer_write_inc(struct ep_buffer *b, struct ep_dest *d, size_t *begin) {
+    ssize_t w = ep_buffer_write(b, d, *begin);
+    if (w > 0) {
+        *begin = (*begin + w) % b->avail;
+    }
+
+    // return remainder
+    return ((b->avail + b->begin + b->size) - *begin) % b->avail;
 }
 
 
 void ep_buffer_release(struct ep_buffer *b, size_t count) {
     if (count < b->size) {
-        b->begin += count;
+        b->begin = (b->begin + count) % b->avail;
         b->size -= count;
     }
     else {
@@ -113,7 +132,10 @@ void *ep_thread_read(void *p) {
         int r = poll(&rd->tbsrc->ksrc, 1, -1);
 
         // since only one thread writes, no lock is required
-        ep_buffer_take(&rd->buf, rd->tbsrc->ksrc.fd);
+        if (ep_buffer_take(&rd->buf, rd->tbsrc->ksrc.fd) == 0) {
+            printf("socket closed\n");
+            return rd;
+        }
 
         // notify of event
         rd->notify_read(rd->tbsrc);

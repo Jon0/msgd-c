@@ -46,6 +46,7 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd);
  * write data to a file descriptor, make no changes to the buffer
  */
 ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin);
+size_t ep_buffer_write_inc(struct ep_buffer *b, struct ep_dest *d, size_t *begin);
 
 /*
  * increment the buffer front, as data is no longer needed
