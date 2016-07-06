@@ -29,7 +29,7 @@ ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
     size_t end = b->begin + b->size;
 
     // check if insert will exceed capacity
-    if (count < (b->avail - b->size)) {
+    if (count > (b->avail - b->size)) {
         count = b->avail - b->size;
     }
 

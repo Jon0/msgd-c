@@ -33,6 +33,7 @@ struct msg_block {
  */
 struct msg_client_state {
     struct ep_table  tb;
+    int              epid;
     struct ep_buffer buf;
     size_t           writes;
     char             proc_name [256];

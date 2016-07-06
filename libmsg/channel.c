@@ -10,10 +10,19 @@ void *on_accept(struct ep_source *s) {
 
 
 void *on_read(struct ep_source *s) {
-    printf("read notify\n");
+    struct ep_read_data *read = (struct ep_read_data *) s->mem;
+    msg_parse_input(&read->buf);
+    return NULL;
+}
+
+
+void msg_parse_input(struct ep_buffer *b) {
+    char *content = &b->ptr[b->begin];
+
+    // parse the buffer content
+    printf("read %s\n", content);
 
     // recieving requests to the local server
-    return NULL;
 }
 
 

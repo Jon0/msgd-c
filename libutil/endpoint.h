@@ -42,8 +42,9 @@ struct ep_source {
  * writable endpoints
  */
 struct ep_dest {
-    int epid;
-    int fd; // either a function or a file descriptor
+    int    epid;
+    int    fd; // either a function or a file descriptor
+    void  *mem;
 };
 
 

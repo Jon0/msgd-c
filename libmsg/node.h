@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#include "mem.h"
-#include "update.h"
-
 
 /*
  * names a specific recieving process
@@ -47,28 +44,6 @@ struct node_tree {
     struct node_base  *subnodes;
     int64_t            subnode_count;
 };
-
-
-/*
- * complete server state
- */
-struct node_buffer {
-    struct node_update_buffer   update_buf;
-    struct mem_block            dest_buf;
-    struct mem_block            src_buf;
-    struct mem_block            tree_buf;
-};
-
-
-void init_node_buffer(struct node_buffer *buf);
-void free_node_buffer(struct node_buffer *buf);
-
-void update_node_buffer(struct node_buffer *buf);
-
-/*
- * create a node
- */
-void register_node_src(struct node_buffer *buf, struct node_src *src);
 
 
 #endif
