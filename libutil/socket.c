@@ -9,7 +9,7 @@
 #include "socket.h"
 
 
-void ep_unlink(char *address) {
+void ep_unlink(const char *address) {
     unlink(address);
 }
 
@@ -47,8 +47,8 @@ void *ep_thread_accept(void *p) {
     struct ep_source *this_src = this_addr->src;
     struct sockaddr_un addr;
     socklen_t len = sizeof(addr);
-    this_src->state = 1;
-    while (this_src->state) {
+    int run_loop = 1;
+    while (run_loop) {
         printf("wait for connections...\n");
 
         // wait for events on the socket
@@ -78,13 +78,13 @@ void *ep_thread_accept(void *p) {
 
 
 void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf, void *obj) {
-    int err;
-    printf("creating socket acceptor\n");
 
     // the acceptor requires an initialised addr and src
+    int err;
     struct ep_address *a = ep_table_addr(t, epid);
     struct ep_source *s = ep_table_src(t, epid);
     if (a && s) {
+        printf("creating socket acceptor\n");
 
         // bind and listen on the socket
         err = bind(s->ksrc.fd, (struct sockaddr *) &a->addr, a->addrlen);
@@ -107,6 +107,9 @@ void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_f
         err = pthread_create(&s->thread, NULL, ep_thread_accept, s->mem);
         if (err) {
             perror("pthread_create");
+        }
+        else {
+            s->state = 1;
         }
     }
     else {

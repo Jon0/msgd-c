@@ -17,6 +17,10 @@ struct ep_accept_data {
 };
 
 
+/*
+ * cleanup old sockets
+ */
+void ep_unlink(const char *address);
 
 /*
  * set endpoint to listen for local connections

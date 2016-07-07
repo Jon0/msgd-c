@@ -5,6 +5,6 @@
 
 int main(int argc, const char *argv[]) {
     struct msg_server_state cs;
-    msg_server_run(&cs);
+    msg_server_run(&cs, "msgd-local");
     return 0;
 }

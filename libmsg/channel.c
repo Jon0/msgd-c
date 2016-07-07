@@ -1,11 +1,11 @@
 #include <stdio.h>
 
 #include "channel.h"
-
+#include "protocol.h"
 
 void on_accept(struct ep_address *a, void *p) {
-    struct msg_channel_table *t = (struct msg_channel_table *) p;
-    printf("accept notify\n");
+    struct msg_server_state *ss = (struct msg_server_state *) p;
+    printf("new connection accepted\n");
 
     // initialise a new channel
 
@@ -13,30 +13,21 @@ void on_accept(struct ep_address *a, void *p) {
 
 
 void on_read(struct ep_address *a, void *p) {
-    struct msg_channel_table *t = (struct msg_channel_table *) p;
+    struct msg_server_state *ss = (struct msg_server_state *) p;
     struct ep_read_data *read = (struct ep_read_data *) a->src->mem;
-    msg_parse_input(&read->buf);
+    msg_poll_buffer(&read->buf);
 }
 
 
-void msg_parse_input(struct ep_buffer *b) {
-    char *content = &b->ptr[b->begin];
-
-    // parse the buffer content
-    printf("read %s\n", content);
-
-    // recieving requests to the local server
-}
-
-
-void msg_server_run(struct msg_server_state *s) {
+void msg_server_run(struct msg_server_state *s, const char *sockpath) {
     ep_table_init(&s->tb, "");
 
     // create a listener
     struct ep_address *addr = ep_new_addr(&s->tb);
-    ep_set_local(addr, "msgd-local");
+    ep_unlink(sockpath);
+    ep_set_local(addr, sockpath);
     ep_add_pipe_endpoints(&s->tb, addr->epid);
-    ep_activate_acceptor(&s->tb, addr->epid, on_accept, on_read, &s->c);
+    ep_activate_acceptor(&s->tb, addr->epid, on_accept, on_read, s);
 
     // wait until threads complete
     ep_table_join(&s->tb);

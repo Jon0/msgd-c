@@ -40,6 +40,7 @@ void ep_table_join(struct ep_table *t) {
             pthread_join(t->src[i].thread, NULL);
         }
     }
+    printf("all threads joined\n");
 }
 
 

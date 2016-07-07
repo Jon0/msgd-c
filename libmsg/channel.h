@@ -27,6 +27,6 @@ struct msg_server_state {
 
 void msg_parse_input(struct ep_buffer *b);
 
-void msg_server_run(struct msg_server_state *s);
+void msg_server_run(struct msg_server_state *s, const char *sockpath);
 
 #endif
