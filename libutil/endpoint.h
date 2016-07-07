@@ -64,7 +64,7 @@ struct ep_address {
 /*
  * notify function type
  */
-typedef void *(*notify_fn_t)(struct ep_source *);
+typedef void (*notify_fn_t)(struct ep_address *, void *);
 
 
 /*

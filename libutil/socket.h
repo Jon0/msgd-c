@@ -9,10 +9,11 @@
 
 
 struct ep_accept_data {
-    struct ep_table  *table;
-    struct ep_source *tbsrc;
-    notify_fn_t       notify_accept;
-    notify_fn_t       notify_read;
+    struct ep_table   *table;
+    struct ep_address *srcaddr;
+    void              *notify_obj;
+    notify_fn_t        notify_accept;
+    notify_fn_t        notify_read;
 };
 
 
@@ -28,8 +29,8 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid);
  */
 void *ep_thread_accept(void *p);
 
-void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf);
+void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf, void *obj);
 
-void ep_activate_connector(struct ep_address *a, notify_fn_t rf);
+void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj);
 
 #endif

@@ -6,9 +6,8 @@
 #include "msgd.h"
 
 
-void *on_client_read(struct ep_source *s) {
+void on_client_read(struct ep_address *a, void *p) {
     printf("read notify\n");
-    return NULL;
 }
 
 
@@ -31,7 +30,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     cs->epid = a->epid;
     ep_set_local(a, "msgd-local");
     ep_add_pipe_endpoints(&cs->tb, cs->epid);
-    ep_activate_connector(a, on_client_read);
+    ep_activate_connector(a, on_client_read, NULL);
     strcpy(cs->proc_name, name);
 
     // send connect request

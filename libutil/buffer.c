@@ -125,37 +125,41 @@ void ep_buffer_release(struct ep_buffer *b, size_t count) {
 
 void *ep_thread_read(void *p) {
     struct ep_read_data *rd = (struct ep_read_data *) p;
+    struct ep_source *s = rd->srcaddr->src;
     while (1) {
         printf("wait for events...\n");
 
         // wait for events on the socket
-        int r = poll(&rd->tbsrc->ksrc, 1, -1);
+        int r = poll(&s->ksrc, 1, -1);
 
         // since only one thread writes, no lock is required
-        if (ep_buffer_take(&rd->buf, rd->tbsrc->ksrc.fd) == 0) {
+        if (ep_buffer_take(&rd->buf, s->ksrc.fd) == 0) {
             printf("socket closed\n");
             return rd;
         }
 
         // notify of event
-        rd->notify_read(rd->tbsrc);
+        rd->notify_read(rd->srcaddr, rd->notify_obj);
     }
 }
 
 
-void ep_create_reader(struct ep_source *s, notify_fn_t fn) {
+void ep_create_reader(struct ep_address *a, notify_fn_t fn, void *obj) {
     printf("starting endpoint thread\n");
 
     // data for the read thread
     size_t buf_size = 4096;
     char *mem = malloc(sizeof(struct ep_read_data) + buf_size);
     struct ep_read_data *rd = (struct ep_read_data *) mem;
-    rd->tbsrc = s;
+    rd->srcaddr = a;
+    rd->notify_obj = obj;
     rd->notify_read = fn;
     ep_buffer_init(&rd->buf, &mem[sizeof(struct ep_read_data)], buf_size);
-    s->mem = rd;
 
-    int err = pthread_create(&s->thread, NULL, ep_thread_read, s->mem);
+    // init source struct
+    struct ep_source *s = a->src;
+    s->mem = rd;
+    int err = pthread_create(&s->thread, NULL, ep_thread_read, rd);
     if (err) {
         perror("pthread_create");
     }

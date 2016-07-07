@@ -43,16 +43,17 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid) {
 
 void *ep_thread_accept(void *p) {
     struct ep_accept_data *ld = (struct ep_accept_data *) p;
-    struct ep_source *this_source = ld->tbsrc;
+    struct ep_address *this_addr = ld->srcaddr;
+    struct ep_source *this_src = this_addr->src;
     struct sockaddr_un addr;
     socklen_t len = sizeof(addr);
-    this_source->state = 1;
-    while (this_source->state) {
+    this_src->state = 1;
+    while (this_src->state) {
         printf("wait for connections...\n");
 
         // wait for events on the socket
-        int r = poll(&this_source->ksrc, 1, -1);
-        int fd = accept(this_source->ksrc.fd, (struct sockaddr *) &addr, &len);
+        int r = poll(&this_src->ksrc, 1, -1);
+        int fd = accept(this_src->ksrc.fd, (struct sockaddr *) &addr, &len);
         printf("accept %d\n", fd);
 
         // make a new table entry
@@ -68,15 +69,15 @@ void *ep_thread_accept(void *p) {
         d->fd = fd;
 
         // start new thread
-        ep_create_reader(s, ld->notify_read);
+        ep_create_reader(a, ld->notify_read, ld->notify_obj);
 
         // call the notify function
-        ld->notify_accept(this_source);
+        ld->notify_accept(this_addr, ld->notify_obj);
     }
 }
 
 
-void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf) {
+void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf, void *obj) {
     int err;
     printf("creating socket acceptor\n");
 
@@ -95,24 +96,26 @@ void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_f
 
         // data passed to thread
         struct ep_accept_data *ad = malloc(sizeof(struct ep_accept_data));
-        s->mem = ad;
         ad->table = t;
-        ad->tbsrc = s;
+        ad->srcaddr = a;
+        ad->notify_obj = obj;
         ad->notify_accept = af;
         ad->notify_read = rf;
 
+        // init source struct
+        s->mem = ad;
         err = pthread_create(&s->thread, NULL, ep_thread_accept, s->mem);
         if (err) {
             perror("pthread_create");
         }
-        else {
-            s->state = 1;
-        }
+    }
+    else {
+        printf("failed to start acceptor\n");
     }
 }
 
 
-void ep_activate_connector(struct ep_address *a, notify_fn_t rf) {
+void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
     printf("creating socket connector\n");
 
     // the connector requires an initialised addr and src
@@ -126,6 +129,6 @@ void ep_activate_connector(struct ep_address *a, notify_fn_t rf) {
         }
 
         // start new thread
-        ep_create_reader(a->src, rf);
+        ep_create_reader(a, rf, obj);
     }
 }

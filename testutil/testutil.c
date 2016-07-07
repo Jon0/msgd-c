@@ -6,15 +6,13 @@
 #include <libutil/socket.h>
 
 
-void *on_accept(struct ep_source *s) {
+void on_accept(struct ep_address *s, void *p) {
     printf("accept notify\n");
-    return NULL;
 }
 
 
-void *on_read(struct ep_source *s) {
+void on_read(struct ep_address *s, void *p) {
     printf("read notify\n");
-    return NULL;
 }
 
 
@@ -55,13 +53,13 @@ void ep_test() {
     struct ep_address *addr = ep_new_addr(&tb);
     ep_set_local(addr, "testname");
     ep_add_pipe_endpoints(&tb, addr->epid);
-    ep_activate_acceptor(&tb, addr->epid, on_accept, on_read);
+    ep_activate_acceptor(&tb, addr->epid, on_accept, on_read, NULL);
 
     // create a connector
     addr = ep_new_addr(&tb);
     ep_set_local(addr, "testname");
     ep_add_pipe_endpoints(&tb, addr->epid);
-    ep_activate_connector(addr, on_read);
+    ep_activate_connector(addr, on_read, NULL);
 
     // test write
     struct ep_buffer buf;

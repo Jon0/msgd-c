@@ -3,16 +3,19 @@
 #include "channel.h"
 
 
-void *on_accept(struct ep_source *s) {
+void on_accept(struct ep_address *a, void *p) {
+    struct msg_channel_table *t = (struct msg_channel_table *) p;
     printf("accept notify\n");
-    return NULL;
+
+    // initialise a new channel
+
 }
 
 
-void *on_read(struct ep_source *s) {
-    struct ep_read_data *read = (struct ep_read_data *) s->mem;
+void on_read(struct ep_address *a, void *p) {
+    struct msg_channel_table *t = (struct msg_channel_table *) p;
+    struct ep_read_data *read = (struct ep_read_data *) a->src->mem;
     msg_parse_input(&read->buf);
-    return NULL;
 }
 
 
@@ -33,7 +36,7 @@ void msg_server_run(struct msg_server_state *s) {
     struct ep_address *addr = ep_new_addr(&s->tb);
     ep_set_local(addr, "msgd-local");
     ep_add_pipe_endpoints(&s->tb, addr->epid);
-    ep_activate_acceptor(&s->tb, addr->epid, on_accept, on_read);
+    ep_activate_acceptor(&s->tb, addr->epid, on_accept, on_read, &s->c);
 
     // wait until threads complete
     ep_table_join(&s->tb);
