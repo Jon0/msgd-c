@@ -84,6 +84,13 @@ struct ep_table {
 };
 
 
+
+/*
+ * block until a new event is recieved
+ */
+void ep_wait(struct ep_source *s);
+
+
 /*
  * init the table with a path to store socket data
  */

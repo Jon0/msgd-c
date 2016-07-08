@@ -29,9 +29,9 @@ struct ep_read_data {
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 
 /*
- * available bytes that can be used past the end
+ * return end index and continuous bytes that can be used past the end
  */
-size_t ep_buffer_endmem(struct ep_buffer *b);
+void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
 
 /*
  * push data into the buffer
@@ -42,6 +42,7 @@ ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
  * take available data from a readable file descriptor
  */
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd);
+size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count);
 
 /*
  * write data to a file descriptor, make no changes to the buffer

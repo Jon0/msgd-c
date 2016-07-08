@@ -19,6 +19,14 @@ void on_read(struct ep_address *a, void *p) {
 }
 
 
+void channel_thread(struct ep_source *s) {
+    // a thread for handle socket input
+
+    // wait for events
+    ep_wait(s);
+}
+
+
 void msg_server_run(struct msg_server_state *s, const char *sockpath) {
     ep_table_init(&s->tb, "");
 

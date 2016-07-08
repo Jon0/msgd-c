@@ -23,6 +23,8 @@ enum msg_type_id {
 
 struct msg_block {
     enum msg_type_id  id;
+    int host_id;
+    int route_id;
 };
 
 

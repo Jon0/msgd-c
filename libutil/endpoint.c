@@ -5,6 +5,11 @@
 #include "endpoint.h"
 
 
+void ep_wait(struct ep_source *s) {
+    int r = poll(&s->ksrc, 1, -1);
+}
+
+
 void ep_table_init(struct ep_table *t, char *path) {
     size_t maxsize = 256;
     size_t addr_size = sizeof(struct ep_address) * maxsize;

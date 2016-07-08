@@ -14,13 +14,15 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
 }
 
 
-size_t ep_buffer_endmem(struct ep_buffer *b) {
-    size_t end = b->begin + b->size;
-    if (end < b->avail) {
-        return b->avail - end;
+void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
+    size_t end_index = b->begin + b->size;
+    if (end_index < b->avail) {
+        *end = &b->ptr[end_index];
+        *space = b->avail - end_index;
     }
     else {
-        return b->avail - b->size;
+        *end = &b->ptr[end_index - b->avail];
+        *space = b->avail - b->size;
     }
 }
 
@@ -54,20 +56,9 @@ ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
 
 
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
-    size_t end = b->begin + b->size;
     char *back;
     size_t space = 0;
-
-    // find back and available space
-    if (end < b->avail) {
-        back = &b->ptr[end];
-        space = b->avail - end;
-    }
-    else {
-        end -= b->avail;
-        back = &b->ptr[end];
-        space = b->begin - end;
-    }
+    ep_buffer_endmem(b, &back, &space);
 
     // try read from file descriptor
     ssize_t r = read(fd, back, space);
@@ -79,6 +70,27 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
     }
     printf("buffer read %d, (%d / %d used)\n", r, b->size, b->avail);
     return r;
+}
+
+
+size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count) {
+    char *back;
+    size_t space = 0;
+    ep_buffer_endmem(b, &back, &space);
+
+    if (count > space) {
+        count = space;
+    }
+
+    ssize_t r = read(s->ksrc.fd, back, count);
+    if (r < 0) {
+        perror("read");
+        return 0;
+    }
+    else {
+        b->size += r;
+        return r;
+    }
 }
 
 
@@ -123,6 +135,7 @@ void ep_buffer_release(struct ep_buffer *b, size_t count) {
 }
 
 
+// replace this function using the channel system
 void *ep_thread_read(void *p) {
     struct ep_read_data *rd = (struct ep_read_data *) p;
     struct ep_source *s = rd->srcaddr->src;
