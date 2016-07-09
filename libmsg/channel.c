@@ -20,10 +20,14 @@ void on_read(struct ep_address *a, void *p) {
 
 
 void channel_thread(struct ep_source *s) {
-    // a thread for handle socket input
+    struct ep_buffer buf;
 
     // wait for events
     ep_wait(s);
+
+
+    // seperate contained streams
+    ep_buffer_take_src(&buf, s, 4);
 }
 
 

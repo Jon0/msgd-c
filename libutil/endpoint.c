@@ -5,8 +5,8 @@
 #include "endpoint.h"
 
 
-void ep_wait(struct ep_source *s) {
-    int r = poll(&s->ksrc, 1, -1);
+int ep_wait(struct ep_source *s) {
+    return poll(&s->ksrc, 1, -1);
 }
 
 

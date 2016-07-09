@@ -28,6 +28,8 @@ struct ep_attributes {
 
 /*
  * a source of new events
+ * todo: create a new system to fill the buffer,
+ * other than the file descriptors.
  */
 struct ep_source {
     int epid;
@@ -86,9 +88,9 @@ struct ep_table {
 
 
 /*
- * block until a new event is recieved
+ * block until input is recieved
  */
-void ep_wait(struct ep_source *s);
+int ep_wait(struct ep_source *s);
 
 
 /*
