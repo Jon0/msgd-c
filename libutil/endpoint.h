@@ -9,15 +9,6 @@
 #include "hashmap.h"
 
 
-// endpoint is local, module or network
-// local endpoints are file descriptors
-enum ep_mode {
-    local,
-    remote,
-    module
-};
-
-
 struct ep_attributes {
     int tls;
     int ipv4;
@@ -27,16 +18,28 @@ struct ep_attributes {
 
 
 /*
- * a source of new events
- * todo: create a new system to fill the buffer,
- * other than the file descriptors.
+ * general source type
  */
-struct ep_source {
-    int epid;
-    struct pollfd  ksrc;
-    pthread_t      thread;
-    int            state;
-    void          *mem;
+struct ep_src {
+    struct ep_handler *hdl;
+    void *obj;
+    void (*copy)(void *, size_t);
+};
+
+
+/*
+ * moves input from file descriptors into handlers
+ */
+struct ep_src_fd {
+    struct pollfd      ksrc;
+};
+
+
+/*
+ * waits for another thread to pass input
+ */
+struct ep_src_cond {
+    pthread_cond_t cond;
 };
 
 
@@ -58,7 +61,7 @@ struct ep_address {
     int                epid;
     char               addr [256];
     socklen_t          addrlen;
-    struct ep_source  *src;
+    struct ep_src     *src;
     struct ep_dest    *dest;
 };
 
@@ -86,12 +89,15 @@ struct ep_table {
 };
 
 
+/*
+ * block until any input is recieved
+ */
+int ep_wait(struct ep_src *s);
 
 /*
- * block until input is recieved
+ * block until at least n bytes are read
  */
-int ep_wait(struct ep_source *s);
-
+int ep_read_block(struct ep_src *s, size_t n);
 
 /*
  * init the table with a path to store socket data

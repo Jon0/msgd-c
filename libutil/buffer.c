@@ -138,7 +138,7 @@ void ep_buffer_release(struct ep_buffer *b, size_t count) {
 // replace this function using the channel system
 void *ep_thread_read(void *p) {
     struct ep_read_data *rd = (struct ep_read_data *) p;
-    struct ep_source *s = rd->srcaddr->src;
+    struct ep_src *s = rd->srcaddr->src;
     while (1) {
         printf("wait for events...\n");
 
@@ -170,7 +170,7 @@ void ep_create_reader(struct ep_address *a, notify_fn_t fn, void *obj) {
     ep_buffer_init(&rd->buf, &mem[sizeof(struct ep_read_data)], buf_size);
 
     // init source struct
-    struct ep_source *s = a->src;
+    struct ep_src *s = a->src;
     s->mem = rd;
     int err = pthread_create(&s->thread, NULL, ep_thread_read, rd);
     if (err) {

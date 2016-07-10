@@ -10,6 +10,16 @@ int ep_wait(struct ep_source *s) {
 }
 
 
+int ep_read_block(struct ep_src *s, size_t n) {
+    char buf[1024];
+    size_t copied = 0;
+    while (copied < count) {
+        copied += read(s->ksrc.fd, &buf[copied], count - copied);
+    }
+    return copied;
+}
+
+
 void ep_table_init(struct ep_table *t, char *path) {
     size_t maxsize = 256;
     size_t addr_size = sizeof(struct ep_address) * maxsize;
