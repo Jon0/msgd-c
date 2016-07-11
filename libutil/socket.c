@@ -68,16 +68,13 @@ void *ep_thread_accept(void *p) {
         struct ep_dest *d = ep_new_dest(ld->table, a->epid);
         d->fd = fd;
 
-        // start new thread
-        ep_create_reader(a, ld->notify_read, ld->notify_obj);
-
         // call the notify function
-        ld->notify_accept(this_addr, ld->notify_obj);
+        ld->notify_accept(this_addr, a);
     }
 }
 
 
-void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_fn_t rf, void *obj) {
+void ep_activate_acceptor(struct ep_table *t, int epid, notify_accept_t af) {
 
     // the acceptor requires an initialised addr and src
     int err;
@@ -93,24 +90,6 @@ void ep_activate_acceptor(struct ep_table *t, int epid, notify_fn_t af, notify_f
             return;
         }
         listen(s->ksrc.fd, 5);
-
-        // data passed to thread
-        struct ep_accept_data *ad = malloc(sizeof(struct ep_accept_data));
-        ad->table = t;
-        ad->srcaddr = a;
-        ad->notify_obj = obj;
-        ad->notify_accept = af;
-        ad->notify_read = rf;
-
-        // init source struct
-        s->mem = ad;
-        err = pthread_create(&s->thread, NULL, ep_thread_accept, s->mem);
-        if (err) {
-            perror("pthread_create");
-        }
-        else {
-            s->state = 1;
-        }
     }
     else {
         printf("failed to start acceptor\n");
@@ -130,8 +109,5 @@ void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
             perror("connect");
             return;
         }
-
-        // start new thread
-        ep_create_reader(a, rf, obj);
     }
 }

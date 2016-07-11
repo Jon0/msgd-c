@@ -3,91 +3,54 @@
 #include "thread.h"
 
 
-void *thread_main(void *p) {
-    struct thread_queue *q = (struct thread_queue *) p;
-    while (q->run) {
+struct ep_pthread_data {
+    struct ep_thread_view st;
+    handler_main_t fn;
+};
 
-        // block while queue no tasks
-        pthread_mutex_lock(&q->empty);
-        if (!q->run) {
-            pthread_mutex_unlock(&q->empty);
-            return NULL;
-        }
 
-        // copy front element
-        pthread_mutex_lock(&q->modify);
-        struct thread_task copy = q->task[q->task_front];
-        q->task_front = (q->task_front + 1) % q->task_avail;
-        --q->task_count;
-        pthread_mutex_unlock(&q->modify);
+/*
+ * wrap the handler main with the pthread function type
+ */
+void *ep_pthread_start(void *p) {
+    struct ep_pthread_data d = *(struct ep_pthread_data *) p;
+    d.fn(&d.st);
+    return NULL;
+}
 
-        // allow next thread if more elements remain
-        printf("queue length %d\n", q->task_count);
-        if (q->task_count > 0) {
-            pthread_mutex_unlock(&q->empty);
-        }
 
-        // run the task
-        copy.fn(p);
+void ep_handler_init(struct ep_thread *h) {
+    pthread_mutex_init(&h->modify, NULL);
+}
+
+
+int ep_handler_start(struct ep_thread_pool *p, handler_main_t fn) {
+    struct ep_thread *h = &p->hdls[p->size];
+    ep_handler_init(h);
+
+    // collect data passed to thread
+    struct ep_pthread_data thread_data;
+    thread_data.st.pool = p;
+    thread_data.st.this_hdl = h;
+    thread_data.fn = fn;
+    int err = pthread_create(&h->thread, NULL, ep_pthread_start, &thread_data);
+    if (err) {
+        perror("pthread_create");
     }
+    else {
+            h->state = 1;
+    }
+    return 0;
 }
 
 
-void queue_init(struct thread_queue *q, size_t maxtask) {
-    q->task = malloc(sizeof(struct thread_task) * maxtask);
-    q->task_avail = maxtask;
-    q->task_front = 0;
-    q->task_count = 0;
-    q->run = 1;
-    pthread_mutex_init(&q->empty, NULL);
-    pthread_mutex_init(&q->modify, NULL);
-
-    // lock the empty mutex
-    pthread_mutex_lock(&q->empty);
-}
-
-
-void queue_free(struct thread_queue *q) {
-    q->task_avail = 0;
-    q->task_front = 0;
-    q->task_count = 0;
-    free(q->task);
-}
-
-
-void queue_stop(struct thread_queue *q) {
-    q->run = 0;
-}
-
-
-void queue_ins(struct thread_queue *q, struct thread_task *t) {
-    pthread_mutex_lock(&q->modify);
-    size_t back = (q->task_front + q->task_count) % q->task_avail;
-    q->task[back] = *t;
-    ++q->task_count;
-    pthread_mutex_unlock(&q->modify);
-
-    // unlock empty mutex
-    pthread_mutex_unlock(&q->empty);
-}
-
-void pool_init(struct thread_pool *tp, size_t thread_count) {
-    queue_init(&tp->queue, 256);
-    tp->task_mem = malloc(sizeof(pthread_t) * thread_count);
-    tp->thread_count = thread_count;
-    for (int i = 0; i < thread_count; ++i) {
-        int err = pthread_create(&tp->task_mem[i], NULL, thread_main, (void *) &tp->queue);
-        if (err) {
-            perror("pthread_create");
-            return;
+void ep_pool_join(struct ep_thread_pool *p) {
+    // how many threads are running?
+    for (int i = 0; i < p->size; ++i) {
+        struct ep_thread *h = &p->hdls[i];
+        if (h->state) {
+            pthread_join(h->thread, NULL);
         }
     }
-}
-
-
-void pool_join(struct thread_pool *tp) {
-    for (int i = 0; i < tp->thread_count; ++i) {
-        pthread_join(tp->task_mem[i], NULL);
-    }
-    free(tp->task_mem);
+    printf("all threads joined\n");
 }

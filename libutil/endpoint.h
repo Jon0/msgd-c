@@ -5,7 +5,6 @@
 #include <poll.h>
 #include <netinet/in.h>
 
-#include "thread.h"
 #include "hashmap.h"
 
 
@@ -18,28 +17,11 @@ struct ep_attributes {
 
 
 /*
- * general source type
- */
-struct ep_src {
-    struct ep_handler *hdl;
-    void *obj;
-    void (*copy)(void *, size_t);
-};
-
-
-/*
  * moves input from file descriptors into handlers
  */
-struct ep_src_fd {
-    struct pollfd      ksrc;
-};
-
-
-/*
- * waits for another thread to pass input
- */
-struct ep_src_cond {
-    pthread_cond_t cond;
+struct ep_source {
+    int            epid;
+    struct pollfd  ksrc;
 };
 
 
@@ -49,7 +31,6 @@ struct ep_src_cond {
 struct ep_dest {
     int    epid;
     int    fd; // either a function or a file descriptor
-    void  *mem;
 };
 
 
@@ -61,7 +42,7 @@ struct ep_address {
     int                epid;
     char               addr [256];
     socklen_t          addrlen;
-    struct ep_src     *src;
+    struct ep_source *src;
     struct ep_dest    *dest;
 };
 
@@ -79,36 +60,31 @@ typedef void (*notify_fn_t)(struct ep_address *, void *);
  */
 struct ep_table {
     struct ep_address *addr;
-    struct ep_source *src;
-    struct ep_dest *dest;
+    struct ep_source  *src;
+    struct ep_dest    *dest;
     size_t avail;
     size_t src_count;
     size_t dest_count;
     int next_id;
-    char path [256];
 };
 
 
 /*
  * block until any input is recieved
  */
-int ep_wait(struct ep_src *s);
+int ep_wait(struct ep_source *s);
 
 /*
  * block until at least n bytes are read
  */
-int ep_read_block(struct ep_src *s, size_t n);
+int ep_read_block(struct ep_source *s, size_t n);
 
 /*
  * init the table with a path to store socket data
  */
-void ep_table_init(struct ep_table *t, char *path);
+void ep_table_init(struct ep_table *t);
 void ep_table_free(struct ep_table *t);
 
-/*
- * wait for all source threads to complete
- */
-void ep_table_join(struct ep_table *t);
 
 /*
  *

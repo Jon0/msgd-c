@@ -15,14 +15,6 @@ struct ep_buffer {
 };
 
 
-struct ep_read_data {
-    struct ep_address *srcaddr;
-    struct ep_buffer   buf;
-    void              *notify_obj;
-    notify_fn_t        notify_read;
-};
-
-
 /*
  * give the buffer some memory
  */
@@ -54,16 +46,5 @@ size_t ep_buffer_write_inc(struct ep_buffer *b, struct ep_dest *d, size_t *begin
  * increment the buffer front, as data is no longer needed
  */
 void ep_buffer_release(struct ep_buffer *b, size_t count);
-
-/*
- * threaded component for the reader
- */
-void *ep_thread_read(void *p);
-
-/*
- * just create threads, the attributes should be initialised
- */
-void ep_create_reader(struct ep_address *s, notify_fn_t fn, void *obj);
-
 
 #endif

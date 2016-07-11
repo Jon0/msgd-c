@@ -2,6 +2,7 @@
 #define CHANNEL_H
 
 #include <libutil/socket.h>
+#include <libutil/thread.h>
 
 
 struct msg_channel {
@@ -21,6 +22,7 @@ struct msg_channel_table {
  */
 struct msg_server_state {
     struct ep_table tb;
+    struct ep_thread_pool pool;
     struct msg_channel_table c;
 };
 

@@ -10,17 +10,17 @@ int ep_wait(struct ep_source *s) {
 }
 
 
-int ep_read_block(struct ep_src *s, size_t n) {
+int ep_read_block(struct ep_source *s, size_t n) {
     char buf[1024];
     size_t copied = 0;
-    while (copied < count) {
-        copied += read(s->ksrc.fd, &buf[copied], count - copied);
+    while (copied < n) {
+        copied += read(s->ksrc.fd, &buf[copied], n - copied);
     }
     return copied;
 }
 
 
-void ep_table_init(struct ep_table *t, char *path) {
+void ep_table_init(struct ep_table *t) {
     size_t maxsize = 256;
     size_t addr_size = sizeof(struct ep_address) * maxsize;
     size_t src_size = sizeof(struct ep_source) * maxsize;
@@ -37,7 +37,6 @@ void ep_table_init(struct ep_table *t, char *path) {
     t->avail = maxsize;
     t->src_count = 0;
     t->next_id = 1;
-    strcpy(t->path, path);
 }
 
 
@@ -45,17 +44,6 @@ void ep_table_free(struct ep_table *t) {
     t->avail = 0;
     t->src_count = 0;
     free(t->addr);
-}
-
-
-void ep_table_join(struct ep_table *t) {
-    // how many threads are running?
-    for (int i = 0; i < t->avail; ++i) {
-        if (t->src[i].state) {
-            pthread_join(t->src[i].thread, NULL);
-        }
-    }
-    printf("all threads joined\n");
 }
 
 
@@ -95,7 +83,6 @@ struct ep_source *ep_new_src(struct ep_table *t, int epid) {
             if (item->epid == 0) {
                 addr->src = item;
                 item->epid = epid;
-                item->mem = NULL;
                 return item;
             }
         }

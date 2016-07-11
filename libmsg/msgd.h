@@ -3,6 +3,7 @@
 
 #include <libutil/buffer.h>
 #include <libutil/endpoint.h>
+#include <libutil/thread.h>
 
 #include "set.h"
 
@@ -12,6 +13,7 @@
  */
 struct msg_client_state {
     struct ep_table  tb;
+    struct ep_thread_pool pool;
     int              epid;
     struct ep_buffer buf;
     size_t           writes;
