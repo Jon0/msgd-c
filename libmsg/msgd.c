@@ -42,7 +42,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 void msg_free_proc(struct msg_client_state *cs) {
 
     // wait until threads complete
-    ep_pool_join(&cs->pool);
+    ep_thread_pool_join(&cs->pool);
     ep_table_free(&cs->tb);
     free(cs->buf.ptr);
 }

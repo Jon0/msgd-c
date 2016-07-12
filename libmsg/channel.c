@@ -27,6 +27,6 @@ void msg_server_run(struct msg_server_state *s, const char *sockpath) {
 
 
     // wait until threads complete
-    ep_pool_join(&s->pool);
+    ep_thread_pool_join(&s->pool);
     ep_table_free(&s->tb);
 }
