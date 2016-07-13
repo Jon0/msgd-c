@@ -1,5 +1,5 @@
-#ifndef HANDLER_H
-#define HANDLER_H
+#ifndef THREAD_H
+#define THREAD_H
 
 #include <pthread.h>
 
