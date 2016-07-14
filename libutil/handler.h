@@ -1,7 +1,7 @@
 #ifndef HANDLER_H
 #define HANDLER_H
 
-#include <sys/epoll.h>
+typedef void (*event_t)(int exception);
 
 
 /*
@@ -21,9 +21,9 @@ struct ep_buffer_hdl {
 
 
 /*
- * a condition to wait for, and a function
+ * a condition to wait for, and functions
  */
-void ep_hdl_wait();
+void ep_hdl_wait(event_t ev);
 
 
 #endif

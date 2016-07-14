@@ -2,6 +2,7 @@
 #define THREAD_H
 
 #include <pthread.h>
+#include <sys/epoll.h>
 
 #include "buffer.h"
 
@@ -11,15 +12,6 @@
 enum ep_hdl_type {
     ep_src_internal,
     ep_src_external
-};
-
-
-/*
- * handler condition
- */
-struct ep_hdl_cond {
-    void *obj;
-    void (*copy)(void *, size_t);
 };
 
 
@@ -40,6 +32,15 @@ struct ep_hdl_wait {
 
 
 /*
+ * handler condition
+ */
+union ep_hdl_cond {
+    struct ep_hdl_poll poll;
+    struct ep_hdl_wait wait;
+};
+
+
+/*
  * data visible inside each thread
  */
 struct ep_thread_view {
@@ -55,6 +56,56 @@ typedef void (*handler_main_t)(struct ep_thread_view *);
 
 
 /*
+ * memory allocated per active input?
+ */
+struct ep_task_ext {
+    enum ep_hdl_type       htype;
+    union ep_hdl_cond      hcond;
+    handler_main_t         fn;
+    pthread_mutex_t        modify;
+    struct ep_buffer       buf;
+};
+
+
+struct ep_task_int {
+    int id;
+    size_t count;
+};
+
+
+/*
+ * threads can complete tasks in blocks
+ */
+struct ep_task_queue {
+    union ep_hdl_cond *taskmap; // sorts tasks by type
+    size_t avail_task;
+    struct ep_task_ext *etask;
+    struct ep_task_int *itask;
+    size_t extsize;
+    size_t intsize;
+};
+
+
+void ep_queue_ext(struct ep_task_queue *q);
+void ep_queue_int(struct ep_task_queue *q);
+
+/*
+ * produces events for the task queue
+ * the notify fd recieves internal events
+ */
+struct ep_loop_data {
+    int epoll_fd;
+    int notify_fd;
+    struct ep_task_queue *q;
+};
+
+
+void ep_loop_init(struct ep_loop_data *d);
+void ep_loop(struct ep_loop_data *d);
+void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event);
+
+
+/*
  * a thread to handle events
  * the src type determines how the thread waits for input
  */
@@ -62,12 +113,7 @@ struct ep_thread {
     int                    hdlid;
     int                    state;
     pthread_t              thread;
-    enum ep_hdl_type       htype;
-    struct ep_hdl_cond     hcond;
-    pthread_mutex_t        modify;
-    struct ep_buffer       buf;
     struct ep_thread_pool *pool;
-    handler_main_t         fn;
 };
 
 

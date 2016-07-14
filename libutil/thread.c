@@ -4,23 +4,51 @@
 #include "thread.h"
 
 
-/*
- * wrap the handler main with the pthread function type
- */
-void *ep_pthread_start(void *p) {
-    struct ep_thread *t = (struct ep_thread *) p;
-    struct ep_thread_view v;
-    v.pool = t->pool;
-    v.self = t;
-    t->fn(&v);
-    ep_thread_pool_stop(v.pool, v.self);
-    return NULL;
+void *ep_pthread_main(void *p) {
+
+}
+
+
+void ep_queue_ext(struct ep_task_queue *q) {
+
+}
+
+
+void ep_queue_int(struct ep_task_queue *q) {
+
+}
+
+
+void ep_loop_init(struct ep_loop_data *d) {
+    d->epoll_fd = epoll_create1(0);
+}
+
+
+void ep_loop(struct ep_loop_data *d) {
+    struct epoll_event event [8];
+    while (1) {
+        int p = epoll_wait(d->epoll_fd, event, 8, 0);
+        for (int i = 0; i < p; ++i) {
+            ep_loop_event(d, &event[i]);
+        }
+    }
+}
+
+
+void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event) {
+    if (event->data.fd == d->notify_fd) {
+        // internal event
+        ep_queue_int(d->q);
+    }
+    else {
+        // external event
+        ep_queue_ext(d->q);
+    }
 }
 
 
 void ep_thread_init(struct ep_thread_pool *p, struct ep_thread *h) {
     h->pool = p;
-    pthread_mutex_init(&h->modify, NULL);
 }
 
 
@@ -45,9 +73,8 @@ int ep_thread_pool_start(struct ep_thread_pool *p, handler_main_t fn) {
     struct ep_thread *h = &p->hdls[p->size++];
     ep_thread_init(p, h);
 
-    // collect data passed to thread
-    h->fn = fn;
-    int err = pthread_create(&h->thread, NULL, ep_pthread_start, h);
+    // try start the thread
+    int err = pthread_create(&h->thread, NULL, ep_pthread_main, h);
     if (err) {
         perror("pthread_create");
     }
