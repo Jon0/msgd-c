@@ -19,6 +19,13 @@ void ep_queue_int(struct ep_task_queue *q) {
 }
 
 
+void ep_queue_apply(struct ep_task_queue *q) {
+    for (int i = 0; i < q->intsize; ++i) {
+        // r
+    }
+}
+
+
 void ep_loop_init(struct ep_loop_data *d) {
     d->epoll_fd = epoll_create1(0);
 }
@@ -28,8 +35,13 @@ void ep_loop(struct ep_loop_data *d) {
     struct epoll_event event [8];
     while (1) {
         int p = epoll_wait(d->epoll_fd, event, 8, 0);
-        for (int i = 0; i < p; ++i) {
-            ep_loop_event(d, &event[i]);
+        if (p == -1) {
+            perror("epoll_wait");
+        }
+        else {
+            for (int i = 0; i < p; ++i) {
+                ep_loop_event(d, &event[i]);
+            }
         }
     }
 }
@@ -37,8 +49,12 @@ void ep_loop(struct ep_loop_data *d) {
 
 void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event) {
     if (event->data.fd == d->notify_fd) {
-        // internal event
+        // read id of triggered handler
+        struct ep_task_recv i;
+
         ep_queue_int(d->q);
+
+
     }
     else {
         // external event
@@ -69,7 +85,7 @@ void ep_thread_pool_free(struct ep_thread_pool *p) {
 }
 
 
-int ep_thread_pool_start(struct ep_thread_pool *p, handler_main_t fn) {
+int ep_thread_pool_start(struct ep_thread_pool *p, ep_event_t fn) {
     struct ep_thread *h = &p->hdls[p->size++];
     ep_thread_init(p, h);
 
