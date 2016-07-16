@@ -20,8 +20,12 @@ void ep_queue_int(struct ep_task_queue *q) {
 
 
 void ep_queue_apply(struct ep_task_queue *q) {
+    // apply the longest queue first
     for (int i = 0; i < q->intsize; ++i) {
-        // r
+        // data has already been copied into buffer
+        struct ep_event_view v;
+        v.self = &q->itask[i];
+        v.self->callback(&v);
     }
 }
 
@@ -50,7 +54,7 @@ void ep_loop(struct ep_loop_data *d) {
 void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event) {
     if (event->data.fd == d->notify_fd) {
         // read id of triggered handler
-        struct ep_task_recv i;
+        struct ep_handler_recv i;
 
         ep_queue_int(d->q);
 

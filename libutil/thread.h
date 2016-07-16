@@ -18,7 +18,7 @@ enum ep_hdl_type {
 /*
  * data visible inside each thread
  */
-struct ep_task_view {
+struct ep_event_view {
     struct ep_handler  *self;
 };
 
@@ -26,11 +26,11 @@ struct ep_task_view {
 /*
  * function to run as a new thread
  */
-typedef void (*ep_event_t)(struct ep_task_view *);
+typedef void (*ep_event_t)(struct ep_event_view *);
 
 
-union ep_task {
-    int tbid;
+union ep_handler_id {
+    int hid;
     struct ep_source *src;
 };
 
@@ -38,17 +38,19 @@ union ep_task {
  * memory allocated per active input?
  */
 struct ep_handler {
-    union ep_task      src;
-    ep_event_t         fn;
-    pthread_mutex_t    modify;
-    pthread_cond_t     cond;
-    struct ep_buffer   buf;
+    union ep_handler_id src;
+    ep_event_t          callback;
+    pthread_mutex_t     modify;
+    pthread_cond_t      cond;
+    struct ep_buffer    buf;
 };
 
 
-
-struct ep_task_recv {
-    union ep_task arr [8];
+/*
+ * recieves update notifications
+ */
+struct ep_handler_recv {
+    union ep_handler_id  arr [8];
     size_t begin;
     size_t bytes;
 };
