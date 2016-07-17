@@ -1,58 +1,9 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <pthread.h>
 #include <sys/epoll.h>
 
-#include "buffer.h"
-
-
-// endpoint is local, module or network
-// external endpoints are file descriptors
-enum ep_hdl_type {
-    ep_src_internal,
-    ep_src_external
-};
-
-
-/*
- * data visible inside each thread
- */
-struct ep_event_view {
-    struct ep_event  *self;
-};
-
-
-/*
- * function to run as a new thread
- */
-typedef void (*ep_callback_t)(struct ep_event_view *);
-
-
-union ep_handler_id {
-    int hid;
-    struct ep_source *src;
-};
-
-/*
- * memory allocated per active input?
- */
-struct ep_handler {
-    union ep_handler_id src;
-    ep_callback_t       callback;
-    pthread_mutex_t     modify;
-    struct ep_buffer    buf;
-};
-
-
-/*
- * recieves update notifications
- */
-struct ep_handler_recv {
-    union ep_handler_id  arr [8];
-    size_t begin;
-    size_t bytes;
-};
+#include "handler.h"
 
 
 /*
@@ -69,12 +20,16 @@ struct ep_event {
  */
 struct ep_event_queue {
     pthread_cond_t   empty;
-    struct ep_event *etask;
-    struct ep_event *itask;
-    size_t intbegin;
-    size_t extsize;
-    size_t intsize;
+    pthread_mutex_t  mutex;
+    struct ep_event *event;
+    size_t begin;
+    size_t size;
+    size_t avail;
+    size_t active;
 };
+
+
+void ep_event_queue_init(struct ep_event_queue *q, size_t max_queue);
 
 
 /*
@@ -87,14 +42,13 @@ void ep_queue_pop(struct ep_event_queue *q, struct ep_event *e);
 /*
  * add events to the back of the queue
  */
-void ep_queue_ext(struct ep_event_queue *q, struct ep_event *e);
-void ep_queue_int(struct ep_event_queue *q, struct ep_event *e);
+void ep_queue_push(struct ep_event_queue *q, struct ep_event *e);
 
 
 /*
  * apply an event (called inside handler threads)
  */
-void ep_apply_event(struct ep_event *e);
+void ep_apply_event(struct ep_event_queue *q, struct ep_event *e);
 
 
 /*

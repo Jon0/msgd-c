@@ -1,29 +1,71 @@
 #ifndef HANDLER_H
 #define HANDLER_H
 
-typedef void (*event_t)(int exception);
+#include <pthread.h>
+
+#include "buffer.h"
 
 
-/*
- * condition for running the function
- */
-struct ep_hdl_cond {
-
+// endpoint is local, module or network
+// external endpoints are file descriptors
+enum ep_hdl_type {
+    ep_src_internal,
+    ep_src_external
 };
 
 
 /*
- * one function at a time, per buffer
+ * data visible inside each thread
  */
-struct ep_buffer_hdl {
-
+struct ep_event_view {
+    struct ep_event_queue *queue;
+    struct ep_event       *self;
 };
 
 
 /*
- * a condition to wait for, and functions
+ * function to run as a new thread
  */
-void ep_hdl_wait(event_t ev);
+typedef void (*ep_callback_t)(int, struct ep_event_view *);
+
+
+union ep_handler_id {
+    int hid;
+    struct ep_source *src;
+};
+
+
+/*
+ * memory allocated per active input?
+ */
+struct ep_handler {
+    union ep_handler_id src;
+    struct ep_buffer    buf;
+    ep_callback_t       callback;
+    size_t              min_input;
+};
+
+
+/*
+ * recieves update notifications
+ */
+struct ep_handler_recv {
+    union ep_handler_id  arr [8];
+    size_t begin;
+    size_t bytes;
+};
+
+
+struct ep_hdlset {
+    struct ep_handler **hdl;
+    size_t size;
+    size_t avail;
+};
+
+
+void ep_hdlset_init(struct ep_hdlset *s, size_t max_hdl);
+
+struct ep_handler *ep_handler_create(struct ep_hdlset *s, ep_callback_t c);
 
 
 #endif
