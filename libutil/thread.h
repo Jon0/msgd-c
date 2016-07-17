@@ -19,14 +19,14 @@ enum ep_hdl_type {
  * data visible inside each thread
  */
 struct ep_event_view {
-    struct ep_handler  *self;
+    struct ep_event  *self;
 };
 
 
 /*
  * function to run as a new thread
  */
-typedef void (*ep_event_t)(struct ep_event_view *);
+typedef void (*ep_callback_t)(struct ep_event_view *);
 
 
 union ep_handler_id {
@@ -39,9 +39,8 @@ union ep_handler_id {
  */
 struct ep_handler {
     union ep_handler_id src;
-    ep_event_t          callback;
+    ep_callback_t       callback;
     pthread_mutex_t     modify;
-    pthread_cond_t      cond;
     struct ep_buffer    buf;
 };
 
@@ -57,19 +56,45 @@ struct ep_handler_recv {
 
 
 /*
- * threads can complete tasks in blocks
+ *
  */
-struct ep_task_queue {
-    struct ep_handler *etask;
-    struct ep_handler *itask;
+struct ep_event {
+    struct ep_handler *hdl;
+    size_t count;
+};
+
+
+/*
+ * threads handle the events
+ */
+struct ep_event_queue {
+    pthread_cond_t   empty;
+    struct ep_event *etask;
+    struct ep_event *itask;
+    size_t intbegin;
     size_t extsize;
     size_t intsize;
 };
 
 
-void ep_queue_ext(struct ep_task_queue *q);
-void ep_queue_int(struct ep_task_queue *q);
-void ep_queue_apply(struct ep_task_queue *q);
+/*
+ * remove element from front of queue, copy to e
+ * blocks until an event is recieved
+ */
+void ep_queue_pop(struct ep_event_queue *q, struct ep_event *e);
+
+
+/*
+ * add events to the back of the queue
+ */
+void ep_queue_ext(struct ep_event_queue *q, struct ep_event *e);
+void ep_queue_int(struct ep_event_queue *q, struct ep_event *e);
+
+
+/*
+ * apply an event (called inside handler threads)
+ */
+void ep_apply_event(struct ep_event *e);
 
 
 /*
@@ -79,7 +104,7 @@ void ep_queue_apply(struct ep_task_queue *q);
 struct ep_loop_data {
     int epoll_fd;
     int notify_fd;
-    struct ep_task_queue *q;
+    struct ep_event_queue *q;
 };
 
 
@@ -89,48 +114,19 @@ void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event);
 
 
 /*
- * a thread to handle events
- * the src type determines how the thread waits for input
- */
-struct ep_thread {
-    int                    hdlid;
-    int                    state;
-    pthread_t              thread;
-    struct ep_thread_pool *pool;
-};
-
-
-/*
  * collection of handler threads
  */
 struct ep_thread_pool {
-    struct ep_thread *hdls;
+    struct ep_event_queue queue;
+    pthread_t *threads;
     size_t size;
-    size_t avail;
 };
-
-
-void ep_thread_init(struct ep_thread_pool *p, struct ep_thread *h);
-
-
-/*
- * write input to a handler thread
- */
-void ep_handler_write(struct ep_thread *h, struct ep_buffer *b);
 
 
 /*
  * alloc memory for the pool
  */
-void ep_thread_pool_init(struct ep_thread_pool *p);
-void ep_thread_pool_free(struct ep_thread_pool *p);
-
-
-/*
- * initialise and start a thread
- */
-int ep_thread_pool_start(struct ep_thread_pool *p, ep_event_t fn);
-int ep_thread_pool_stop(struct ep_thread_pool *p, struct ep_thread *h);
+void ep_thread_pool_create(struct ep_thread_pool *p, size_t threads);
 
 
 /*

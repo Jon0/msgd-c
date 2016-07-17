@@ -8,8 +8,8 @@
 
 void thread_test() {
     struct ep_thread_pool tp;
-    ep_thread_pool_init(&tp);
-    ep_thread_pool_free(&tp);
+    ep_thread_pool_create(&tp, 4);
+    ep_thread_pool_join(&tp);
 }
 
 
