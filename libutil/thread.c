@@ -59,12 +59,26 @@ void ep_apply_event(struct ep_event_queue *q, struct ep_event *e) {
 }
 
 
-void ep_loop_init(struct ep_loop_data *d) {
+void ep_loop_init(struct ep_loop_data *d, struct ep_event_queue *q) {
+    ep_table_init(&d->table);
     d->epoll_fd = epoll_create1(0);
+    d->queue = q;
 }
 
 
-void ep_loop(struct ep_loop_data *d) {
+void ep_loop_source(struct ep_loop_data *d, struct ep_handler *h) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN;
+
+    struct ep_source *s = h->id.addr->src;
+    int err = epoll_ctl(d->epoll_fd, EPOLL_CTL_ADD, s->fd, &ev);
+    if (err == -1) {
+        perror("epoll_ctl");
+    }
+}
+
+
+void ep_loop_run(struct ep_loop_data *d) {
     struct epoll_event event [8];
     while (1) {
         int p = epoll_wait(d->epoll_fd, event, 8, 0);
@@ -81,19 +95,10 @@ void ep_loop(struct ep_loop_data *d) {
 
 
 void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event) {
+    printf("epoll event recieved\n");
     struct ep_event e;
-    if (event->data.fd == d->notify_fd) {
-        // read id of triggered handler
-        struct ep_handler_recv i;
-
-        ep_queue_push(d->q, &e);
-
-
-    }
-    else {
-        // external event
-        ep_queue_push(d->q, &e);
-    }
+    e.hdl = d->fd_map[event->data.fd].hdl;
+    ep_queue_push(d->queue, &e);
 }
 
 

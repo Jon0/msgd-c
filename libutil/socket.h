@@ -35,9 +35,9 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid);
 /*
  * a thread to handle input of a single file descriptor
  */
-void *ep_thread_accept(void *p);
+void ep_on_accept(struct ep_table *t, struct ep_handler *h);
 
-void ep_activate_acceptor(struct ep_table *t, int epid, notify_accept_t af);
+void ep_activate_acceptor(struct ep_address *a);
 
 void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj);
 

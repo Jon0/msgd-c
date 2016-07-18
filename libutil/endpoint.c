@@ -5,16 +5,11 @@
 #include "endpoint.h"
 
 
-int ep_wait(struct ep_source *s) {
-    return poll(&s->ksrc, 1, -1);
-}
-
-
 int ep_read_block(struct ep_source *s, size_t n) {
     char buf[1024];
     size_t copied = 0;
     while (copied < n) {
-        copied += read(s->ksrc.fd, &buf[copied], n - copied);
+        copied += read(s->fd, &buf[copied], n - copied);
     }
     return copied;
 }

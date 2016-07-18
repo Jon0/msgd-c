@@ -8,6 +8,11 @@ void ep_hdlset_init(struct ep_hdlset *s, size_t max_hdl) {
 }
 
 
+struct ep_handler *ep_hdlset_get(struct ep_hdlset *s, int hid) {
+    return NULL;
+}
+
+
 struct ep_handler *ep_handler_create(struct ep_hdlset *s, ep_callback_t c) {
     // allocate memory for buffer and handler
     size_t buffer_size = 4096;

@@ -31,65 +31,54 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid) {
     struct ep_dest *d = ep_new_dest(t, epid);
 
     // create a unix socket
-    s->ksrc.fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    s->ksrc.events = POLLIN;
-    if (s->ksrc.fd < 0) {
+    s->fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (s->fd < 0) {
         perror("socket");
         return;
     }
-    d->fd = s->ksrc.fd;
+    d->fd = s->fd;
 }
 
 
-void *ep_thread_accept(void *p) {
-    struct ep_accept_data *ld = (struct ep_accept_data *) p;
-    struct ep_address *this_addr = ld->srcaddr;
+void ep_on_accept(struct ep_table *t, struct ep_handler *h) {
+    struct ep_address *this_addr = h->id.addr;
     struct ep_source *this_src = this_addr->src;
     struct sockaddr_un addr;
     socklen_t len = sizeof(addr);
-    int run_loop = 1;
-    while (run_loop) {
-        printf("wait for connections...\n");
 
-        // wait for events on the socket
-        int r = poll(&this_src->ksrc, 1, -1);
-        int fd = accept(this_src->ksrc.fd, (struct sockaddr *) &addr, &len);
-        printf("accept %d\n", fd);
 
-        // make a new table entry
-        struct ep_address *a = ep_new_addr(ld->table);
-        memcpy(a->addr, &addr, len);
-        a->addrlen = len;
+    // wait for events on the socket
+    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
+    printf("accept %d\n", fd);
 
-        // initialise source and dest
-        struct ep_source *s = ep_new_src(ld->table, a->epid);
-        s->ksrc.fd = fd;
-        s->ksrc.events = POLLIN;
-        struct ep_dest *d = ep_new_dest(ld->table, a->epid);
-        d->fd = fd;
+    // make a new table entry
+    struct ep_address *a = ep_new_addr(t);
+    memcpy(a->addr, &addr, len);
+    a->addrlen = len;
 
-        // call the notify function
-        ld->notify_accept(this_addr, a);
-    }
+    // initialise source and dest
+    struct ep_source *s = ep_new_src(t, a->epid);
+    s->fd = fd;
+    struct ep_dest *d = ep_new_dest(t, a->epid);
+    d->fd = fd;
+
 }
 
 
-void ep_activate_acceptor(struct ep_table *t, int epid, notify_accept_t af) {
+void ep_activate_acceptor(struct ep_address *a) {
 
     // the acceptor requires an initialised addr and src
     int err;
-    struct ep_address *a = ep_table_addr(t, epid);
-    struct ep_source *s = ep_table_src(t, epid);
-    if (a && s) {
+    if (a && a->src) {
         printf("creating socket acceptor\n");
 
         // bind and listen on the socket
-        err = bind(s->ksrc.fd, (struct sockaddr *) &a->addr, a->addrlen);
+        err = bind(a->src->fd, (struct sockaddr *) &a->addr, a->addrlen);
         if (err < 0) {
             perror("bind");
             return;
         }
-        listen(s->ksrc.fd, 5);
+        listen(a->src->fd, 5);
     }
     else {
         printf("failed to start acceptor\n");
@@ -104,7 +93,7 @@ void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
     if (a && a->src) {
 
         // connect to address
-        int err = connect(a->src->ksrc.fd, (struct sockaddr *) &a->addr, a->addrlen);
+        int err = connect(a->src->fd, (struct sockaddr *) &a->addr, a->addrlen);
         if (err == -1) {
             perror("connect");
             return;

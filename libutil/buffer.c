@@ -82,7 +82,7 @@ size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count
         count = space;
     }
 
-    ssize_t r = read(s->ksrc.fd, back, count);
+    ssize_t r = read(s->fd, back, count);
     if (r < 0) {
         perror("read");
         return 0;

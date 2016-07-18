@@ -7,11 +7,20 @@
 
 
 /*
+ * events recieve bytes or accepted addr
+ */
+union event_attr {
+    size_t count;
+    struct ep_address *addr;
+};
+
+
+/*
  *
  */
 struct ep_event {
     struct ep_handler *hdl;
-    size_t count;
+    union event_attr attr;
 };
 
 
@@ -52,18 +61,41 @@ void ep_apply_event(struct ep_event_queue *q, struct ep_event *e);
 
 
 /*
- * produces events for the task queue
- * the notify fd recieves internal events
+ * callback for file descriptor events
  */
-struct ep_loop_data {
-    int epoll_fd;
-    int notify_fd;
-    struct ep_event_queue *q;
+typedef void (*ep_recv_t)(struct ep_table *t, struct ep_handler *);
+
+
+struct ep_hdl_id {
+    int fd;
+    ep_recv_t fn;
+    struct ep_handler *hdl;
 };
 
 
-void ep_loop_init(struct ep_loop_data *d);
-void ep_loop(struct ep_loop_data *d);
+/*
+ * listens for external events for a subset of handlers
+ */
+struct ep_loop_data {
+    int epoll_fd;
+    struct ep_table table;
+    struct ep_hdl_id *fd_map;
+    struct ep_event_queue *queue;
+};
+
+
+void ep_loop_init(struct ep_loop_data *d, struct ep_event_queue *q);
+
+/*
+ * add data source
+ */
+void ep_loop_source(struct ep_loop_data *d, struct ep_handler *h);
+
+
+/*
+ * wait for events
+ */
+void ep_loop_run(struct ep_loop_data *d);
 void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event);
 
 

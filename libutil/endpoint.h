@@ -20,8 +20,8 @@ struct ep_attributes {
  * moves input from file descriptors into handlers
  */
 struct ep_source {
-    int            epid;
-    struct pollfd  ksrc;
+    int   epid;
+    int   fd;
 };
 
 
@@ -68,11 +68,6 @@ struct ep_table {
     int next_id;
 };
 
-
-/*
- * block until any input is recieved
- */
-int ep_wait(struct ep_source *s);
 
 /*
  * block until at least n bytes are read
