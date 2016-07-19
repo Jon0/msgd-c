@@ -2,9 +2,6 @@
 #define BUFFER_H
 
 #include <stdlib.h>
-#include <poll.h>
-
-#include "endpoint.h"
 
 
 struct ep_buffer {
@@ -34,13 +31,13 @@ ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
  * take available data from a readable file descriptor
  */
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd);
-size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count);
+size_t ep_buffer_take_src(struct ep_buffer *b, int fd, size_t count);
 
 /*
  * write data to a file descriptor, make no changes to the buffer
  */
-ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin);
-size_t ep_buffer_write_inc(struct ep_buffer *b, struct ep_dest *d, size_t *begin);
+ssize_t ep_buffer_write(struct ep_buffer *b, int fd, size_t begin);
+size_t ep_buffer_write_inc(struct ep_buffer *b, int fd, size_t *begin);
 
 /*
  * increment the buffer front, as data is no longer needed

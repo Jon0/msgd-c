@@ -4,7 +4,7 @@
 #include <poll.h>
 
 #include "buffer.h"
-#include "endpoint.h"
+#include "epoll.h"
 #include "thread.h"
 
 
@@ -35,10 +35,15 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid);
 /*
  * a thread to handle input of a single file descriptor
  */
-void ep_on_accept(struct ep_table *t, struct ep_handler *h);
+void ep_on_accept(struct ep_table *t, int epid, union event_attr *e);
 
 void ep_activate_acceptor(struct ep_address *a);
 
 void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj);
+
+/*
+ *
+ */
+void ep_local_acceptor(struct ep_loop_data *d, struct ep_handler *h);
 
 #endif

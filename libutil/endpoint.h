@@ -5,14 +5,33 @@
 #include <poll.h>
 #include <netinet/in.h>
 
+#include "buffer.h"
 #include "hashmap.h"
 
 
-struct ep_attributes {
-    int tls;
-    int ipv4;
-    int shared;
-    char *name;
+/*
+ * data visible inside each thread
+ */
+struct ep_event_view {
+    struct ep_event_queue *queue;
+    struct ep_event       *self;
+};
+
+
+/*
+ * function to run as a new thread
+ */
+typedef void (*ep_callback_t)(int, struct ep_event_view *);
+
+
+/*
+ * memory allocated per active input?
+ */
+struct ep_handler {
+    int                 epid;
+    struct ep_buffer    buf;
+    ep_callback_t       callback;
+    size_t              min_input;
 };
 
 
@@ -62,9 +81,11 @@ struct ep_table {
     struct ep_address *addr;
     struct ep_source  *src;
     struct ep_dest    *dest;
+    struct ep_handler *hdl;
     size_t avail;
     size_t src_count;
     size_t dest_count;
+    size_t hdl_count;
     int next_id;
 };
 
@@ -90,6 +111,7 @@ size_t ep_table_hash(struct ep_table *t, int epid);
  * create a new endpoint entry
  */
 struct ep_address *ep_new_addr(struct ep_table *t);
+struct ep_handler *ep_new_hdl(struct ep_table *t, ep_callback_t c);
 
 /*
  * create src and dest attributes for existing entries
@@ -103,5 +125,7 @@ struct ep_dest *ep_new_dest(struct ep_table *t, int epid);
 struct ep_address *ep_table_addr(struct ep_table *t, int epid);
 struct ep_source *ep_table_src(struct ep_table *t, int epid);
 struct ep_dest *ep_table_dest(struct ep_table *t, int epid);
+struct ep_handler *ep_table_hdl(struct ep_table *t, int epid);
+
 
 #endif

@@ -73,7 +73,7 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
 }
 
 
-size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count) {
+size_t ep_buffer_take_src(struct ep_buffer *b, int fd, size_t count) {
     char *back;
     size_t space = 0;
     ep_buffer_endmem(b, &back, &space);
@@ -82,7 +82,7 @@ size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count
         count = space;
     }
 
-    ssize_t r = read(s->fd, back, count);
+    ssize_t r = read(fd, back, count);
     if (r < 0) {
         perror("read");
         return 0;
@@ -94,26 +94,26 @@ size_t ep_buffer_take_src(struct ep_buffer *b, struct ep_source *s, size_t count
 }
 
 
-ssize_t ep_buffer_write(struct ep_buffer *b, struct ep_dest *d, size_t begin) {
+ssize_t ep_buffer_write(struct ep_buffer *b, int fd, size_t begin) {
 
     // write as much as possible from begin
     size_t end = b->begin + b->size;
     if (end < b->avail) {
-        return write(d->fd, &b->ptr[begin], end - begin);
+        return write(fd, &b->ptr[begin], end - begin);
     }
     else if (begin < (end - b->avail)) {
         // begin is positioned before end, only one write is required
-        return write(d->fd, &b->ptr[begin], (end - b->avail) - begin);
+        return write(fd, &b->ptr[begin], (end - b->avail) - begin);
     }
     else {
         // begin is positioned after end, not all can be written
-        return write(d->fd, &b->ptr[begin], (b->begin - b->avail));
+        return write(fd, &b->ptr[begin], (b->begin - b->avail));
     }
 }
 
 
-size_t ep_buffer_write_inc(struct ep_buffer *b, struct ep_dest *d, size_t *begin) {
-    ssize_t w = ep_buffer_write(b, d, *begin);
+size_t ep_buffer_write_inc(struct ep_buffer *b, int fd, size_t *begin) {
+    ssize_t w = ep_buffer_write(b, fd, *begin);
     if (w > 0) {
         *begin = (*begin + w) % b->avail;
     }

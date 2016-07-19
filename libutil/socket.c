@@ -40,8 +40,8 @@ void ep_add_pipe_endpoints(struct ep_table *t, int epid) {
 }
 
 
-void ep_on_accept(struct ep_table *t, struct ep_handler *h) {
-    struct ep_address *this_addr = h->id.addr;
+void ep_on_accept(struct ep_table *t, int epid, union event_attr *e) {
+    struct ep_address *this_addr = ep_table_addr(t, epid);
     struct ep_source *this_src = this_addr->src;
     struct sockaddr_un addr;
     socklen_t len = sizeof(addr);
@@ -62,6 +62,8 @@ void ep_on_accept(struct ep_table *t, struct ep_handler *h) {
     struct ep_dest *d = ep_new_dest(t, a->epid);
     d->fd = fd;
 
+    // output
+    e->addr = a;
 }
 
 
@@ -99,4 +101,19 @@ void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
             return;
         }
     }
+}
+
+
+void ep_local_acceptor(struct ep_loop_data *d, struct ep_handler *h) {
+    const char *testpath = "utiltest";
+
+    // add to endpoint table
+    struct ep_address *addr = ep_new_addr(&d->table);
+    ep_unlink(testpath);
+    ep_set_local(addr, testpath);
+    ep_add_pipe_endpoints(&d->table, addr->epid);
+    ep_activate_acceptor(addr);
+
+    // add listener
+    ep_loop_source(d, h, ep_on_accept);
 }

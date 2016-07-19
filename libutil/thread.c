@@ -16,7 +16,8 @@ void *ep_pthread_main(void *p) {
 }
 
 
-void ep_event_queue_init(struct ep_event_queue *q, size_t max_queue) {
+void ep_event_queue_init(struct ep_event_queue *q, struct ep_table *t, size_t max_queue) {
+    q->table = t;
     q->event = malloc(sizeof(struct ep_event) * max_queue);
     q->begin = 0;
     q->size = 0;
@@ -50,7 +51,12 @@ void ep_queue_push(struct ep_event_queue *q, struct ep_event *e) {
 
 
 void ep_apply_event(struct ep_event_queue *q, struct ep_event *e) {
-    // data has already been copied into buffer
+    // if the epid has a source
+    // then the input must be read
+    if (e->recv) {
+        e->recv(q->table, e->hdl->epid, &e->attr);
+    }
+
     // check the callback conditions are met
     struct ep_event_view v;
     v.queue = q;
@@ -59,51 +65,8 @@ void ep_apply_event(struct ep_event_queue *q, struct ep_event *e) {
 }
 
 
-void ep_loop_init(struct ep_loop_data *d, struct ep_event_queue *q) {
-    ep_table_init(&d->table);
-    d->epoll_fd = epoll_create1(0);
-    d->queue = q;
-}
-
-
-void ep_loop_source(struct ep_loop_data *d, struct ep_handler *h) {
-    struct epoll_event ev;
-    ev.events = EPOLLIN;
-
-    struct ep_source *s = h->id.addr->src;
-    int err = epoll_ctl(d->epoll_fd, EPOLL_CTL_ADD, s->fd, &ev);
-    if (err == -1) {
-        perror("epoll_ctl");
-    }
-}
-
-
-void ep_loop_run(struct ep_loop_data *d) {
-    struct epoll_event event [8];
-    while (1) {
-        int p = epoll_wait(d->epoll_fd, event, 8, 0);
-        if (p == -1) {
-            perror("epoll_wait");
-        }
-        else {
-            for (int i = 0; i < p; ++i) {
-                ep_loop_event(d, &event[i]);
-            }
-        }
-    }
-}
-
-
-void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event) {
-    printf("epoll event recieved\n");
-    struct ep_event e;
-    e.hdl = d->fd_map[event->data.fd].hdl;
-    ep_queue_push(d->queue, &e);
-}
-
-
-void ep_thread_pool_create(struct ep_thread_pool *p, size_t threads) {
-    ep_event_queue_init(&p->queue, 256);
+void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t threads) {
+    ep_event_queue_init(&p->queue, tb, 256);
     size_t total_size = sizeof(pthread_t) * threads;
     p->threads = malloc(total_size);
     memset(p->threads, 0, total_size);

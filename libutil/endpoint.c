@@ -67,6 +67,23 @@ struct ep_address *ep_new_addr(struct ep_table *t) {
 }
 
 
+struct ep_handler *ep_new_hdl(struct ep_table *t, ep_callback_t c) {
+    // allocate memory for buffer and handler
+    size_t buffer_size = 4096;
+    char *mem = malloc(sizeof(struct ep_handler));
+    char *bufmem = &mem[sizeof(struct ep_handler)];
+
+    // init handler values
+    struct ep_handler *h = (struct ep_handler *) mem;
+    ep_buffer_init(&h->buf, bufmem, buffer_size);
+    h->callback = c;
+    h->min_input = 0;
+    t->hdl[t->hdl_count] = *h;
+    ++t->hdl_count;
+    return h;
+}
+
+
 struct ep_source *ep_new_src(struct ep_table *t, int epid) {
     size_t array_pos = ep_table_hash(t, epid);
 
@@ -143,4 +160,9 @@ struct ep_dest *ep_table_dest(struct ep_table *t, int epid) {
     }
     printf("epid not found: %d\n", epid);
     return NULL;
+}
+
+
+struct ep_handler *ep_table_hdl(struct ep_table *t, int epid) {
+    return &t->hdl[epid];
 }

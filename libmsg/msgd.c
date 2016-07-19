@@ -15,7 +15,7 @@ void on_client_read(struct ep_address *a, void *p) {
 void write_str(struct msg_client_state *cs, const char *str) {
     msg_push_buffer(&cs->buf, str, strlen(str));
     struct ep_dest *d = ep_table_dest(&cs->tb, cs->epid);
-    size_t r = ep_buffer_write_inc(&cs->buf, d, &cs->writes);
+    size_t r = ep_buffer_write_inc(&cs->buf, d->fd, &cs->writes);
 }
 
 
