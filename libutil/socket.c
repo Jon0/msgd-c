@@ -52,18 +52,20 @@ void ep_on_accept(struct ep_table *t, int epid, union event_attr *e) {
     printf("accept %d\n", fd);
 
     // make a new table entry
-    struct ep_address *a = ep_new_addr(t);
+    struct ep_handler *h = ep_new_hdl(t, this_src->read);
+    struct ep_address *a = ep_new_addr(t, h->epid);
     memcpy(a->addr, &addr, len);
     a->addrlen = len;
 
     // initialise source and dest
     struct ep_source *s = ep_new_src(t, a->epid);
     s->fd = fd;
-    struct ep_dest *d = ep_new_dest(t, a->epid);
-    d->fd = fd;
+    struct ep_dest *dt = ep_new_dest(t, a->epid);
+    dt->fd = fd;
 
-    // output
-    e->addr = a;
+
+    // handler still requires initialisation
+    e->hdl = h;
 }
 
 
@@ -108,10 +110,10 @@ void ep_local_acceptor(struct ep_loop_data *d, struct ep_handler *h) {
     const char *testpath = "utiltest";
 
     // add to endpoint table
-    struct ep_address *addr = ep_new_addr(&d->table);
+    struct ep_address *addr = ep_new_addr(&d->table, h->epid);
     ep_unlink(testpath);
     ep_set_local(addr, testpath);
-    ep_add_pipe_endpoints(&d->table, addr->epid);
+    ep_add_pipe_endpoints(&d->table, h->epid);
     ep_activate_acceptor(addr);
 
     // add listener

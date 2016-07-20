@@ -3,7 +3,8 @@
 
 #include <sys/epoll.h>
 
-#include "thread.h"
+#include "queue.h"
+
 
 
 /*
@@ -39,5 +40,7 @@ void ep_loop_source(struct ep_loop_data *d, struct ep_handler *h, ep_recv_t r);
  */
 void ep_loop_run(struct ep_loop_data *d);
 void ep_loop_event(struct ep_loop_data *d, struct epoll_event *event);
+
+
 
 #endif

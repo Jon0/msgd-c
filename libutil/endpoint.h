@@ -41,6 +41,8 @@ struct ep_handler {
 struct ep_source {
     int   epid;
     int   fd;
+    ep_callback_t accept;
+    ep_callback_t read;
 };
 
 
@@ -110,12 +112,12 @@ size_t ep_table_hash(struct ep_table *t, int epid);
 /*
  * create a new endpoint entry
  */
-struct ep_address *ep_new_addr(struct ep_table *t);
 struct ep_handler *ep_new_hdl(struct ep_table *t, ep_callback_t c);
 
 /*
  * create src and dest attributes for existing entries
  */
+struct ep_address *ep_new_addr(struct ep_table *t, int epid);
 struct ep_source *ep_new_src(struct ep_table *t, int epid);
 struct ep_dest *ep_new_dest(struct ep_table *t, int epid);
 

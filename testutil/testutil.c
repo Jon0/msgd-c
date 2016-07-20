@@ -15,8 +15,8 @@ void callback_test(int e, struct ep_event_view *v) {
 void thread_test() {
     struct ep_thread_pool tp;
     struct ep_loop_data loop;
-    ep_thread_pool_create(&tp, &loop.table, 4);
     ep_loop_init(&loop, &tp.queue);
+    ep_thread_pool_create(&tp, &loop.table, 4);
 
 
     // create a socket acceptor

@@ -15,6 +15,9 @@ struct ep_hash_map {
 };
 
 
+size_t ep_hash(int i);
+
+
 void ep_map_insert(struct ep_hash_map *m, void *elem);
 
 

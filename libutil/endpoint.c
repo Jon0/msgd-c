@@ -47,40 +47,41 @@ size_t ep_table_hash(struct ep_table *t, int epid) {
 }
 
 
-struct ep_address *ep_new_addr(struct ep_table *t) {
+struct ep_handler *ep_new_hdl(struct ep_table *t, ep_callback_t c) {
     int id = t->next_id++;
     size_t array_pos = ep_table_hash(t, id);
     for (size_t i = 0; i < t->avail; ++i) {
+        struct ep_handler *item = &t->hdl[(array_pos + i) % t->avail];
+        if (item->epid == 0) {
+
+            // allocate memory for buffer and handler
+            size_t buffer_size = 4096;
+            ep_buffer_init(&item->buf, malloc(buffer_size), buffer_size);
+            item->epid = id;
+            item->callback = c;
+            item->min_input = 0;
+            return item;
+        }
+    }
+    printf("array is full\n");
+    return NULL;
+}
+
+
+struct ep_address *ep_new_addr(struct ep_table *t, int epid) {
+    size_t array_pos = ep_table_hash(t, epid);
+    for (size_t i = 0; i < t->avail; ++i) {
         struct ep_address *item = &t->addr[(array_pos + i) % t->avail];
         if (item->epid == 0) {
-            item->epid = id;
+            item->epid = epid;
             item->addrlen = 0;
             item->src = NULL;
             item->dest = NULL;
             return item;
         }
     }
-
-    // array is full
     printf("array is full\n");
     return NULL;
-}
-
-
-struct ep_handler *ep_new_hdl(struct ep_table *t, ep_callback_t c) {
-    // allocate memory for buffer and handler
-    size_t buffer_size = 4096;
-    char *mem = malloc(sizeof(struct ep_handler));
-    char *bufmem = &mem[sizeof(struct ep_handler)];
-
-    // init handler values
-    struct ep_handler *h = (struct ep_handler *) mem;
-    ep_buffer_init(&h->buf, bufmem, buffer_size);
-    h->callback = c;
-    h->min_input = 0;
-    t->hdl[t->hdl_count] = *h;
-    ++t->hdl_count;
-    return h;
 }
 
 
@@ -164,5 +165,13 @@ struct ep_dest *ep_table_dest(struct ep_table *t, int epid) {
 
 
 struct ep_handler *ep_table_hdl(struct ep_table *t, int epid) {
-    return &t->hdl[epid];
+    size_t array_pos = ep_table_hash(t, epid);
+    for (size_t i = 0; i < t->avail; ++i) {
+        struct ep_handler *item = &t->hdl[(array_pos + i) % t->avail];
+        if (item->epid == epid) {
+            return item;
+        }
+    }
+    printf("epid not found: %d\n", epid);
+    return NULL;
 }
