@@ -108,12 +108,18 @@ void ep_activate_connector(struct ep_address *a) {
 
 void ep_local_acceptor(struct ep_table *t, struct ep_handler *h) {
     const char *testpath = "utiltest";
+    printf("opening %s\n", testpath);
 
     // add to endpoint table
     struct ep_address *addr = ep_new_addr(t, h->epid);
     ep_unlink(testpath);
     ep_set_local(addr, testpath);
     ep_add_pipe_endpoints(t, h->epid);
+
+    // add an event handler
+    struct ep_source *s = ep_table_src(t, h->epid);
+    s->func = ep_on_accept;
+
     ep_activate_acceptor(addr);
 
 }

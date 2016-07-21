@@ -20,7 +20,8 @@ void ep_table_init(struct ep_table *t) {
     size_t addr_size = sizeof(struct ep_address) * maxsize;
     size_t src_size = sizeof(struct ep_source) * maxsize;
     size_t dest_size = sizeof(struct ep_dest) * maxsize;
-    size_t total_size = addr_size + src_size + dest_size;
+    size_t hdl_size = sizeof(struct ep_handler) * maxsize;
+    size_t total_size = addr_size + src_size + dest_size + hdl_size;
 
     // allocate and zero
     printf("alloc table (%d bytes)\n", total_size);
@@ -29,6 +30,7 @@ void ep_table_init(struct ep_table *t) {
     t->addr = (struct ep_address *) mem;
     t->src = (struct ep_source *) &mem[addr_size];
     t->dest = (struct ep_dest *) &mem[addr_size + src_size];
+    t->hdl = (struct ep_handler *) &mem[addr_size + src_size + dest_size];
     t->avail = maxsize;
     t->src_count = 0;
     t->next_id = 1;
@@ -204,5 +206,10 @@ struct ep_handler *ep_table_hdl(struct ep_table *t, int epid) {
 
 
 struct ep_source *ep_table_src_fd(struct ep_table *t, int fd) {
-
+    for (int i = 0; i < t->avail; ++i) {
+        if (t->src[i].epid > 0 && t->src[i].fd == fd) {
+            return &t->src[i];
+        }
+    }
+    return NULL;
 }

@@ -24,11 +24,14 @@ void thread_test() {
 
 
     // listen for incoming events
+    struct ep_event ev;
     struct ep_source *src [32];
     while (1) {
         int r = ep_table_wait(&table, src, 32);
         for (int i = 0; i < r; ++i) {
             printf("recv event\n");
+            ev.hdl = ep_table_hdl(&table, src[i]->epid);
+            ev.recv = src[i]->func;
         }
     }
 
