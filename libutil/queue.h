@@ -7,21 +7,6 @@
 
 
 /*
- * events recieve bytes or accepted addr
- */
-union event_attr {
-    size_t count;
-    struct ep_handler *hdl;
-};
-
-
-/*
- * callback for file descriptor events
- */
-typedef void (*ep_recv_t)(struct ep_table *, int, union event_attr *);
-typedef void (*ep_accept_t)(struct ep_table *, int, union event_attr *);
-
-/*
  *
  */
 struct ep_event {

@@ -32,7 +32,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     cs->epid = a->epid;
     ep_set_local(a, "msgd-local");
     ep_add_pipe_endpoints(&cs->tb, cs->epid);
-    ep_activate_connector(a, on_client_read, NULL);
+    ep_activate_connector(a);
     strcpy(cs->proc_name, name);
 
     // send connect request

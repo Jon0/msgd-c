@@ -90,7 +90,7 @@ void ep_activate_acceptor(struct ep_address *a) {
 }
 
 
-void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
+void ep_activate_connector(struct ep_address *a) {
     printf("creating socket connector\n");
 
     // the connector requires an initialised addr and src
@@ -106,16 +106,14 @@ void ep_activate_connector(struct ep_address *a, notify_fn_t rf, void *obj) {
 }
 
 
-void ep_local_acceptor(struct ep_loop_data *d, struct ep_handler *h) {
+void ep_local_acceptor(struct ep_table *t, struct ep_handler *h) {
     const char *testpath = "utiltest";
 
     // add to endpoint table
-    struct ep_address *addr = ep_new_addr(&d->table, h->epid);
+    struct ep_address *addr = ep_new_addr(t, h->epid);
     ep_unlink(testpath);
     ep_set_local(addr, testpath);
-    ep_add_pipe_endpoints(&d->table, h->epid);
+    ep_add_pipe_endpoints(t, h->epid);
     ep_activate_acceptor(addr);
 
-    // add listener
-    ep_loop_source(d, h, ep_on_accept);
 }

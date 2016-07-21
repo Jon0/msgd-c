@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <poll.h>
 #include <netinet/in.h>
+#include <sys/epoll.h>
 
 #include "buffer.h"
 #include "hashmap.h"
 
+struct ep_table;
 
 /*
  * data visible inside each thread
@@ -36,12 +38,28 @@ struct ep_handler {
 
 
 /*
+ * events recieve either bytes or accepted addr
+ */
+union event_attr {
+    size_t count;
+    struct ep_handler *hdl;
+};
+
+
+/*
+ * callback for file descriptor events
+ */
+typedef void (*ep_recv_t)(struct ep_table *, int, union event_attr *);
+typedef void (*ep_accept_t)(struct ep_table *, int, union event_attr *);
+
+
+/*
  * moves input from file descriptors into handlers
  */
 struct ep_source {
     int   epid;
     int   fd;
-    ep_callback_t accept;
+    ep_recv_t func;
     ep_callback_t read;
 };
 
@@ -69,12 +87,6 @@ struct ep_address {
 
 
 /*
- * notify function type
- */
-typedef void (*notify_fn_t)(struct ep_address *, void *);
-
-
-/*
  * list of source file descriptors
  * a hash map of epid to attributes
  * all epids have an address attribute
@@ -89,6 +101,7 @@ struct ep_table {
     size_t dest_count;
     size_t hdl_count;
     int next_id;
+    int epoll_fd;
 };
 
 
@@ -103,6 +116,11 @@ int ep_read_block(struct ep_source *s, size_t n);
 void ep_table_init(struct ep_table *t);
 void ep_table_free(struct ep_table *t);
 
+
+/*
+ * wait for events and return the sources
+ */
+int ep_table_wait(struct ep_table *t, struct ep_source **src, size_t count);
 
 /*
  *
@@ -129,5 +147,9 @@ struct ep_source *ep_table_src(struct ep_table *t, int epid);
 struct ep_dest *ep_table_dest(struct ep_table *t, int epid);
 struct ep_handler *ep_table_hdl(struct ep_table *t, int epid);
 
+/*
+ * return by file descriptor
+ */
+struct ep_source *ep_table_src_fd(struct ep_table *t, int fd);
 
 #endif
