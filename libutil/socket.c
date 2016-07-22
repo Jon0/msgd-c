@@ -24,48 +24,31 @@ void ep_set_local(struct ep_address *a, const char *address) {
 }
 
 
-void ep_add_pipe_endpoints(struct ep_table *t, int epid) {
+void ep_set_remote(struct ep_address *a, short portnum) {
+    struct sockaddr_in *addr = (struct sockaddr_in *) &a->addr;
+    bzero(addr, sizeof(struct sockaddr_in));
+    addr->sin_family = AF_INET;
+    addr->sin_addr.s_addr = INADDR_ANY;
+    addr->sin_port = htons(portnum);
+    a->addrlen = sizeof(struct sockaddr_in);
+}
+
+
+void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_recv_t r) {
 
     // what if src or dest already exist?
     struct ep_source *s = ep_new_src(t, epid);
     struct ep_dest *d = ep_new_dest(t, epid);
 
     // create a unix socket
-    s->fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    s->fd = socket(type, SOCK_STREAM, 0);
+    s->func = r;
     if (s->fd < 0) {
         perror("socket");
         return;
     }
     d->fd = s->fd;
-}
-
-
-void ep_on_accept(struct ep_table *t, int epid, union event_attr *e) {
-    struct ep_address *this_addr = ep_table_addr(t, epid);
-    struct ep_source *this_src = this_addr->src;
-    struct sockaddr_un addr;
-    socklen_t len = sizeof(addr);
-
-
-    // wait for events on the socket
-    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
-    printf("accept %d\n", fd);
-
-    // make a new table entry
-    struct ep_handler *h = ep_new_hdl(t, this_src->read);
-    struct ep_address *a = ep_new_addr(t, h->epid);
-    memcpy(a->addr, &addr, len);
-    a->addrlen = len;
-
-    // initialise source and dest
-    struct ep_source *s = ep_new_src(t, a->epid);
-    s->fd = fd;
-    struct ep_dest *dt = ep_new_dest(t, a->epid);
-    dt->fd = fd;
-
-
-    // handler still requires initialisation
-    e->hdl = h;
+    ep_enable_src(t, s);
 }
 
 
@@ -106,20 +89,73 @@ void ep_activate_connector(struct ep_address *a) {
 }
 
 
-void ep_local_acceptor(struct ep_table *t, struct ep_handler *h) {
-    const char *testpath = "utiltest";
-    printf("opening %s\n", testpath);
+void ep_on_accept_local(struct ep_table *t, int epid, union event_attr *e) {
+    struct ep_address *this_addr = ep_table_addr(t, epid);
+    struct ep_source *this_src = this_addr->src;
+    struct sockaddr_un addr;
+    socklen_t len = sizeof(addr);
+    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
+    if (fd < 0) {
+        perror("accept");
+        return;
+    }
+
+    // make a new table entry
+    struct ep_handler *h = ep_new_hdl(t, this_src->read);
+    struct ep_address *a = ep_new_addr(t, h->epid);
+    memcpy(a->addr, &addr, len);
+    a->addrlen = len;
+    ep_accept_endpoints(t, h->epid, fd);
+
+    // handler still requires initialisation
+    e->hdl = h;
+}
+
+void ep_on_accept_net(struct ep_table *t, int epid, union event_attr *e) {
+    struct ep_address *this_addr = ep_table_addr(t, epid);
+    struct ep_source *this_src = this_addr->src;
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
+    if (fd < 0) {
+        perror("accept");
+        return;
+    }
+
+    // make a new table entry
+    struct ep_handler *h = ep_new_hdl(t, this_src->read);
+    struct ep_address *a = ep_new_addr(t, h->epid);
+    memcpy(a->addr, &addr, len);
+    a->addrlen = len;
+    ep_accept_endpoints(t, h->epid, fd);
+
+    // handler still requires initialisation
+    e->hdl = h;
+    printf("created new epid %d\n", h->epid);
+}
+
+
+void ep_on_recv(struct ep_table *t, int epid, union event_attr *e) {
+    printf("ep_on_recv\n");
+}
+
+
+void ep_accept_endpoints(struct ep_table *t, int epid, int fd) {
+    // initialise source and dest
+    struct ep_source *s = ep_new_src(t, epid);
+    s->fd = fd;
+    s->func = ep_on_recv;
+    struct ep_dest *dt = ep_new_dest(t, epid);
+    dt->fd = fd;
+    ep_enable_src(t, s);
+}
+
+
+void ep_tcp_acceptor(struct ep_table *t, struct ep_handler *h, ep_callback_t c) {
 
     // add to endpoint table
     struct ep_address *addr = ep_new_addr(t, h->epid);
-    ep_unlink(testpath);
-    ep_set_local(addr, testpath);
-    ep_add_pipe_endpoints(t, h->epid);
-
-    // add an event handler
-    struct ep_source *s = ep_table_src(t, h->epid);
-    s->func = ep_on_accept;
-
+    ep_set_remote(addr, 2240);
+    ep_new_endpoints(t, h->epid, AF_INET, ep_on_accept_net);
     ep_activate_acceptor(addr);
-
 }

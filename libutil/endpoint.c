@@ -47,19 +47,20 @@ void ep_table_free(struct ep_table *t) {
 
 int ep_table_wait(struct ep_table *t, struct ep_source **src, size_t count) {
     struct epoll_event event [32];
+    printf("wait for events\n");
     int p = epoll_wait(t->epoll_fd, event, 32, -1);
     if (p == -1) {
         perror("epoll_wait");
     }
     else {
         for (int i = 0; i < p; ++i) {
-            src[i] = ep_table_src_fd(t, event[i].data.fd);
+            printf("id %d event\n", event[i].data.u32);
+            src[i] = ep_table_src(t, event[i].data.u32);
         }
         return p;
     }
     return 0;
 }
-
 
 
 size_t ep_table_hash(struct ep_table *t, int epid) {
@@ -116,14 +117,6 @@ struct ep_source *ep_new_src(struct ep_table *t, int epid) {
             if (item->epid == 0) {
                 addr->src = item;
                 item->epid = epid;
-
-                struct epoll_event ev;
-                ev.events = EPOLLIN;
-                // add to epoll
-                int err = epoll_ctl(t->epoll_fd, EPOLL_CTL_ADD, item->fd, &ev);
-                if (err == -1) {
-                    perror("epoll_ctl");
-                }
                 return item;
             }
         }
@@ -205,11 +198,14 @@ struct ep_handler *ep_table_hdl(struct ep_table *t, int epid) {
 }
 
 
-struct ep_source *ep_table_src_fd(struct ep_table *t, int fd) {
-    for (int i = 0; i < t->avail; ++i) {
-        if (t->src[i].epid > 0 && t->src[i].fd == fd) {
-            return &t->src[i];
-        }
+void ep_enable_src(struct ep_table *t, struct ep_source *s) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.u32 = s->epid;
+
+    // add to epoll
+    int err = epoll_ctl(t->epoll_fd, EPOLL_CTL_ADD, s->fd, &ev);
+    if (err == -1) {
+        perror("epoll_ctl");
     }
-    return NULL;
 }

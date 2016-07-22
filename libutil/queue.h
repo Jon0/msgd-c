@@ -47,6 +47,9 @@ void ep_queue_pop(struct ep_event_queue *q, struct ep_event *e);
 void ep_queue_push(struct ep_event_queue *q, struct ep_event *e);
 
 
+void ep_queue_from_table(struct ep_event_queue *q, struct ep_table *t);
+
+
 /*
  * apply an event (called inside handler threads)
  */

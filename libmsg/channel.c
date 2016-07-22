@@ -12,7 +12,7 @@ void msg_server_run(struct msg_server_state *s, const char *sockpath) {
     struct ep_address *addr = ep_new_addr(&s->tb, h->epid);
     ep_unlink(sockpath);
     ep_set_local(addr, sockpath);
-    ep_add_pipe_endpoints(&s->tb, addr->epid);
+    ep_new_endpoints(&s->tb, addr->epid, AF_UNIX, NULL);
 
 
     // wait until threads complete

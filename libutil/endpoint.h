@@ -54,6 +54,17 @@ typedef void (*ep_accept_t)(struct ep_table *, int, union event_attr *);
 
 
 /*
+ * acceptors create new handlers and sources
+ * should acceptors have epids?
+ */
+struct ep_acceptor {
+    int epid;
+    ep_recv_t func;
+    ep_callback_t read;
+};
+
+
+/*
  * moves input from file descriptors into handlers
  */
 struct ep_source {
@@ -148,8 +159,8 @@ struct ep_dest *ep_table_dest(struct ep_table *t, int epid);
 struct ep_handler *ep_table_hdl(struct ep_table *t, int epid);
 
 /*
- * return by file descriptor
+ * add a file descriptor to epoll
  */
-struct ep_source *ep_table_src_fd(struct ep_table *t, int fd);
+void ep_enable_src(struct ep_table *t, struct ep_source *s);
 
 #endif

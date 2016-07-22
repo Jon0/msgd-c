@@ -34,6 +34,20 @@ void ep_queue_push(struct ep_event_queue *q, struct ep_event *e) {
 }
 
 
+void ep_queue_from_table(struct ep_event_queue *q, struct ep_table *t) {
+    struct ep_event ev;
+    struct ep_source *src [32];
+    while (1) {
+        int r = ep_table_wait(t, src, 32);
+        for (int i = 0; i < r; ++i) {
+            ev.hdl = ep_table_hdl(t, src[i]->epid);
+            ev.recv = src[i]->func;
+            ep_queue_push(q, &ev);
+        }
+    }
+}
+
+
 void ep_apply_event(struct ep_event_queue *q, struct ep_event *e) {
     // if the epid has a source
     // then the input must be read
