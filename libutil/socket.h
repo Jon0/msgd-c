@@ -23,7 +23,7 @@ void ep_set_remote(struct ep_address *a, short portnum);
 /*
  * adds source and dest to table
  */
-void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_recv_t r);
+void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_fwd_t r);
 void ep_activate_acceptor(struct ep_address *a);
 void ep_activate_connector(struct ep_address *a);
 
@@ -31,9 +31,9 @@ void ep_activate_connector(struct ep_address *a);
 /*
  * a thread to handle input of a single file descriptor
  */
-void ep_on_accept_local(struct ep_table *t, int epid, union event_attr *e);
-void ep_on_accept_net(struct ep_table *t, int epid, union event_attr *e);
-void ep_on_recv(struct ep_table *t, int epid, union event_attr *e);
+int ep_on_accept_local(struct ep_table *t, int src, int out);
+int ep_on_accept_net(struct ep_table *t, int src, int out);
+int ep_on_recv(struct ep_table *t, int src, int out);
 
 
 void ep_accept_endpoints(struct ep_table *t, int epid, int fd);

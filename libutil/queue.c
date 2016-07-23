@@ -48,16 +48,41 @@ void ep_queue_from_table(struct ep_event_queue *q, struct ep_table *t) {
 }
 
 
+void ep_write_buf(struct ep_event_queue *q, int epid, struct ep_buffer *b) {
+
+}
+
+
+void ep_write_fd(struct ep_event_queue *q, int epid, int fd) {
+
+}
+
+
+void ep_read_src(struct ep_event_queue *q, struct ep_source *src) {
+    src->func(q->table, src->epid, src->out);
+
+    // if the source has output
+    if (src->out) {
+        struct ep_event ev;
+        ep_queue_push(q, &ev);
+    }
+}
+
+
 void ep_apply_event(struct ep_event_queue *q, struct ep_event *e) {
     // if the epid has a source
     // then the input must be read
-    if (e->recv) {
-        e->recv(q->table, e->hdl->epid, &e->attr);
-    }
+    if (e->src) {
+        // queues another update
+        ep_write_fd(q, e->src->out, e->src->fd);
 
-    // check the callback conditions are met
-    struct ep_event_view v;
-    v.queue = q;
-    v.self = e;
-    e->hdl->callback(0, &v);
+
+    }
+    else if (e->hdl) {
+        // if the event has a handler
+        struct ep_event_view v;
+        v.queue = q;
+        v.self = e;
+        ep_handler_update(e->hdl, &v, e->attr);
+    }
 }

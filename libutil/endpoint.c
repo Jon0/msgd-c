@@ -5,13 +5,15 @@
 #include "endpoint.h"
 
 
-int ep_read_block(struct ep_source *s, size_t n) {
-    char buf[1024];
-    size_t copied = 0;
-    while (copied < n) {
-        copied += read(s->fd, &buf[copied], n - copied);
+void ep_handler_update(struct ep_handler *h, struct ep_event_view *v, union event_attr a) {
+    // read some source data
+
+    // check the callback conditions are met
+
+    //
+    if (h->callback) {
+        h->callback(0, v);
     }
-    return copied;
 }
 
 

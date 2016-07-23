@@ -27,6 +27,7 @@ typedef void (*ep_callback_t)(int, struct ep_event_view *);
 
 
 /*
+ * each epid is either an address, or a handler
  * memory allocated per active input?
  */
 struct ep_handler {
@@ -42,45 +43,37 @@ struct ep_handler {
  */
 union event_attr {
     size_t count;
-    struct ep_handler *hdl;
-};
-
-
-/*
- * callback for file descriptor events
- */
-typedef void (*ep_recv_t)(struct ep_table *, int, union event_attr *);
-typedef void (*ep_accept_t)(struct ep_table *, int, union event_attr *);
-
-
-/*
- * acceptors create new handlers and sources
- * should acceptors have epids?
- */
-struct ep_acceptor {
     int epid;
-    ep_recv_t func;
-    ep_callback_t read;
 };
+
+
+/*
+ * move data from source to handlers
+ * or accept new sockets
+ * returns copied data
+ */
+typedef int (*ep_fwd_t)(struct ep_table *, int src, int out);
 
 
 /*
  * moves input from file descriptors into handlers
  */
 struct ep_source {
-    int   epid;
-    int   fd;
-    ep_recv_t func;
+    int           epid;
+    int           fd;
+    int           out;
+    ep_fwd_t      func;
     ep_callback_t read;
 };
 
 
 /*
- * writable endpoints
+ * writable endpoints (merge with source?)
+ * instead of a handler, will perform external write
  */
 struct ep_dest {
     int    epid;
-    int    fd; // either a function or a file descriptor
+    int    fd;
 };
 
 
@@ -100,7 +93,7 @@ struct ep_address {
 /*
  * list of source file descriptors
  * a hash map of epid to attributes
- * all epids have an address attribute
+ * all epids have either address or handler
  */
 struct ep_table {
     struct ep_address *addr;
@@ -117,9 +110,9 @@ struct ep_table {
 
 
 /*
- * block until at least n bytes are read
+ * notify handler of updates
  */
-int ep_read_block(struct ep_source *s, size_t n);
+void ep_handler_update(struct ep_handler *h, struct ep_event_view *v, union event_attr a);
 
 /*
  * init the table with a path to store socket data

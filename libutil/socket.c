@@ -34,7 +34,7 @@ void ep_set_remote(struct ep_address *a, short portnum) {
 }
 
 
-void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_recv_t r) {
+void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_fwd_t r) {
 
     // what if src or dest already exist?
     struct ep_source *s = ep_new_src(t, epid);
@@ -89,15 +89,15 @@ void ep_activate_connector(struct ep_address *a) {
 }
 
 
-void ep_on_accept_local(struct ep_table *t, int epid, union event_attr *e) {
-    struct ep_address *this_addr = ep_table_addr(t, epid);
+int ep_on_accept_local(struct ep_table *t, int src, int out) {
+    struct ep_address *this_addr = ep_table_addr(t, src);
     struct ep_source *this_src = this_addr->src;
     struct sockaddr_un addr;
     socklen_t len = sizeof(addr);
     int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
     if (fd < 0) {
         perror("accept");
-        return;
+        return 0;
     }
 
     // make a new table entry
@@ -106,20 +106,18 @@ void ep_on_accept_local(struct ep_table *t, int epid, union event_attr *e) {
     memcpy(a->addr, &addr, len);
     a->addrlen = len;
     ep_accept_endpoints(t, h->epid, fd);
-
-    // handler still requires initialisation
-    e->hdl = h;
+    return 0;
 }
 
-void ep_on_accept_net(struct ep_table *t, int epid, union event_attr *e) {
-    struct ep_address *this_addr = ep_table_addr(t, epid);
+int ep_on_accept_net(struct ep_table *t, int src, int out) {
+    struct ep_address *this_addr = ep_table_addr(t, src);
     struct ep_source *this_src = this_addr->src;
     struct sockaddr_in addr;
     socklen_t len = sizeof(addr);
     int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
     if (fd < 0) {
         perror("accept");
-        return;
+        return 0;
     }
 
     // make a new table entry
@@ -128,15 +126,14 @@ void ep_on_accept_net(struct ep_table *t, int epid, union event_attr *e) {
     memcpy(a->addr, &addr, len);
     a->addrlen = len;
     ep_accept_endpoints(t, h->epid, fd);
-
-    // handler still requires initialisation
-    e->hdl = h;
     printf("created new epid %d\n", h->epid);
+    return 0;
 }
 
 
-void ep_on_recv(struct ep_table *t, int epid, union event_attr *e) {
+int ep_on_recv(struct ep_table *t, int src, int out) {
     printf("ep_on_recv\n");
+    return 0;
 }
 
 
