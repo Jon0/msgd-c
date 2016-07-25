@@ -25,6 +25,10 @@ struct ep_map {
  */
 struct ep_multimap {
     char     *array;
+    ep_hash_t hashfn;
+    size_t    elem_size;
+    size_t    elem_count;
+    size_t    array_max;
 };
 
 
