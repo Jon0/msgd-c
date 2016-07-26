@@ -7,6 +7,7 @@ size_t ep_entry_hash(void *p) {
 }
 
 void ep_table_init(struct ep_table *t) {
+    ep_map_alloc(&t->entries, sizeof(struct ep_table_entry), 256);
     t->epoll_fd = epoll_create1(0);
 }
 

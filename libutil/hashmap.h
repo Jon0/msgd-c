@@ -21,6 +21,14 @@ struct ep_map {
 
 
 /*
+ * a continuous section of the multimap
+ */
+struct ep_map_block {
+    char *ptr;
+    size_t elems;
+}
+
+/*
  * map one key to many items
  */
 struct ep_multimap {
