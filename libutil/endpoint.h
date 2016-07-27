@@ -77,7 +77,7 @@ union ep_source {
  * epid is 0 for unused blocks
  */
 struct ep_address {
-    char               addr [256];
+    char               addr [32];
     socklen_t          addrlen;
     union ep_source    src;
 };

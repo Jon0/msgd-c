@@ -1,7 +1,7 @@
 #include "hashmap.h"
 
 
-size_t ep_hash(int i) {
+size_t ep_int_hash(int i) {
     return i;
 }
 
@@ -14,8 +14,13 @@ void ep_map_alloc(struct ep_map *m, size_t esize, size_t count) {
 }
 
 
+void ep_map_free(struct ep_map *m) {
+    free(m->array);
+}
+
+
 void ep_map_insert(struct ep_map *m, void *elem) {
-    size_t array_pos = m->hashfn(elem) % m->array_max;
+    size_t array_pos = ep_int_hash(m->idfn(elem)) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
         size_t index = ((array_pos + i) % m->array_max) * m->elem_size;
         void *item = &m->array[index];
@@ -35,10 +40,8 @@ void ep_map_erase(struct ep_map *m, int i) {
 }
 
 
-
-
 void *ep_map_get(struct ep_map *m, int i) {
-    size_t array_pos = m->hashfn(elem) % m->array_max;
+    size_t array_pos = m->idfn(elem) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
         size_t index = ((array_pos + i) % m->array_max) * m->elem_size;
         void *item = &m->array[index];

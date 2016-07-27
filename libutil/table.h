@@ -15,7 +15,7 @@ enum ep_type {
 struct ep_table_entry {
     int           epid;
     enum ep_type  type;
-    union ep_item item;
+    union ep_item data;
 };
 
 
@@ -41,7 +41,9 @@ void ep_table_init(struct ep_table *t);
 void ep_table_free(struct ep_table *t);
 
 
-int ep_open(struct ep_table *t, enum ep_type t);
+int ep_open_acceptor(struct ep_table *t, struct ep_acceptor *a);
+int ep_open_channel(struct ep_table *t, struct ep_channel *a);
+int ep_open_handler(struct ep_table *t, struct ep_handler *a);
 void ep_close(struct ep_table *t, int epid);
 
 

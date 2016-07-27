@@ -6,6 +6,7 @@ size_t ep_entry_hash(void *p) {
     return e->epid;
 }
 
+
 void ep_table_init(struct ep_table *t) {
     ep_map_alloc(&t->entries, sizeof(struct ep_table_entry), 256);
     t->epoll_fd = epoll_create1(0);
@@ -13,8 +14,25 @@ void ep_table_init(struct ep_table *t) {
 
 
 void ep_table_free(struct ep_table *t) {
-
+    ep_map_free(&t->entries);
 }
+
+
+int ep_open_acceptor(struct ep_table *t, struct ep_acceptor *a) {
+    struct ep_table_entry e;
+    e.epid = t->next_id++;
+    e.type = ep_type_acceptor;
+    e.data.addr =
+}
+
+
+void ep_close(struct ep_table *t, int epid);
+
+
+/*
+ * modify endpoints
+ */
+void ep_table_ctl(struct ep_table *t, int epid);
 
 
 int ep_table_wait(struct ep_table *t, struct ep_source **src, size_t count) {
