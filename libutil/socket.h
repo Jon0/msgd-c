@@ -17,26 +17,15 @@ void ep_unlink(const char *address);
 /*
  * set endpoint to listen for local connections
  */
-void ep_set_local(struct ep_address *a, const char *address);
-void ep_set_remote(struct ep_address *a, short portnum);
+void ep_listen_local(struct ep_address *a, const char *address);
+void ep_listen_remote(struct ep_address *a, short portnum);
+void ep_connect_remote(struct ep_address *a, const char *ip, short portnum);
 
 /*
  * adds source and dest to table
  */
-void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_fwd_t r);
-void ep_activate_acceptor(struct ep_address *a);
-void ep_activate_connector(struct ep_address *a);
-
-
-/*
- * a thread to handle input of a single file descriptor
- */
-int ep_on_accept_local(struct ep_table *t, int src, int out);
-int ep_on_accept_net(struct ep_table *t, int src, int out);
-int ep_on_recv(struct ep_table *t, int src, int out);
-
-
-void ep_accept_endpoints(struct ep_table *t, int epid, int fd);
+void ep_init_acceptor(struct ep_acceptor *a);
+void ep_init_channel(struct ep_channel *c);
 
 
 /*

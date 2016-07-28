@@ -14,145 +14,76 @@ void ep_unlink(const char *address) {
 }
 
 
-void ep_set_local(struct ep_address *a, const char *address) {
+void ep_listen_local(struct ep_address *a, const char *address) {
 
     // intialise address struct with address name
-    struct sockaddr_un *saun = (struct sockaddr_un *) &a->addr;
+    struct sockaddr_un *saun = (struct sockaddr_un *) &a->data;
     saun->sun_family = AF_UNIX;
     strcpy(saun->sun_path, address);
-    a->addrlen = sizeof(saun->sun_family) + strlen(saun->sun_path);
+    a->len = sizeof(saun->sun_family) + strlen(saun->sun_path);
 }
 
 
-void ep_set_remote(struct ep_address *a, short portnum) {
-    struct sockaddr_in *addr = (struct sockaddr_in *) &a->addr;
+void ep_listen_remote(struct ep_address *a, short portnum) {
+    struct sockaddr_in *addr = (struct sockaddr_in *) &a->data;
     bzero(addr, sizeof(struct sockaddr_in));
     addr->sin_family = AF_INET;
     addr->sin_addr.s_addr = INADDR_ANY;
     addr->sin_port = htons(portnum);
-    a->addrlen = sizeof(struct sockaddr_in);
+    a->len = sizeof(struct sockaddr_in);
 }
 
 
-void ep_new_endpoints(struct ep_table *t, int epid, int type, ep_fwd_t r) {
+void ep_connect_remote(struct ep_address *a, const char *ip, short portnum) {
 
-    // what if src or dest already exist?
-    struct ep_source *s = ep_new_src(t, epid);
-    struct ep_dest *d = ep_new_dest(t, epid);
+}
 
-    // create a unix socket
-    s->fd = socket(type, SOCK_STREAM, 0);
-    s->func = r;
-    if (s->fd < 0) {
+
+
+void ep_init_acceptor(struct ep_acceptor *a) {
+    struct sockaddr *sa = (struct sockaddr *) &a->addr.data;
+    a->fd = socket(sa->sa_family, SOCK_STREAM, 0);
+    if (a->fd < 0) {
         perror("socket");
         return;
     }
-    d->fd = s->fd;
-    ep_enable_src(t, s);
+
+    // bind and listen on the socket
+    int err = bind(a->fd, sa, a->addr.len);
+    if (err < 0) {
+        perror("bind");
+        close(a->fd);
+        return;
+    }
+    listen(a->fd, 5);
 }
 
 
-void ep_activate_acceptor(struct ep_address *a) {
-
-    // the acceptor requires an initialised addr and src
-    int err;
-    if (a && a->src) {
-        printf("creating socket acceptor\n");
-
-        // bind and listen on the socket
-        err = bind(a->src->fd, (struct sockaddr *) &a->addr, a->addrlen);
-        if (err < 0) {
-            perror("bind");
-            return;
-        }
-        listen(a->src->fd, 5);
-    }
-    else {
-        printf("failed to start acceptor\n");
-    }
-}
-
-
-void ep_activate_connector(struct ep_address *a) {
-    printf("creating socket connector\n");
-
-    // the connector requires an initialised addr and src
-    if (a && a->src) {
-
-        // connect to address
-        int err = connect(a->src->fd, (struct sockaddr *) &a->addr, a->addrlen);
-        if (err == -1) {
-            perror("connect");
-            return;
-        }
-    }
-}
-
-
-int ep_on_accept_local(struct ep_table *t, int src, int out) {
-    struct ep_address *this_addr = ep_table_addr(t, src);
-    struct ep_source *this_src = this_addr->src;
-    struct sockaddr_un addr;
-    socklen_t len = sizeof(addr);
-    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
-    if (fd < 0) {
-        perror("accept");
-        return 0;
+void ep_init_channel(struct ep_channel *c) {
+    struct sockaddr *sa = (struct sockaddr *) &c->addr.data;
+    c->fd = socket(sa->sa_family, SOCK_STREAM, 0);
+    if (c->fd < 0) {
+        perror("socket");
+        return;
     }
 
-    // make a new table entry
-    struct ep_handler *h = ep_new_hdl(t, this_src->read);
-    struct ep_address *a = ep_new_addr(t, h->epid);
-    memcpy(a->addr, &addr, len);
-    a->addrlen = len;
-    ep_accept_endpoints(t, h->epid, fd);
-    return 0;
-}
-
-int ep_on_accept_net(struct ep_table *t, int src, int out) {
-    struct ep_address *this_addr = ep_table_addr(t, src);
-    struct ep_source *this_src = this_addr->src;
-    struct sockaddr_in addr;
-    socklen_t len = sizeof(addr);
-    int fd = accept(this_src->fd, (struct sockaddr *) &addr, &len);
-    if (fd < 0) {
-        perror("accept");
-        return 0;
+    // connect to address
+    int err = connect(c->fd, sa, c->addr.len);
+    if (err == -1) {
+        perror("connect");
+        close(c->fd);
+        return;
     }
-
-    // make a new table entry
-    struct ep_handler *h = ep_new_hdl(t, this_src->read);
-    struct ep_address *a = ep_new_addr(t, h->epid);
-    memcpy(a->addr, &addr, len);
-    a->addrlen = len;
-    ep_accept_endpoints(t, h->epid, fd);
-    printf("created new epid %d\n", h->epid);
-    return 0;
-}
-
-
-int ep_on_recv(struct ep_table *t, int src, int out) {
-    printf("ep_on_recv\n");
-    return 0;
-}
-
-
-void ep_accept_endpoints(struct ep_table *t, int epid, int fd) {
-    // initialise source and dest
-    struct ep_source *s = ep_new_src(t, epid);
-    s->fd = fd;
-    s->func = ep_on_recv;
-    struct ep_dest *dt = ep_new_dest(t, epid);
-    dt->fd = fd;
-    ep_enable_src(t, s);
 }
 
 
 void ep_tcp_acceptor(struct ep_table *t, struct ep_handler *h, ep_callback_t c) {
+    struct ep_acceptor acc;
+    ep_listen_remote(&acc.addr, 2240);
+    ep_init_acceptor(&acc);
 
-    // add to endpoint table
-    struct ep_address *addr = ep_new_addr(t, h->epid);
-    ep_set_remote(addr, 2240);
-    ep_new_endpoints(t, h->epid, AF_INET, ep_on_accept_net);
-    ep_activate_acceptor(addr);
+    // set callback fns
+
+    // add to table
+    ep_add_acceptor(t, &acc);
 }

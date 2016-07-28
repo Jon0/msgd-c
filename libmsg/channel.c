@@ -5,15 +5,17 @@
 
 
 void msg_server_run(struct msg_server_state *s, const char *sockpath) {
-    ep_table_init(&s->tb);
+    ep_table_init(&s->tb, 256);
+    ep_thread_pool_create(&s->pool, &s->tb, 4);
 
-    // create a listener
-    struct ep_handler *h = ep_new_hdl(&s->tb, NULL);
-    struct ep_address *addr = ep_new_addr(&s->tb, h->epid);
-    ep_unlink(sockpath);
-    ep_set_local(addr, sockpath);
-    ep_new_endpoints(&s->tb, addr->epid, AF_UNIX, NULL);
+    // create an acceptor
+    struct ep_acceptor acc;
+    ep_listen_remote(&acc.addr, 2204);
+    ep_init_acceptor(&acc);
+    ep_add_acceptor(&s->tb, &acc);
 
+    // main loop
+    ep_queue_from_table(&s->pool.queue);
 
     // wait until threads complete
     ep_thread_pool_join(&s->pool);

@@ -4,6 +4,9 @@
 #include <stdlib.h>
 
 
+/*
+ * returns a unique identifier for elements
+ */
 typedef int (*ep_id_t)(void *);
 
 
@@ -42,10 +45,10 @@ struct ep_multimap {
 size_t ep_int_hash(int i);
 
 
-void ep_map_alloc(struct ep_map *m, size_t esize, size_t count);
+void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count);
 void ep_map_free(struct ep_map *m);
-void ep_map_insert(struct ep_map *m, void *elem);
-void ep_map_erase(struct ep_map *m, int i);
+int ep_map_insert(struct ep_map *m, void *elem);
+int ep_map_erase(struct ep_map *m, int i);
 void *ep_map_get(struct ep_map *m, int i);
 
 

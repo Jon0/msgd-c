@@ -38,6 +38,15 @@ struct ep_handler {
 
 
 /*
+ * give address for a remote
+ */
+struct ep_address {
+    char               data [32];
+    socklen_t          len;
+};
+
+
+/*
  * move data from source to handlers
  * or accept new sockets
  * returns copied data
@@ -47,10 +56,10 @@ typedef int (*ep_accept_t)(struct ep_table *, int src);
 
 
 struct ep_acceptor {
-    int           fd;
-    ep_accept_t   accept;
-    ep_callback_t callback;
-    ep_callback_t read;
+    struct ep_address addr;
+    int               fd;
+    ep_callback_t     callback;
+    ep_callback_t     read;
 };
 
 
@@ -58,36 +67,10 @@ struct ep_acceptor {
  * moves input from file descriptors into handlers
  */
 struct ep_channel {
-    int           fd;
-    ep_fwd_t      func;
-};
-
-
-/*
- *
- */
-union ep_source {
-    struct ep_acceptor acc;
-    struct ep_channel  chan;
-};
-
-
-/*
- * give address for a remote
- * epid is 0 for unused blocks
- */
-struct ep_address {
-    char               addr [32];
-    socklen_t          addrlen;
-    union ep_source    src;
-};
-
-
-union ep_item {
     struct ep_address addr;
-    struct ep_handler hdl;
+    int               fd;
+    ep_fwd_t          func;
 };
-
 
 
 #endif

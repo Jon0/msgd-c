@@ -14,26 +14,22 @@ void on_client_read(struct ep_address *a, void *p) {
 
 void write_str(struct msg_client_state *cs, const char *str) {
     msg_push_buffer(&cs->buf, str, strlen(str));
-    struct ep_dest *d = ep_table_dest(&cs->tb, cs->epid);
-    size_t r = ep_buffer_write_inc(&cs->buf, d->fd, &cs->writes);
+    size_t r = ep_write_buf(&cs->pool.queue, cs->epid, &cs->buf);
 }
 
 
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
-    ep_table_init(&cs->tb);
-    cs->writes = 0;
+    ep_table_init(&cs->tb, 256);
+    cs->writepos = 0;
 
     size_t bufsize = 4096;
     ep_buffer_init(&cs->buf, malloc(bufsize), bufsize);
 
-    // create a connector
-    struct ep_handler *h = ep_new_hdl(&cs->tb, NULL);
-    struct ep_address *a = ep_new_addr(&cs->tb, h->epid);
-    cs->epid = a->epid;
-    ep_set_local(a, "msgd-local");
-    ep_new_endpoints(&cs->tb, cs->epid, AF_UNIX, NULL);
-    ep_activate_connector(a);
-    strcpy(cs->proc_name, name);
+    struct ep_channel ch;
+    ep_connect_remote(&ch.addr, "127.0.0.1", 2204);
+    ep_init_channel(&ch);
+    ep_add_channel(&cs->tb, &ch);
+
 
     // send connect request
     write_str(cs, "connect");

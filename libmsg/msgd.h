@@ -16,7 +16,7 @@ struct msg_client_state {
     struct ep_thread_pool pool;
     int              epid;
     struct ep_buffer buf;
-    size_t           writes;
+    size_t           writepos;
     char             proc_name [256];
 };
 
