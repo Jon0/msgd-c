@@ -23,15 +23,8 @@ struct ep_map {
 
 
 /*
- * a continuous section of the multimap
- */
-struct ep_map_block {
-    char *ptr;
-    size_t elems;
-};
-
-/*
  * map one key to many items
+ * maybe use an ordered set of key value pairs
  */
 struct ep_multimap {
     char     *array;
@@ -48,8 +41,8 @@ size_t ep_int_hash(int i);
 void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count);
 void ep_map_free(struct ep_map *m);
 int ep_map_insert(struct ep_map *m, void *elem);
-int ep_map_erase(struct ep_map *m, int i);
-void *ep_map_get(struct ep_map *m, int i);
+int ep_map_erase(struct ep_map *m, int elem);
+void *ep_map_get(struct ep_map *m, int elem);
 
 
 #endif

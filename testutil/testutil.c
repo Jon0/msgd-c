@@ -10,6 +10,12 @@ void callback_test(int e, struct ep_event_view *v) {
 }
 
 
+int accept_test(struct ep_table *t, int epid) {
+    printf("accept test\n");
+    return 0;
+}
+
+
 void thread_test() {
     struct ep_thread_pool tp;
     struct ep_table table;

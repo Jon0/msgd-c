@@ -40,7 +40,7 @@ void ep_connect_remote(struct ep_address *a, const char *ip, short portnum) {
 
 
 
-void ep_init_acceptor(struct ep_acceptor *a) {
+void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af) {
     struct sockaddr *sa = (struct sockaddr *) &a->addr.data;
     a->fd = socket(sa->sa_family, SOCK_STREAM, 0);
     if (a->fd < 0) {
@@ -56,6 +56,7 @@ void ep_init_acceptor(struct ep_acceptor *a) {
         return;
     }
     listen(a->fd, 5);
+    a->create_hdl = af;
 }
 
 
@@ -74,16 +75,4 @@ void ep_init_channel(struct ep_channel *c) {
         close(c->fd);
         return;
     }
-}
-
-
-void ep_tcp_acceptor(struct ep_table *t, struct ep_handler *h, ep_callback_t c) {
-    struct ep_acceptor acc;
-    ep_listen_remote(&acc.addr, 2240);
-    ep_init_acceptor(&acc);
-
-    // set callback fns
-
-    // add to table
-    ep_add_acceptor(t, &acc);
 }

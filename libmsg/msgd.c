@@ -14,7 +14,7 @@ void on_client_read(struct ep_address *a, void *p) {
 
 void write_str(struct msg_client_state *cs, const char *str) {
     msg_push_buffer(&cs->buf, str, strlen(str));
-    size_t r = ep_write_buf(&cs->pool.queue, cs->epid, &cs->buf);
+    size_t r = ep_queue_wbuf(&cs->pool.queue, cs->epid, &cs->buf, cs->writepos);
 }
 
 

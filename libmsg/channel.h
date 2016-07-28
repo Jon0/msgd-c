@@ -29,6 +29,10 @@ struct msg_server_state {
 
 void msg_parse_input(struct ep_buffer *b);
 
+int msg_server_accept(struct ep_table *t, int *out);
+
+void msg_server_recv(int ex, struct ep_event_view *ev);
+
 void msg_server_run(struct msg_server_state *s, const char *sockpath);
 
 #endif

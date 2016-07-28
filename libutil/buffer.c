@@ -27,7 +27,7 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
 }
 
 
-ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
+size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
     size_t end = b->begin + b->size;
 
     // check if insert will exceed capacity

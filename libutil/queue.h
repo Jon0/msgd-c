@@ -52,10 +52,29 @@ void ep_queue_from_table(struct ep_event_queue *q);
 
 
 /*
- * block until write completes
+ * use type of epid to decide how to handle
+ * how will it add new events to the queue?
+ * assume only one event returned per update for now
  */
-ssize_t ep_write_buf(struct ep_event_queue *q, int epid, struct ep_buffer *b);
-ssize_t ep_write_fd(struct ep_event_queue *q, int epid, int fd);
+void ep_queue_update(struct ep_event_queue *q, int epid);
 
+/*
+ * apply accept event
+ */
+int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a);
+
+
+/*
+ * the sources have new input, apply required actions
+ */
+void ep_queue_read_ch(struct ep_event_queue *q, struct ep_channel *c);
+void ep_queue_read_hdl(struct ep_event_queue *q,  int epid, struct ep_handler *h);
+
+/*
+ * writes buffer contents to handlers or channels
+ * blocking until write completes
+ */
+size_t ep_queue_wbuf(struct ep_event_queue *q, int epid, struct ep_buffer *b, size_t s);
+size_t ep_queue_wblk(struct ep_event_queue *q, int epid, char *b, size_t count);
 
 #endif

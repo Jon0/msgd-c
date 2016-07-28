@@ -9,6 +9,8 @@
 #include "buffer.h"
 #include "hashmap.h"
 
+#define EP_OUT_MAX 32
+
 struct ep_table;
 
 /*
@@ -16,7 +18,7 @@ struct ep_table;
  */
 struct ep_event_view {
     struct ep_event_queue *queue;
-    struct ep_event       *self;
+    int                    self;
 };
 
 
@@ -24,6 +26,12 @@ struct ep_event_view {
  * function to run as a new thread
  */
 typedef void (*ep_callback_t)(int, struct ep_event_view *);
+
+/*
+ * create and return a handler for accepted sockets
+ * this may need to return many handlers
+ */
+typedef int (*ep_accept_t)(struct ep_table *, int *);
 
 
 /*
@@ -46,20 +54,10 @@ struct ep_address {
 };
 
 
-/*
- * move data from source to handlers
- * or accept new sockets
- * returns copied data
- */
-typedef int (*ep_fwd_t)(struct ep_table *, int src, int out);
-typedef int (*ep_accept_t)(struct ep_table *, int src);
-
-
 struct ep_acceptor {
     struct ep_address addr;
     int               fd;
-    ep_callback_t     callback;
-    ep_callback_t     read;
+    ep_accept_t       create_hdl;
 };
 
 
@@ -69,7 +67,8 @@ struct ep_acceptor {
 struct ep_channel {
     struct ep_address addr;
     int               fd;
-    ep_fwd_t          func;
+    int               output [EP_OUT_MAX];
+    char              outcount;
 };
 
 

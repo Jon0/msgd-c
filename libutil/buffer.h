@@ -25,7 +25,7 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
 /*
  * push data into the buffer
  */
-ssize_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
+size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
 
 /*
  * take available data from a readable file descriptor

@@ -38,17 +38,17 @@ int ep_map_insert(struct ep_map *m, void *elem) {
 }
 
 
-int ep_map_erase(struct ep_map *m, int i) {
-
+int ep_map_erase(struct ep_map *m, int elem) {
+    return 0;
 }
 
 
-void *ep_map_get(struct ep_map *m, int i) {
-    size_t array_pos = ep_int_hash(i) % m->array_max;
+void *ep_map_get(struct ep_map *m, int elem) {
+    size_t array_pos = ep_int_hash(elem) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
         size_t index = ((array_pos + i) % m->array_max) * m->elem_size;
         void *item = &m->array[index];
-        if (m->idfn(item) == 0) {
+        if (m->idfn(item) == elem) {
             return item;
         }
     }
