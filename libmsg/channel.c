@@ -7,15 +7,17 @@
 int msg_server_accept(struct ep_table *t, int *out) {
     printf("accept\n");
     struct ep_handler hdl;
-    ep_buffer_init(&hdl.buf, malloc(4096), 4096);
-    hdl.callback = msg_server_recv;
+    ep_handler_init(&hdl, 4096, msg_server_recv);
     *out = ep_add_handler(t, &hdl);
     return 1;
 }
 
 
 void msg_server_recv(int ex, struct ep_event_view *ev) {
-    printf("recv\n");
+    char out [256];
+    struct ep_buffer *b = &ev->self->buf;
+    size_t s = ep_buffer_erase(b, out, 256);
+    printf("recv %d: %s\n", s, out);
 }
 
 

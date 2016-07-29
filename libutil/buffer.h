@@ -28,6 +28,11 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
 size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
 
 /*
+ * take bytes from the buffer
+ */
+size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count);
+
+/*
  * take available data from a readable file descriptor
  */
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd);

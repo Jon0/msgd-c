@@ -2,7 +2,7 @@
 #define ENDPOINT_H
 
 #include <stdlib.h>
-#include <poll.h>
+#include <pthread.h>
 #include <netinet/in.h>
 #include <sys/epoll.h>
 
@@ -18,7 +18,8 @@ struct ep_table;
  */
 struct ep_event_view {
     struct ep_event_queue *queue;
-    int                    self;
+    int                    epid;
+    struct ep_handler     *self;
 };
 
 
@@ -40,8 +41,10 @@ typedef int (*ep_accept_t)(struct ep_table *, int *);
  */
 struct ep_handler {
     struct ep_buffer    buf;
+    pthread_mutex_t     mutex;
     ep_callback_t       callback;
     size_t              min_input;
+    void               *data;
 };
 
 
@@ -71,5 +74,7 @@ struct ep_channel {
     char              outcount;
 };
 
+
+void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c);
 
 #endif

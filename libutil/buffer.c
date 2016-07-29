@@ -55,6 +55,26 @@ size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
 }
 
 
+size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
+    size_t end = b->begin + b->size;
+    if (count > b->size) {
+        count = b->size;
+    }
+
+    char *start = &b->ptr[b->begin];
+    size_t cs = b->avail - b->begin;
+    if (count > cs) {
+        memcpy(outbuf, start, cs);
+        memcpy(&outbuf[cs], b->ptr, count - cs);
+    }
+    else {
+        memcpy(outbuf, start, count);
+    }
+    ep_buffer_release(b, count);
+    return count;
+}
+
+
 ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
     char *back;
     size_t space = 0;
