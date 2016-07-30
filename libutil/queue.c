@@ -76,7 +76,7 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
         perror("accept");
         return 0;
     }
-    newc.outcount = a->create_hdl(t, newc.output);
+    newc.outcount = a->create_hdl(t, a->data, newc.output);
     return ep_add_channel(t, &newc);
 }
 

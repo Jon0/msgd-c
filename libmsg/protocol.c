@@ -4,21 +4,14 @@
 #include "protocol.h"
 
 
-void msg_poll_buffer(struct ep_buffer *b) {
+void msg_poll_buffer(struct msg_tree *tree, struct ep_buffer *b) {
+    struct msg_header head;
+
     // recieving requests to the local server
-    size_t sb = sizeof(prot_size_t);
-    while (b->size > sb) {
-        // the first 4 bytes contain the message length
-        char *content = &b->ptr[b->begin];
-        prot_size_t length = *((prot_size_t *) content);
-        if (b->size >= (length + sb)) {
-            msg_parse_block((content + sb), length);
-            ep_buffer_release(b, (length + sb));
-        }
-        else {
-            printf("recv length %d / %d\n", b->size, length);
-            return;
-        }
+    size_t hs = sizeof(struct msg_header);
+    while (b->size > hs) {
+        size_t s = ep_buffer_erase(b, (char *) &head, hs);
+        msg_parse_block(tree, &head);
     }
 }
 
@@ -29,13 +22,8 @@ void msg_push_buffer(struct ep_buffer *b, const char *msg, size_t count) {
 }
 
 
-void msg_parse_block(const char *buf, size_t count) {
-    char sbuf [256];
-    memcpy(sbuf, buf, count);
-    sbuf[count] = 0;
-    printf("recv %d: %s\n", count, sbuf);
+void msg_parse_block(struct msg_tree *tree, struct msg_header *h) {
+    printf("recv %d\n", h->id);
 
-    struct msg_block *mb = (struct msg_block *) buf;
-    switch (mb->id) {}
 
 }

@@ -39,9 +39,10 @@ void ep_connect_remote(struct ep_address *a, const char *ip, short portnum) {
 }
 
 
-
-void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af) {
+void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af, void *data) {
     struct sockaddr *sa = (struct sockaddr *) &a->addr.data;
+    a->create_hdl = af;
+    a->data = data;
     a->fd = socket(sa->sa_family, SOCK_STREAM, 0);
     if (a->fd < 0) {
         perror("socket");
@@ -56,7 +57,6 @@ void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af) {
         return;
     }
     listen(a->fd, 5);
-    a->create_hdl = af;
 }
 
 

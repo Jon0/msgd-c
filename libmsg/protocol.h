@@ -3,6 +3,8 @@
 
 #include <libutil/buffer.h>
 
+#include "node.h"
+
 typedef int32_t prot_size_t;
 
 /*
@@ -21,17 +23,18 @@ enum msg_type_id {
 };
 
 
-struct msg_block {
+struct msg_header {
     enum msg_type_id  id;
     int host_id;
     int route_id;
+    int size;
 };
 
 
 
-void msg_poll_buffer(struct ep_buffer *b);
+void msg_poll_buffer(struct msg_tree *tree, struct ep_buffer *b);
 void msg_push_buffer(struct ep_buffer *b, const char *msg, size_t count);
-void msg_parse_block(const char *buf, size_t count);
+void msg_parse_block(struct msg_tree *tree, struct msg_header *h);
 
 
 #endif

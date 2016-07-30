@@ -39,11 +39,14 @@ struct node_src {
 };
 
 
-struct node_tree {
+struct msg_tree {
     struct node_base   node;
     struct node_base  *subnodes;
-    int64_t            subnode_count;
+    int64_t            size;
 };
+
+
+void msg_tree_init(struct msg_tree *t);
 
 
 #endif

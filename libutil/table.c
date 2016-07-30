@@ -74,7 +74,6 @@ void ep_table_ctl(struct ep_table *t, int in, int out) {
 
 int ep_table_wait(struct ep_table *t, int *src, size_t count) {
     struct epoll_event event [32];
-    printf("wait for events\n");
     int p = epoll_wait(t->epoll_fd, event, 32, -1);
     if (p == -1) {
         perror("epoll_wait");

@@ -31,8 +31,9 @@ typedef void (*ep_callback_t)(int, struct ep_event_view *);
 /*
  * create and return a handler for accepted sockets
  * this may need to return many handlers
+ * the output can return max of 32 ints
  */
-typedef int (*ep_accept_t)(struct ep_table *, int *);
+typedef int (*ep_accept_t)(struct ep_table *t, void *in, int *out);
 
 
 /*
@@ -61,6 +62,7 @@ struct ep_acceptor {
     struct ep_address addr;
     int               fd;
     ep_accept_t       create_hdl;
+    void             *data;
 };
 
 
@@ -75,6 +77,6 @@ struct ep_channel {
 };
 
 
-void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c);
+void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d);
 
 #endif
