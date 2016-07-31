@@ -61,6 +61,12 @@ void ep_table_ctl(struct ep_table *t, int in, int out);
 
 
 /*
+ * return the network address of one endpoint
+ */
+int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out);
+
+
+/*
  * wait for events and return the sources
  */
 int ep_table_wait(struct ep_table *t, int *src, size_t count);

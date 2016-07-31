@@ -8,12 +8,11 @@
 
 
 /*
- * events must handle:
- * handlers recieving updates
- * acceptors opening a new socket
+ * should contain a stack of all visited epid
  */
 struct ep_event {
     int epid;
+    int srcid;
 };
 
 
@@ -48,6 +47,9 @@ void ep_queue_pop(struct ep_event_queue *q, struct ep_event *e);
 void ep_queue_push(struct ep_event_queue *q, struct ep_event *e);
 
 
+/*
+ * enter main loop
+ */
 void ep_queue_from_table(struct ep_event_queue *q);
 
 
@@ -56,7 +58,7 @@ void ep_queue_from_table(struct ep_event_queue *q);
  * how will it add new events to the queue?
  * assume only one event returned per update for now
  */
-void ep_queue_update(struct ep_event_queue *q, int epid);
+void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev);
 
 /*
  * apply accept event
@@ -67,14 +69,14 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a);
 /*
  * the sources have new input, apply required actions
  */
-void ep_queue_read_ch(struct ep_event_queue *q, struct ep_channel *c);
-void ep_queue_read_hdl(struct ep_event_queue *q,  int epid, struct ep_handler *h);
+void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_channel *c);
+void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_handler *h);
 
 /*
  * writes buffer contents to handlers or channels
  * blocking until write completes
  */
-size_t ep_queue_wbuf(struct ep_event_queue *q, int epid, struct ep_buffer *b, size_t s);
-size_t ep_queue_wblk(struct ep_event_queue *q, int epid, char *b, size_t count);
+size_t ep_queue_wbuf(struct ep_event_queue *q, int epid, int srcid, struct ep_buffer *b, size_t s);
+size_t ep_queue_wblk(struct ep_event_queue *q, int epid, int srcid, char *b, size_t count);
 
 #endif

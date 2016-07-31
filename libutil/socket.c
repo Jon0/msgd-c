@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -35,7 +36,18 @@ void ep_listen_remote(struct ep_address *a, short portnum) {
 
 
 void ep_connect_remote(struct ep_address *a, const char *ip, short portnum) {
+    struct sockaddr_in *addr = (struct sockaddr_in *) &a->data;
+    bzero(addr, sizeof(struct sockaddr_in));
 
+    struct in_addr buf;
+	if (inet_pton(AF_INET, ip, &buf) <= 0) {
+        perror("inet_pton");
+    }
+
+    addr->sin_family = AF_INET;
+    addr->sin_addr = buf;
+    addr->sin_port = htons(portnum);
+    a->len = sizeof(struct sockaddr_in);
 }
 
 
@@ -60,12 +72,13 @@ void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af, void *data) {
 }
 
 
-void ep_init_channel(struct ep_channel *c) {
+int ep_init_channel(struct ep_channel *c) {
     struct sockaddr *sa = (struct sockaddr *) &c->addr.data;
+    c->outcount = 0;
     c->fd = socket(sa->sa_family, SOCK_STREAM, 0);
     if (c->fd < 0) {
         perror("socket");
-        return;
+        return -1;
     }
 
     // connect to address
@@ -73,6 +86,7 @@ void ep_init_channel(struct ep_channel *c) {
     if (err == -1) {
         perror("connect");
         close(c->fd);
-        return;
+        return -1;
     }
+    return c->fd;
 }

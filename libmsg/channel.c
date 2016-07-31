@@ -14,6 +14,9 @@ int msg_server_accept(struct ep_table *t, void *in, int *out) {
 
 
 void msg_server_recv(int ex, struct ep_event_view *ev) {
+    struct ep_address addr;
+    ep_table_addr(ev->queue->table, ev->event->srcid, &addr);
+    ep_address_print(&addr);
     struct msg_tree *tree = (struct msg_tree *) ev->self->data;
     msg_poll_buffer(tree, &ev->self->buf);
 }

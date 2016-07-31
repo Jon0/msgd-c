@@ -23,6 +23,11 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
 
 /*
+ * copy from one buffer to another
+ */
+size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start);
+
+/*
  * push data into the buffer
  */
 size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);

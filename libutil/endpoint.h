@@ -18,7 +18,7 @@ struct ep_table;
  */
 struct ep_event_view {
     struct ep_event_queue *queue;
-    int                    epid;
+    struct ep_event       *event;
     struct ep_handler     *self;
 };
 
@@ -78,5 +78,7 @@ struct ep_channel {
 
 
 void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d);
+
+void ep_address_print(struct ep_address *a);
 
 #endif

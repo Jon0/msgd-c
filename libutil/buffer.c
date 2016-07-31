@@ -27,6 +27,12 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
 }
 
 
+size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start) {
+    printf("TODO: copy\n");
+    return 0;
+}
+
+
 size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
     size_t end = b->begin + b->size;
 
@@ -88,7 +94,6 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
     else {
         b->size += r;
     }
-    printf("buffer read %d, (%d / %d used)\n", r, b->size, b->avail);
     return r;
 }
 

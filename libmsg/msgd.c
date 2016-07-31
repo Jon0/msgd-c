@@ -7,19 +7,9 @@
 #include "protocol.h"
 
 
-void on_client_read(struct ep_address *a, void *p) {
-    printf("read notify\n");
-}
-
-
-void write_str(struct msg_client_state *cs, const char *str) {
-    msg_push_buffer(&cs->buf, str, strlen(str));
-    size_t r = ep_queue_wbuf(&cs->pool.queue, cs->epid, &cs->buf, cs->writepos);
-}
-
-
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     ep_table_init(&cs->tb, 256);
+    ep_thread_pool_create(&cs->pool, &cs->tb, 4);
     cs->writepos = 0;
 
     size_t bufsize = 4096;
@@ -27,12 +17,16 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
     struct ep_channel ch;
     ep_connect_remote(&ch.addr, "127.0.0.1", 2204);
-    ep_init_channel(&ch);
-    ep_add_channel(&cs->tb, &ch);
+    int err = ep_init_channel(&ch);
+    if (err == -1) {
+        return;
+    }
+    cs->epid = ep_add_channel(&cs->tb, &ch);
 
 
     // send connect request
-    write_str(cs, "connect");
+    msg_req_addproc(&cs->buf, name, strlen(name));
+    cs->writepos = ep_queue_wbuf(&cs->pool.queue, cs->epid, 0, &cs->buf, cs->writepos);
 }
 
 
@@ -56,7 +50,8 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 
 
 void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
-    write_str(cs, "available");
+    msg_req_avail(&cs->buf);
+    cs->writepos = ep_queue_wbuf(&cs->pool.queue, cs->epid, 0, &cs->buf, cs->writepos);
 }
 
 

@@ -72,6 +72,25 @@ void ep_table_ctl(struct ep_table *t, int in, int out) {
 }
 
 
+int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    if (e) {
+        switch(e->type) {
+        case ep_type_acceptor:
+            *out = e->data.acc.addr;
+            return 1;
+        case ep_type_channel:
+            *out = e->data.ch.addr;
+            return 1;
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+    return 0;
+}
+
+
 int ep_table_wait(struct ep_table *t, int *src, size_t count) {
     struct epoll_event event [32];
     int p = epoll_wait(t->epoll_fd, event, 32, -1);

@@ -47,6 +47,7 @@ struct msg_tree {
 
 
 void msg_tree_init(struct msg_tree *t);
+void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);
 
 
 #endif

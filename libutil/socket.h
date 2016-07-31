@@ -25,7 +25,7 @@ void ep_connect_remote(struct ep_address *a, const char *ip, short portnum);
  * adds source and dest to table
  */
 void ep_init_acceptor(struct ep_acceptor *a, ep_accept_t af, void *data);
-void ep_init_channel(struct ep_channel *c);
+int ep_init_channel(struct ep_channel *c);
 
 
 #endif

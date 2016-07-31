@@ -16,9 +16,6 @@ struct msg_server_state {
     struct msg_tree tree;
 };
 
-
-void msg_parse_input(struct ep_buffer *b);
-
 int msg_server_accept(struct ep_table *t, void *in, int *out);
 
 void msg_server_recv(int ex, struct ep_event_view *ev);

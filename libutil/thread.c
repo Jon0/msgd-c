@@ -11,7 +11,7 @@ void *ep_pthread_main(void *p) {
         // wait for events from the queue
         struct ep_event ev;
         ep_queue_pop(q, &ev);
-        ep_queue_update(q, ev.epid);
+        ep_queue_update(q, &ev);
     }
 }
 
