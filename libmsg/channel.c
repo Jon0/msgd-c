@@ -14,16 +14,17 @@ int msg_server_accept(struct ep_table *t, void *in, int *out) {
 
 
 void msg_server_recv(int ex, struct ep_event_view *ev) {
-    struct ep_address addr;
-    ep_table_addr(ev->queue->table, ev->event->srcid, &addr);
-    ep_address_print(&addr);
     struct msg_tree *tree = (struct msg_tree *) ev->self->data;
-    msg_poll_buffer(tree, &ev->self->buf);
+    struct msg_request req;
+    req.srcid = ev->event->srcid;
+    req.queue = ev->queue;
+    req.msgbuf = &ev->self->buf;
+    msg_poll_apply(tree, &req);
 }
 
 
 void msg_server_run(struct msg_server_state *s, const char *sockpath) {
-    msg_tree_init(&s->tree);
+    msg_tree_init(&s->tree, "testhost");
     ep_table_init(&s->tb, 256);
     ep_thread_pool_create(&s->pool, &s->tb, 4);
 

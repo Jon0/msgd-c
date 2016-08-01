@@ -2,6 +2,7 @@
 #define PROTOCOL_H
 
 #include <libutil/buffer.h>
+#include <libutil/queue.h>
 
 #include "node.h"
 
@@ -32,9 +33,18 @@ struct msg_header {
 };
 
 
+/*
+ * required to create responses
+ */
+struct msg_request {
+    int               srcid;
+    struct ep_event_queue *queue;
+    struct ep_buffer *msgbuf;
+};
 
-void msg_poll_buffer(struct msg_tree *tree, struct ep_buffer *b);
-void msg_parse_block(struct msg_tree *tree, struct msg_header *h, char *data, size_t count);
+
+void msg_poll_apply(struct msg_tree *tree, struct msg_request *r);
+size_t msg_parse_block(struct msg_tree *tree, struct msg_header *h, char *data, size_t count);
 
 
 /*
@@ -43,5 +53,10 @@ void msg_parse_block(struct msg_tree *tree, struct msg_header *h, char *data, si
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b);
 
+
+/*
+ * response types
+ */
+void msg_rsp_avail(struct msg_tree *tree, struct msg_header *h, char *data);
 
 #endif

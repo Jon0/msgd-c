@@ -26,7 +26,7 @@ struct node_routes {
 struct node_base {
     int64_t   id;
     int64_t   mode;
-    char      route_name [256];
+    char      name [256];
 };
 
 
@@ -40,13 +40,13 @@ struct node_src {
 
 
 struct msg_tree {
-    struct node_base   node;
+    struct node_base   self;
     struct node_base  *subnodes;
     int64_t            size;
 };
 
 
-void msg_tree_init(struct msg_tree *t);
+void msg_tree_init(struct msg_tree *t, char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);
 
 
