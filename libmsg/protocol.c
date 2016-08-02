@@ -24,6 +24,7 @@ void msg_poll_apply(struct msg_tree *tree, struct msg_request *r) {
 
         // if the message has a reply
         if (s > 0) {
+            printf("sending reply\n");
             ep_queue_wblk(r->queue, r->srcid, 0, (char *) &head, hs);
         }
     }
