@@ -33,18 +33,25 @@ struct msg_header {
 };
 
 
+struct msg_message {
+    struct msg_header head;
+    char              body [256];
+    size_t            bsize;
+};
+
+
 /*
  * required to create responses
  */
 struct msg_request {
-    int               srcid;
+    struct ep_event       *ev;
     struct ep_event_queue *queue;
-    struct ep_buffer *msgbuf;
+    struct ep_buffer      *msgbuf;
 };
 
 
 void msg_poll_apply(struct msg_tree *tree, struct msg_request *r);
-size_t msg_parse_block(struct msg_tree *tree, struct msg_header *h, char *data, size_t count);
+void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out);
 
 
 /*
@@ -57,6 +64,6 @@ void msg_req_avail(struct ep_buffer *b);
 /*
  * response types
  */
-void msg_rsp_avail(struct msg_tree *tree, struct msg_header *h, char *data);
+size_t msg_rsp_avail(struct msg_tree *tree, struct ep_buffer *b);
 
 #endif

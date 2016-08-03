@@ -6,11 +6,10 @@
 
 void msg_poll_apply(struct msg_tree *tree, struct msg_request *r) {
     struct ep_address addr;
-    struct msg_header head;
-    char body [256];
+    struct msg_message m;
 
     // print addr
-    ep_table_addr(r->queue->table, r->srcid, &addr);
+    ep_table_addr(r->queue->table, r->ev->srcid, &addr);
     ep_address_print(&addr);
 
 
@@ -18,30 +17,29 @@ void msg_poll_apply(struct msg_tree *tree, struct msg_request *r) {
     size_t hs = sizeof(struct msg_header);
     size_t s;
     while (r->msgbuf->size >= hs) {
-        s = ep_buffer_erase(r->msgbuf, (char *) &head, hs);
-        s = ep_buffer_erase(r->msgbuf, body, head.size);
-        s = msg_parse_block(tree, &head, body, s);
+        s = ep_buffer_erase(r->msgbuf, (char *) &st.head, hs);
+        s = ep_buffer_erase(r->msgbuf, st.body, st.head.size);
+        s = msg_parse_block(tree, &m, buf);
 
         // if the message has a reply
         if (s > 0) {
-            printf("sending reply\n");
-            ep_queue_wblk(r->queue, r->srcid, 0, (char *) &head, hs);
+            printf("sending reply (%d)\n", s);
+            ep_queue_reply(r->queue, r->ev, (char *) &st.head, hs);
         }
     }
 }
 
 
-size_t msg_parse_block(struct msg_tree *tree, struct msg_header *h, char *data, size_t count) {
-    printf("recv %d\n", h->id);
-    switch (h->id) {
+void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out) {
+    printf("recv type %d (%d)\n", m->head.id, count);
+    switch (m->head.id) {
     case msg_type_proc:
-        msg_tree_add_proc(tree, data, count);
-        return 0;
+        msg_tree_add_proc(tree, m->body, m->bsize);
+        break;
     case msg_type_avail:
-        msg_rsp_avail(tree, h, data);
-        return 1;
+        msg_rsp_avail(tree, out);
+        break;
     }
-    return 0;
 }
 
 
@@ -62,6 +60,9 @@ void msg_req_avail(struct ep_buffer *b) {
 }
 
 
-void msg_rsp_avail(struct msg_tree *tree, struct msg_header *h, char *data) {
-
+size_t msg_rsp_avail(struct msg_tree *tree, struct ep_buffer *b) {
+    struct msg_header head;
+    head.id = msg_type_avail;
+    head.size = 0;
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
 }

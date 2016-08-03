@@ -11,6 +11,7 @@
  * should contain a stack of all visited epid
  */
 struct ep_event {
+    int event_id;
     int epid;
     int srcid;
 };
@@ -28,6 +29,16 @@ struct ep_event_queue {
     size_t size;
     size_t avail;
     size_t active;
+    int next_id;
+};
+
+
+/*
+ * writable endpoint
+ */
+struct ep_sink {
+    struct ep_event_queue *q;
+    int epid;
 };
 
 
@@ -76,7 +87,10 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
  * writes buffer contents to handlers or channels
  * blocking until write completes
  */
-size_t ep_queue_wbuf(struct ep_event_queue *q, int epid, int srcid, struct ep_buffer *b, size_t s);
-size_t ep_queue_wblk(struct ep_event_queue *q, int epid, int srcid, char *b, size_t count);
+size_t ep_queue_wbuf(struct ep_event_queue *q, struct ep_event *ev, struct ep_buffer *b, size_t s);
+size_t ep_queue_wblk(struct ep_event_queue *q, struct ep_event *ev, char *b, size_t count);
+
+size_t ep_queue_reply(struct ep_event_queue *q, struct ep_event *ev, char *b, size_t count);
+
 
 #endif
