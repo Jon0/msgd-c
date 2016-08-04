@@ -13,13 +13,24 @@
 
 struct ep_table;
 
+
+/*
+ * writable endpoint
+ */
+struct ep_sink {
+    struct ep_event_queue *q;
+    int epid;
+    int srcid;
+};
+
+
 /*
  * data visible inside each thread
  */
 struct ep_event_view {
-    struct ep_event_queue *queue;
-    struct ep_event       *event;
-    struct ep_handler     *self;
+    int                 epid;
+    struct ep_sink      src;
+    struct ep_handler  *self;
 };
 
 

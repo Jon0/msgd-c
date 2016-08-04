@@ -36,7 +36,6 @@ struct msg_header {
 struct msg_message {
     struct msg_header head;
     char              body [256];
-    size_t            bsize;
 };
 
 
@@ -44,9 +43,8 @@ struct msg_message {
  * required to create responses
  */
 struct msg_request {
-    struct ep_event       *ev;
-    struct ep_event_queue *queue;
-    struct ep_buffer      *msgbuf;
+    struct ep_buffer   *buf;
+    struct ep_sink     *src;
 };
 
 
@@ -64,6 +62,6 @@ void msg_req_avail(struct ep_buffer *b);
 /*
  * response types
  */
-size_t msg_rsp_avail(struct msg_tree *tree, struct ep_buffer *b);
+size_t msg_rsp_avail(struct msg_tree *tree, struct ep_sink *s);
 
 #endif

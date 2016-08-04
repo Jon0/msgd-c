@@ -85,14 +85,14 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
 
 void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_channel *c) {
     char buf [1024];
-    struct ep_event newevent;
-    newevent.event_id = q->next_id++;
-    newevent.srcid = ev->epid;
+    struct ep_sink s;
+    s.q = q;
+    s.srcid = ev->epid;
     int r = read(c->fd, buf, 1024);
     if (r > 0) {
         for (int i = 0; i < c->outcount; ++i) {
-            newevent.epid = c->output[i];
-            ep_queue_wblk(q, &newevent, buf, r);
+            s.epid = c->output[i];
+            ep_write_blk(&s, buf, r);
         }
     }
 }
@@ -107,8 +107,10 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
     else {
         if (h->min_input <= h->buf.size) {
             struct ep_event_view v;
-            v.queue = q;
-            v.event = ev;
+            v.epid = ev->epid;
+            v.src.q = q;
+            v.src.epid = ev->srcid;
+            v.src.srcid = ev->epid;
             v.self = h;
             h->callback(0, &v);
         }
@@ -117,29 +119,41 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
 }
 
 
-size_t ep_queue_wbuf(struct ep_event_queue *q, struct ep_event *ev, struct ep_buffer *b, size_t s) {
-    struct ep_table_entry *e = ep_map_get(&q->table->entries, ev->epid);
+void ep_sink_print(struct ep_sink *s) {
+    struct ep_address addr;
+    ep_table_addr(s->q->table, s->epid, &addr);
+    ep_address_print(&addr);
+}
+
+
+
+size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
+    struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
+    struct ep_event ev;
     int wr;
     if (e) {
         switch(e->type) {
         case ep_type_channel:
-            wr = ep_buffer_write(b, e->data.ch.fd, s);
+            wr = ep_buffer_write(b, e->data.ch.fd, start);
             return wr;
         case ep_type_handler:
-            wr = ep_buffer_copy(&e->data.hdl.buf, b, s);
-            ep_queue_push(q, ev);
+            wr = ep_buffer_copy(&e->data.hdl.buf, b, start);
+            ev.epid = e->epid;
+            ev.srcid = s->srcid;
+            ep_queue_push(s->q, &ev);
             return wr;
         }
     }
     else {
-        printf("%d not found\n", ev->epid);
+        printf("%d not found\n", s->epid);
     }
     return 0;
 }
 
 
-size_t ep_queue_wblk(struct ep_event_queue *q, struct ep_event *ev, char *b, size_t count) {
-    struct ep_table_entry *e = ep_map_get(&q->table->entries, ev->epid);
+size_t ep_write_blk(struct ep_sink *s, char *b, size_t count) {
+    struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
+    struct ep_event ev;
     int wr;
     if (e) {
         switch(e->type) {
@@ -152,21 +166,14 @@ size_t ep_queue_wblk(struct ep_event_queue *q, struct ep_event *ev, char *b, siz
             return wr;
         case ep_type_handler:
             wr = ep_buffer_insert(&e->data.hdl.buf, b, count);
-            ep_queue_push(q, ev);
+            ev.epid = e->epid;
+            ev.srcid = s->srcid;
+            ep_queue_push(s->q, &ev);
             return wr;
         }
     }
     else {
-        printf("%d not found\n", ev->epid);
+        printf("%d not found\n", s->epid);
     }
     return 0;
-}
-
-
-size_t ep_queue_reply(struct ep_event_queue *q, struct ep_event *ev, char *b, size_t count) {
-    struct ep_event reply;
-    reply.event_id = ev->event_id;
-    reply.epid = ev->srcid;
-    reply.srcid = ev->epid;
-    return ep_queue_wblk(q, &reply, b, count);
 }

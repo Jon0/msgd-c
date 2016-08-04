@@ -26,10 +26,11 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
     // send connect request
     msg_req_addproc(&cs->buf, name, strlen(name));
-    struct ep_event ev;
-    ev.epid = cs->epid;
-    ev.srcid = 0;
-    cs->writepos = ep_queue_wbuf(&cs->pool.queue, &ev, &cs->buf, cs->writepos);
+    struct ep_sink s;
+    s.q = &cs->pool.queue;
+    s.epid = cs->epid;
+    s.srcid = 0;
+    cs->writepos = ep_write_buf(&s, &cs->buf, cs->writepos);
 }
 
 
@@ -54,10 +55,11 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 
 void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
     msg_req_avail(&cs->buf);
-    struct ep_event ev;
-    ev.epid = cs->epid;
-    ev.srcid = 0;
-    cs->writepos = ep_queue_wbuf(&cs->pool.queue, &ev, &cs->buf, cs->writepos);
+    struct ep_sink s;
+    s.q = &cs->pool.queue;
+    s.epid = cs->epid;
+    s.srcid = 0;
+    cs->writepos = ep_write_buf(&s, &cs->buf, cs->writepos);
 }
 
 

@@ -16,9 +16,8 @@ int msg_server_accept(struct ep_table *t, void *in, int *out) {
 void msg_server_recv(int ex, struct ep_event_view *ev) {
     struct msg_tree *tree = (struct msg_tree *) ev->self->data;
     struct msg_request req;
-    req.ev = ev->event;
-    req.queue = ev->queue;
-    req.msgbuf = &ev->self->buf;
+    req.buf = &ev->self->buf;
+    req.src = &ev->src;
     msg_poll_apply(tree, &req);
 }
 
