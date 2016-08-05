@@ -5,6 +5,7 @@
 int main(int argc, char *argv[]) {
     struct msg_client_state nstate;
     struct node_id_set nds;
+    msg_connect(&nstate, "127.0.0.1", 2204);
     msg_init_proc(&nstate, "test", 0);
 
     // either connect or create a nodes

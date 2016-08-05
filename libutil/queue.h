@@ -78,6 +78,7 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
 /*
  * sink functions
  */
+void ep_sink_init(struct ep_event_queue *q, int epid, struct ep_sink *out);
 void ep_sink_print(struct ep_sink *s);
 
 

@@ -15,12 +15,14 @@ struct msg_client_state {
     struct ep_table  tb;
     struct ep_thread_pool pool;
     int              epid;
+    int              hdlid;
     struct ep_buffer buf;
+    struct ep_sink   out;
     size_t           writepos;
     char             proc_name [256];
 };
 
-
+void msg_connect(struct msg_client_state *cs, const char *addr, short port);
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 

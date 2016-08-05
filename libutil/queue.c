@@ -119,6 +119,13 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
 }
 
 
+void ep_sink_init(struct ep_event_queue *q, int epid, struct ep_sink *out) {
+    out->q = q;
+    out->epid = epid;
+    out->srcid = q->table->next_id++;
+}
+
+
 void ep_sink_print(struct ep_sink *s) {
     struct ep_address addr;
     ep_table_addr(s->q->table, s->epid, &addr);

@@ -93,7 +93,10 @@ int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
 
 int ep_table_wait(struct ep_table *t, int *src, size_t count) {
     struct epoll_event event [32];
-    int p = epoll_wait(t->epoll_fd, event, 32, -1);
+    if (count > 32) {
+        count = 32;
+    }
+    int p = epoll_wait(t->epoll_fd, event, count, -1);
     if (p == -1) {
         perror("epoll_wait");
     }
