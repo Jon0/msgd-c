@@ -66,14 +66,9 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
     msg_req_avail(&cs->buf);
     cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
-    int id;
-    int r = ep_table_wait(&cs->tb, &id, 1);
-    struct ep_event ev;
-    ev.epid = id;
-    ev.srcid = 0;
-    if (r) {
-        printf("recv reply %d\n", id);
-        ep_queue_update(&cs->pool.queue, &ev);
+    struct msg_message reply;
+    if (msg_read(&cs->tb, cs->epid, &reply)) {
+        printf("str: %s\n", reply.body);
     }
 }
 

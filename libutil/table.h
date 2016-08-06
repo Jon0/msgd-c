@@ -78,4 +78,24 @@ int ep_table_wait(struct ep_table *t, int *src, size_t count);
 void ep_enable_fd(struct ep_table *t, int epid, int fd);
 
 
+/*
+ * read directly
+ */
+size_t ep_table_read(struct ep_table *t, int epid, char *buf, size_t count);
+
+
+/*
+ * move from readable endpoint to handlers
+ */
+void ep_table_fwd(struct ep_table *t, int epid);
+void ep_channel_fwd(struct ep_table *t, struct ep_channel *c);
+
+
+/*
+ * write data to endpoints
+ */
+size_t ep_fwd_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start);
+size_t ep_fwd_blk(struct ep_table_entry *e, char *b, size_t count);
+
+
 #endif

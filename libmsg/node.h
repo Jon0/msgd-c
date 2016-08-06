@@ -39,6 +39,14 @@ struct node_src {
 };
 
 
+/*
+ * processes and published nodes
+ */
+struct msg_tree_node {
+    struct msg_tree_node  *subnodes;
+};
+
+
 struct msg_tree {
     struct node_base   self;
     struct node_base  *subnodes;

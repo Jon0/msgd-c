@@ -52,11 +52,15 @@ void msg_poll_apply(struct msg_tree *tree, struct msg_request *r);
 void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out);
 
 
+int msg_read(struct ep_table *t, int epid, struct msg_message *out);
+
+
 /*
  * request types
  */
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b);
+void msg_req_publish(struct ep_buffer *b, const char *name, size_t len);
 
 
 /*

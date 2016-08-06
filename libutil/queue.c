@@ -119,6 +119,18 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
 }
 
 
+void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int srcid) {
+    struct ep_event ev;
+    ev.epid = e->epid;
+    ev.srcid = srcid;
+    switch(e->type) {
+    case ep_type_handler:
+        ep_queue_push(q, &ev);
+        break;
+    }
+}
+
+
 void ep_sink_init(struct ep_event_queue *q, int epid, struct ep_sink *out) {
     out->q = q;
     out->epid = epid;
@@ -136,20 +148,10 @@ void ep_sink_print(struct ep_sink *s) {
 
 size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
     struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
-    struct ep_event ev;
-    int wr;
     if (e) {
-        switch(e->type) {
-        case ep_type_channel:
-            wr = ep_buffer_write(b, e->data.ch.fd, start);
-            return wr;
-        case ep_type_handler:
-            wr = ep_buffer_copy(&e->data.hdl.buf, b, start);
-            ev.epid = e->epid;
-            ev.srcid = s->srcid;
-            ep_queue_push(s->q, &ev);
-            return wr;
-        }
+        size_t wr = ep_fwd_buf(e, b, start);
+        ep_queue_notify(s->q, e, s->srcid);
+        return wr;
     }
     else {
         printf("%d not found\n", s->epid);
@@ -160,24 +162,10 @@ size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
 
 size_t ep_write_blk(struct ep_sink *s, char *b, size_t count) {
     struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
-    struct ep_event ev;
-    int wr;
     if (e) {
-        switch(e->type) {
-        case ep_type_channel:
-            wr = write(e->data.ch.fd, b, count);
-            if (wr < 0) {
-                perror("write");
-                return 0;
-            }
-            return wr;
-        case ep_type_handler:
-            wr = ep_buffer_insert(&e->data.hdl.buf, b, count);
-            ev.epid = e->epid;
-            ev.srcid = s->srcid;
-            ep_queue_push(s->q, &ev);
-            return wr;
-        }
+        size_t wr = ep_fwd_blk(e, b, count);
+        ep_queue_notify(s->q, e, s->srcid);
+        return wr;
     }
     else {
         printf("%d not found\n", s->epid);

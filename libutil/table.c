@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 
 #include "table.h"
 
@@ -119,5 +120,74 @@ void ep_enable_fd(struct ep_table *t, int epid, int fd) {
     int err = epoll_ctl(t->epoll_fd, EPOLL_CTL_ADD, fd, &ev);
     if (err == -1) {
         perror("epoll_ctl");
+    }
+}
+
+
+size_t ep_table_read(struct ep_table *t, int epid, char *buf, size_t count) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    int wr;
+    if (e) {
+        switch(e->type) {
+        case ep_type_channel:
+            wr = read(e->data.ch.fd, buf, count);
+            if (wr < 0) {
+                perror("read");
+                return 0;
+            }
+            return wr;
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+    return 0;
+}
+
+
+void ep_table_fwd(struct ep_table *t, int epid) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    if (e) {
+        switch(e->type) {
+        case ep_type_channel:
+            return ep_channel_fwd(t, &e->data.ch);
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+}
+
+
+void ep_channel_fwd(struct ep_table *t, struct ep_channel *c) {
+    char buf [1024];
+    int r = read(c->fd, buf, 1024);
+    if (r > 0) {
+        for (int i = 0; i < c->outcount; ++i) {
+            struct ep_table_entry *e = ep_map_get(&t->entries, c->output[i]);
+            if (e) {
+                ep_fwd_blk(e, buf, r);
+            }
+        }
+    }
+}
+
+
+size_t ep_fwd_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start) {
+    switch(e->type) {
+    case ep_type_channel:
+        return ep_buffer_write(b, e->data.ch.fd, start);
+    case ep_type_handler:
+        return ep_buffer_copy(&e->data.hdl.buf, b, start);
+    }
+}
+
+
+size_t ep_fwd_blk(struct ep_table_entry *e, char *b, size_t count) {
+    switch(e->type) {
+    case ep_type_channel:
+        return ep_ch_write_blk(&e->data.ch, b, count);
+    case ep_type_handler:
+        return ep_hdl_write_blk(&e->data.hdl, b, count);
     }
 }

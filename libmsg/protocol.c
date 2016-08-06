@@ -33,6 +33,18 @@ void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out
 }
 
 
+int msg_read(struct ep_table *t, int epid, struct msg_message *out) {
+    // client reads replies
+    int r = ep_table_read(t, epid, (char *) &out->head, sizeof(struct msg_header));
+    if (r == sizeof(struct msg_header)) {
+        printf("recv reply (%d, %d)\n", out->head.id, out->head.size);
+        r = ep_table_read(t, epid, out->body, out->head.size);
+        return 1;
+    }
+    return 0;
+}
+
+
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
     head.id = msg_type_proc;
@@ -50,11 +62,26 @@ void msg_req_avail(struct ep_buffer *b) {
 }
 
 
+void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
+    struct msg_header head;
+    head.id = msg_type_publ;
+    head.size = len;
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
+    ep_buffer_insert(b, name, len);
+}
+
+
 size_t msg_rsp_avail(struct msg_tree *tree, struct ep_sink *s) {
     struct msg_header head;
-    head.id = msg_type_avail;
-    head.size = 0;
+    char buf [32];
 
-    printf("sending reply (%d)\n", s->epid);
+    head.id = msg_type_avail;
+    head.size = tree->size * 32;
+
+    printf("sending avail (%d, %d)\n", s->epid, tree->size);
     ep_write_blk(s, (char *) &head, sizeof(struct msg_header));
+    for (int i = 0; i < tree->size; ++i) {
+        memcpy(buf, tree->subnodes[i].name, 32);
+        ep_write_blk(s, buf, 32);
+    }
 }

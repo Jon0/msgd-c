@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
     }
 
     // get available nodes
+    // block until result is recieved
     msg_available(&nstate, &nds);
 
 
