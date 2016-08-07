@@ -63,7 +63,7 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 }
 
 
-void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
+void msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
     msg_req_avail(&cs->buf);
     cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
     struct msg_message reply;
@@ -73,11 +73,11 @@ void msg_available(struct msg_client_state *cs, struct node_id_set *ns) {
 }
 
 
-void msg_published(struct msg_client_state *cs, struct node_id_set *ns) {
+void msg_published(struct msg_client_state *cs, struct msg_node_set *ns) {
 
 }
 
-void msg_subscribed(struct msg_client_state *cs, struct node_id_set *ns) {
+void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns) {
 
 }
 

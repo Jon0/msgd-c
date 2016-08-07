@@ -5,6 +5,25 @@
 
 
 /*
+ * processes and published nodes
+ */
+struct msg_tree_node {
+    int node_id;
+    struct msg_tree_node  *subnodes;
+};
+
+
+/*
+ * allocated memory for nodes
+ */
+struct msg_node_buffer {
+    struct msg_tree_node *arr;
+    size_t size;
+    size_t avail;
+};
+
+
+/*
  * names a specific recieving process
  */
 struct node_dest {
@@ -39,20 +58,14 @@ struct node_src {
 };
 
 
-/*
- * processes and published nodes
- */
-struct msg_tree_node {
-    struct msg_tree_node  *subnodes;
-};
-
-
 struct msg_tree {
     struct node_base   self;
     struct node_base  *subnodes;
     int64_t            size;
 };
 
+
+void msg_node_buffer_init(struct msg_node_buffer *buf);
 
 void msg_tree_init(struct msg_tree *t, char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);

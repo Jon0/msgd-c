@@ -5,6 +5,13 @@
 #include "node.h"
 
 
+void msg_node_buffer_init(struct msg_node_buffer *buf) {
+    buf->arr = malloc(sizeof(struct msg_tree_node) * 256);
+    buf->size = 0;
+    buf->avail = 256;
+}
+
+
 void msg_tree_init(struct msg_tree *t, char *hostname) {
     strcpy(t->self.name, hostname);
     t->subnodes = malloc(sizeof(struct node_base) * 32);

@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "node.h"
+
 
 /*
  * a list of node ids
  */
-struct node_id_set {
+struct msg_node_set {
     int64_t  *nid;
     int64_t   count;
 };
@@ -32,23 +34,11 @@ struct node_attr_set {
 };
 
 
+void msg_set_init(struct msg_node_set *s);
 
 
-
-/*
- * memory allocation for node collections
- */
-struct set_memory {
-    struct node_id_set  *set;
-    size_t               used;
-    size_t               available;
-};
-
-
-
-
-void md_subset_name(struct node_attr_set *ns, char *name);
-void md_subset_type(struct node_attr_set *ns, char *type);
+void msg_subset_name(struct node_attr_set *ns, char *name);
+void msg_subset_type(struct node_attr_set *ns, char *type);
 
 
 #endif

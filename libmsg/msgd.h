@@ -32,9 +32,9 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns);
 /*
  * take a copy of the servers nodes
  */
-void msg_available(struct msg_client_state *cs, struct node_id_set *ns);
-void msg_published(struct msg_client_state *cs, struct node_id_set *ns);
-void msg_subscribed(struct msg_client_state *cs, struct node_id_set *ns);
+void msg_available(struct msg_client_state *cs, struct msg_node_set *ns);
+void msg_published(struct msg_client_state *cs, struct msg_node_set *ns);
+void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns);
 
 /*
  * poll new events from subscribed nodes
