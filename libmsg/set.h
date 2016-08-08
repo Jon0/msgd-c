@@ -8,9 +8,20 @@
 
 
 /*
+ * map group ids to a set of node ids
+ */
+struct msg_node_group {
+    int64_t *ids;
+    int64_t avail;
+    int64_t start;
+};
+
+
+/*
  * a list of node ids
  */
 struct msg_node_set {
+    int64_t   sid;
     int64_t  *nid;
     int64_t   count;
 };
