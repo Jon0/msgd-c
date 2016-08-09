@@ -14,6 +14,7 @@ struct msg_node_group {
     int64_t *ids;
     int64_t avail;
     int64_t start;
+    int64_t size;
 };
 
 
@@ -44,6 +45,9 @@ struct node_attr_set {
 
 };
 
+
+void msg_group_init(struct msg_node_group *g);
+int msg_group_reserve(struct msg_node_group *g, int count);
 
 void msg_set_init(struct msg_node_set *s);
 
