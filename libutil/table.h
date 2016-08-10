@@ -34,8 +34,8 @@ struct ep_table {
     int                next_id;
     int                epoll_fd;
     struct ep_map      entries;
-    struct ep_multimap accepted;
-    struct ep_multimap chanout;
+    struct ep_memory   accepted;
+    struct ep_memory   chanout;
 };
 
 

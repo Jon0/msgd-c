@@ -3,6 +3,24 @@
 #include "hashmap.h"
 
 
+void ep_memory_init(struct ep_memory *m, size_t esize, size_t count) {
+    m->elem_count = 0;
+    m->elem_size = esize;
+    m->array_max = count;
+    size_t memsize = m->elem_size * m->array_max;
+    m->array = malloc(memsize);
+    memset(m->array, 0, memsize);
+}
+
+
+void *ep_memory_alloc(struct ep_memory *m, size_t count) {
+    void *result = &m->array[m->elem_count * m->elem_size];
+    m->elem_count += count;
+    return result;
+}
+
+
+
 size_t ep_int_hash(int i) {
     return i;
 }

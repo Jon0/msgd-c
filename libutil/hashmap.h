@@ -11,6 +11,17 @@ typedef int (*ep_id_t)(void *);
 
 
 /*
+ * provides sized blocks of memory
+ */
+struct ep_memory {
+    char     *array;
+    size_t    elem_size;
+    size_t    elem_count;
+    size_t    array_max;
+};
+
+
+/*
  * hash map attributes
  */
 struct ep_map {
@@ -23,21 +34,15 @@ struct ep_map {
 
 
 /*
- * map one key to many items
- * maybe use an ordered set of key value pairs
+ * memory functions
  */
-struct ep_multimap {
-    char     *array;
-    ep_id_t   idfn;
-    size_t    elem_size;
-    size_t    elem_count;
-    size_t    array_max;
-};
+void ep_memory_init(struct ep_memory *m, size_t esize, size_t count);
+void *ep_memory_alloc(struct ep_memory *m, size_t count);
 
-
+/*
+ * map functions
+ */
 size_t ep_int_hash(int i);
-
-
 void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count);
 void ep_map_free(struct ep_map *m);
 int ep_map_insert(struct ep_map *m, void *elem);
