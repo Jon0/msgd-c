@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <libutil/hashmap.h>
+
 #include "node.h"
 
 
@@ -11,10 +13,8 @@
  * map group ids to a set of node ids
  */
 struct msg_node_group {
-    int64_t *ids;
-    int64_t avail;
-    int64_t start;
-    int64_t size;
+    struct ep_multimap groups;
+
 };
 
 

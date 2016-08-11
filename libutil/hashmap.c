@@ -3,19 +3,30 @@
 #include "hashmap.h"
 
 
-void ep_memory_init(struct ep_memory *m, size_t esize, size_t count) {
-    m->elem_count = 0;
+void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count) {
+    size_t pair_mem = sizeof(struct ep_pair) * m->array_max;
+    size_t value_mem = m->elem_size * m->array_max;
+    size_t total_mem = pair_mem + value_mem;
+
+    // allocate both arrays together
+    m->pair_count = 0;
+    m->value_count = 0;
     m->elem_size = esize;
     m->array_max = count;
-    size_t memsize = m->elem_size * m->array_max;
-    m->array = malloc(memsize);
-    memset(m->array, 0, memsize);
+    m->values = malloc(total_mem);
+    memset(m->values, 0, total_mem);
+    m->pairs = (struct ep_pair *) &m->values[value_mem];
 }
 
 
-void *ep_memory_alloc(struct ep_memory *m, size_t count) {
-    void *result = &m->array[m->elem_count * m->elem_size];
-    m->elem_count += count;
+void *ep_multimap_alloc(struct ep_multimap *m, int key, size_t count) {
+    struct ep_pair *p = &m->pairs[m->pair_count];
+    void *result = &m->values[m->value_count * m->elem_size];
+    p->key = key;
+    p->count = count;
+    p->value = result;
+    m->pair_count += 1;
+    m->value_count += count;
     return result;
 }
 

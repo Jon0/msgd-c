@@ -11,13 +11,25 @@ typedef int (*ep_id_t)(void *);
 
 
 /*
+ * negative keys for unused space
+ */
+struct ep_pair  {
+    int key;
+    size_t count;
+    void *value;
+};
+
+
+/*
  * provides sized blocks of memory
  */
-struct ep_memory {
-    char     *array;
+struct ep_multimap {
+    struct ep_pair *pairs;
+    char           *values;
     size_t    elem_size;
-    size_t    elem_count;
     size_t    array_max;
+    size_t    pair_count;
+    size_t    value_count;
 };
 
 
@@ -36,8 +48,8 @@ struct ep_map {
 /*
  * memory functions
  */
-void ep_memory_init(struct ep_memory *m, size_t esize, size_t count);
-void *ep_memory_alloc(struct ep_memory *m, size_t count);
+void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count);
+void *ep_multimap_alloc(struct ep_multimap *m, int key, size_t count);
 
 /*
  * map functions
