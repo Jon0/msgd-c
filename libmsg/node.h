@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <libutil/buffer.h>
+
 
 /*
  * processes and published nodes
@@ -59,6 +61,8 @@ struct node_src {
 
 
 struct msg_tree {
+    struct msg_node_buffer buf;
+    struct msg_tree_node  *root;
     struct node_base   self;
     struct node_base  *subnodes;
     int64_t            size;
@@ -67,8 +71,16 @@ struct msg_tree {
 
 void msg_node_buffer_init(struct msg_node_buffer *buf);
 
+/*
+ * include in client requests,
+ * allowing a delta update to be sent
+ */
+int msg_tree_hash(struct msg_tree *t);
+
 void msg_tree_init(struct msg_tree *t, char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);
 
+void msg_serialise_node(struct ep_bufer *b, struct msg_tree_node *n);
+void msg_serialise_tree(struct ep_bufer *b, struct msg_tree *n);
 
 #endif

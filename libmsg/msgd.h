@@ -12,8 +12,9 @@
  * state held by client processes
  */
 struct msg_client_state {
-    struct ep_table  tb;
+    struct ep_table       tb;
     struct ep_thread_pool pool;
+    struct msg_tree       tree;
     int              epid;
     int              hdlid;
     struct ep_buffer buf;
@@ -32,7 +33,7 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns);
 /*
  * take a copy of the servers nodes
  */
-void msg_available(struct msg_client_state *cs, struct msg_node_set *ns);
+int msg_available(struct msg_client_state *cs, struct msg_node_set *ns);
 void msg_published(struct msg_client_state *cs, struct msg_node_set *ns);
 void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns);
 

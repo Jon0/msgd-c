@@ -12,6 +12,11 @@ void msg_node_buffer_init(struct msg_node_buffer *buf) {
 }
 
 
+int msg_tree_hash(struct msg_tree *t) {
+    return t->size;
+}
+
+
 void msg_tree_init(struct msg_tree *t, char *hostname) {
     strcpy(t->self.name, hostname);
     t->subnodes = malloc(sizeof(struct node_base) * 32);
@@ -26,4 +31,14 @@ void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count) {
     memset(node->name, 0, 256);
     memcpy(node->name, procname, count);
     printf("[%s] adding %s\n", t->self.name, node->name);
+}
+
+
+void msg_serialise_node(struct ep_bufer *b, struct msg_tree_node *n) {
+
+}
+
+
+void msg_serialise_tree(struct ep_bufer *b, struct msg_tree *n) {
+
 }

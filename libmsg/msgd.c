@@ -63,13 +63,14 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 }
 
 
-void msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
+int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
     msg_req_avail(&cs->buf);
     cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
     struct msg_message reply;
     if (msg_read(&cs->tb, cs->epid, &reply)) {
         printf("str: %s\n", reply.body);
     }
+    return 0;
 }
 
 
