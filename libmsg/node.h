@@ -80,7 +80,8 @@ int msg_tree_hash(struct msg_tree *t);
 void msg_tree_init(struct msg_tree *t, char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);
 
-void msg_serialise_node(struct ep_bufer *b, struct msg_tree_node *n);
-void msg_serialise_tree(struct ep_bufer *b, struct msg_tree *n);
+void msg_serialise_tree(struct ep_buffer *b, struct msg_tree *n);
+void msg_serialise_node(struct ep_buffer *b, struct msg_tree_node *n);
+
 
 #endif
