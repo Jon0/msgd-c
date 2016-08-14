@@ -42,4 +42,9 @@ void msg_serialise_tree(struct ep_buffer *b, struct msg_tree *n) {
 
 void msg_serialise_node(struct ep_buffer *b, struct msg_tree_node *n) {
     ep_buffer_insert(b, (char *) n, sizeof(struct msg_tree_node));
+
+    // copy subnodes
+    for (int i = 0; i < n->subnode_count; ++i) {
+        msg_serialise_node(b, &n->subnodes[i]);
+    }
 }

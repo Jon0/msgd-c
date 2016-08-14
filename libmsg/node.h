@@ -12,6 +12,7 @@
 struct msg_tree_node {
     int node_id;
     struct msg_tree_node  *subnodes;
+    size_t subnode_count;
 };
 
 
