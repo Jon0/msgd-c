@@ -38,6 +38,9 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
 
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
+    // init tree
+    msg_tree_init(&cs->tree, name);
+
     // send connect request
     msg_req_addproc(&cs->buf, name, strlen(name));
     cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
@@ -64,12 +67,14 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 
 
 int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
-    msg_req_avail(&cs->buf);
-    cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
     struct msg_message reply;
-    if (msg_read(&cs->tb, cs->epid, &reply)) {
-        printf("str: %s\n", reply.body);
-    }
+
+    msg_req_avail(&cs->buf, &cs->tree);
+    cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
+
+    // wait for reply
+    ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
+    msg_tree_delta(&cs->recv_buf, &cs->tree);
     return 0;
 }
 

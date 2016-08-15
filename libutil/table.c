@@ -145,6 +145,27 @@ size_t ep_table_read(struct ep_table *t, int epid, char *buf, size_t count) {
 }
 
 
+size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    int wr;
+    if (e) {
+        switch(e->type) {
+        case ep_type_channel:
+            wr = ep_buffer_take(b, e->data.ch.fd);
+            if (wr < 0) {
+                perror("read");
+                return 0;
+            }
+            return wr;
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+    return 0;
+}
+
+
 void ep_table_fwd(struct ep_table *t, int epid) {
     struct ep_table_entry *e = ep_map_get(&t->entries, epid);
     if (e) {

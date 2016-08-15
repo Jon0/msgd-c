@@ -54,9 +54,10 @@ void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
 }
 
 
-void msg_req_avail(struct ep_buffer *b) {
+void msg_req_avail(struct ep_buffer *b, struct msg_tree *t) {
     struct msg_header head;
     head.id = msg_type_avail;
+    head.state = msg_tree_hash(t);
     head.size = 0;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
 }

@@ -70,6 +70,12 @@ struct msg_tree {
 };
 
 
+struct msg_delta_header {
+    int32_t size;
+    int32_t checksum;
+};
+
+
 void msg_node_buffer_init(struct msg_node_buffer *buf);
 
 /*
@@ -78,11 +84,22 @@ void msg_node_buffer_init(struct msg_node_buffer *buf);
  */
 int msg_tree_hash(struct msg_tree *t);
 
-void msg_tree_init(struct msg_tree *t, char *hostname);
-void msg_tree_add_proc(struct msg_tree *t, char *procname, size_t count);
+void msg_tree_init(struct msg_tree *t, const char *hostname);
+void msg_tree_add_proc(struct msg_tree *t, const char *procname, size_t count);
 
-void msg_serialise_tree(struct ep_buffer *b, struct msg_tree *n);
-void msg_serialise_node(struct ep_buffer *b, struct msg_tree_node *n);
+
+/*
+ * serialise node tree
+ */
+void msg_read_tree(struct ep_buffer *b, struct msg_tree *tree);
+void msg_read_node(struct ep_buffer *b, struct msg_tree_node *n);
+void msg_write_tree(struct ep_buffer *b, struct msg_tree *tree);
+void msg_write_node(struct ep_buffer *b, struct msg_tree_node *n);
+
+/*
+ * apply from buffer
+ */
+void msg_tree_delta(struct ep_buffer *b, struct msg_tree *tree);
 
 
 #endif

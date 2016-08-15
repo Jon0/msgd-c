@@ -18,6 +18,7 @@ struct msg_client_state {
     int              epid;
     int              hdlid;
     struct ep_buffer buf;
+    struct ep_buffer recv_buf;
     struct ep_sink   out;
     size_t           writepos;
     char             proc_name [256];

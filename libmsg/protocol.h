@@ -29,6 +29,7 @@ struct msg_header {
     enum msg_type_id  id;
     int host_id;
     int route_id;
+    int state;
     int size;
 };
 
@@ -59,7 +60,7 @@ int msg_read(struct ep_table *t, int epid, struct msg_message *out);
  * request types
  */
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
-void msg_req_avail(struct ep_buffer *b);
+void msg_req_avail(struct ep_buffer *b, struct msg_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len);
 
 

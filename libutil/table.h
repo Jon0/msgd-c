@@ -82,6 +82,7 @@ void ep_enable_fd(struct ep_table *t, int epid, int fd);
  * read directly
  */
 size_t ep_table_read(struct ep_table *t, int epid, char *buf, size_t count);
+size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b);
 
 
 /*
