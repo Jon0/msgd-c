@@ -65,6 +65,8 @@ void msg_tree_delta(struct ep_buffer *b, struct msg_tree *tree) {
     int32_t read;
 
     // read header for total size
-    ep_buffer_erase(b, (char *) &h, sizeof(struct msg_delta_header));
+    read = ep_buffer_erase(b, (char *) &h, sizeof(struct msg_delta_header));
+    printf("recv %d\n", read);
+
     msg_read_tree(b, tree);
 }

@@ -24,6 +24,7 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_connect_remote(&ch.addr, addr, port);
     int err = ep_init_channel(&ch);
     if (err == -1) {
+        cs->connected = 0;
         return;
     }
     cs->epid = ep_add_channel(&cs->tb, &ch);
@@ -33,17 +34,22 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_handler_init(&hdl, 4096, msg_client_recv, NULL);
     cs->hdlid = ep_add_handler(&cs->tb, &hdl);
     ep_table_ctl(&cs->tb, cs->epid, cs->hdlid);
+    cs->connected = 1;
 }
 
 
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
+    if (cs->connected) {
+        // init tree
+        msg_tree_init(&cs->tree, name);
 
-    // init tree
-    msg_tree_init(&cs->tree, name);
-
-    // send connect request
-    msg_req_addproc(&cs->buf, name, strlen(name));
-    cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
+        // send connect request
+        msg_req_addproc(&cs->buf, name, strlen(name));
+        cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
+    }
+    else {
+        printf("no connection\n");
+    }
 }
 
 
@@ -67,7 +73,11 @@ void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) 
 
 
 int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
-    struct msg_message reply;
+    if (!cs->connected) {
+        printf("no connection\n");
+        return 0;
+    }
+
 
     msg_req_avail(&cs->buf, &cs->tree);
     cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
