@@ -49,6 +49,9 @@ struct msg_request {
 };
 
 
+/*
+ * server responding to events
+ */
 void msg_poll_apply(struct msg_tree *tree, struct msg_request *r);
 void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out);
 

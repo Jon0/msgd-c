@@ -73,16 +73,20 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
 
 
 size_t msg_rsp_avail(struct msg_tree *tree, struct ep_sink *s) {
-    struct msg_header head;
+    struct msg_delta_header head;
     char buf [32];
 
-    head.id = msg_type_avail;
     head.size = tree->size * 32;
+    head.checksum = 0;
 
+    // send delta of tree
     printf("sending avail (%d, %d)\n", s->epid, tree->size);
-    ep_write_blk(s, (char *) &head, sizeof(struct msg_header));
+    ep_write_blk(s, (char *) &head, sizeof(struct msg_delta_header));
     for (int i = 0; i < tree->size; ++i) {
         memcpy(buf, tree->subnodes[i].name, 32);
         ep_write_blk(s, buf, 32);
     }
+
+
+
 }

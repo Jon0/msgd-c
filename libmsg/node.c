@@ -67,6 +67,7 @@ void msg_tree_delta(struct ep_buffer *b, struct msg_tree *tree) {
     // read header for total size
     read = ep_buffer_erase(b, (char *) &h, sizeof(struct msg_delta_header));
     printf("recv %d\n", read);
-
+    printf("size %d\n", h.size);
+    printf("checksum %d\n", h.checksum);
     msg_read_tree(b, tree);
 }
