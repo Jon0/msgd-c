@@ -153,7 +153,6 @@ size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b) {
         case ep_type_channel:
             wr = ep_buffer_take(b, e->data.ch.fd);
             if (wr < 0) {
-                perror("read");
                 return 0;
             }
             return wr;

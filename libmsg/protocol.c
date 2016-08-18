@@ -25,9 +25,10 @@ void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out
     switch (m->head.id) {
     case msg_type_proc:
         msg_tree_add_proc(tree, m->body, m->head.size);
+        msg_tree_send(tree, out);
         break;
     case msg_type_avail:
-        msg_rsp_avail(tree, out);
+        msg_tree_send(tree, out);
         break;
     }
 }
@@ -69,24 +70,4 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
     head.size = len;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, name, len);
-}
-
-
-size_t msg_rsp_avail(struct msg_tree *tree, struct ep_sink *s) {
-    struct msg_delta_header head;
-    char buf [32];
-
-    head.size = tree->size * 32;
-    head.checksum = 0;
-
-    // send delta of tree
-    printf("sending avail (%d, %d)\n", s->epid, tree->size);
-    ep_write_blk(s, (char *) &head, sizeof(struct msg_delta_header));
-    for (int i = 0; i < tree->size; ++i) {
-        memcpy(buf, tree->subnodes[i].name, 32);
-        ep_write_blk(s, buf, 32);
-    }
-
-
-
 }

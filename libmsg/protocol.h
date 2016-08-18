@@ -67,9 +67,4 @@ void msg_req_avail(struct ep_buffer *b, struct msg_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len);
 
 
-/*
- * response types
- */
-size_t msg_rsp_avail(struct msg_tree *tree, struct ep_sink *s);
-
 #endif

@@ -19,11 +19,14 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
     req.buf = &ev->self->buf;
     req.src = &ev->src;
     msg_poll_apply(tree, &req);
+    msg_tree_print(tree);
 }
 
 
 void msg_server_run(struct msg_server_state *s, const char *sockpath) {
-    msg_tree_init(&s->tree, "testhost");
+    msg_tree_init(&s->tree);
+    msg_tree_set_name(&s->tree, "testhost");
+    msg_tree_print(&s->tree);
     ep_table_init(&s->tb, 256);
     ep_thread_pool_create(&s->pool, &s->tb, 4);
 

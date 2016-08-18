@@ -90,6 +90,7 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
     ssize_t r = read(fd, back, space);
     if (r < 0) {
         perror("read");
+        printf("%x : %d, %d\n", back, space, b->size);
     }
     else {
         b->size += r;

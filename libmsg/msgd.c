@@ -18,7 +18,8 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->writepos = 0;
 
     size_t bufsize = 4096;
-    ep_buffer_init(&cs->buf, malloc(bufsize), bufsize);
+    ep_buffer_init(&cs->send_buf, malloc(bufsize), bufsize);
+    ep_buffer_init(&cs->recv_buf, malloc(bufsize), bufsize);
 
     struct ep_channel ch;
     ep_connect_remote(&ch.addr, addr, port);
@@ -40,12 +41,19 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
 
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
-        // init tree
-        msg_tree_init(&cs->tree, name);
 
         // send connect request
-        msg_req_addproc(&cs->buf, name, strlen(name));
-        cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
+        msg_req_addproc(&cs->send_buf, name, strlen(name));
+        cs->writepos = ep_write_buf(&cs->out, &cs->send_buf, cs->writepos);
+
+        // hostname will be returned
+        printf("wait for tree state\n");
+        ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
+
+        // init tree
+        msg_tree_init(&cs->tree);
+        msg_tree_recv(&cs->recv_buf, &cs->tree);
+        msg_tree_print(&cs->tree);
     }
     else {
         printf("no connection\n");
@@ -58,7 +66,8 @@ void msg_free_proc(struct msg_client_state *cs) {
     // wait until threads complete
     ep_thread_pool_join(&cs->pool);
     ep_table_free(&cs->tb);
-    free(cs->buf.ptr);
+    free(cs->send_buf.ptr);
+    free(cs->recv_buf.ptr);
 }
 
 
@@ -79,12 +88,13 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
     }
 
 
-    msg_req_avail(&cs->buf, &cs->tree);
-    cs->writepos = ep_write_buf(&cs->out, &cs->buf, cs->writepos);
+    msg_req_avail(&cs->send_buf, &cs->tree);
+    cs->writepos = ep_write_buf(&cs->out, &cs->send_buf, cs->writepos);
 
     // wait for reply
     ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
-    msg_tree_delta(&cs->recv_buf, &cs->tree);
+    msg_tree_recv(&cs->recv_buf, &cs->tree);
+    msg_tree_print(&cs->tree);
     return 0;
 }
 

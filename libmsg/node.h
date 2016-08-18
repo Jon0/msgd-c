@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <libutil/buffer.h>
+#include <libutil/queue.h>
 
 
 /*
@@ -84,7 +85,16 @@ void msg_node_buffer_init(struct msg_node_buffer *buf);
  */
 int msg_tree_hash(struct msg_tree *t);
 
-void msg_tree_init(struct msg_tree *t, const char *hostname);
+
+/*
+ * print out all nodes
+ */
+void msg_tree_print(struct msg_tree *t);
+
+
+
+void msg_tree_init(struct msg_tree *t);
+void msg_tree_set_name(struct msg_tree *t, const char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, const char *procname, size_t count);
 
 
@@ -97,9 +107,15 @@ void msg_write_tree(struct ep_buffer *b, struct msg_tree *tree);
 void msg_write_node(struct ep_buffer *b, struct msg_tree_node *n);
 
 /*
+ * send to sink
+ */
+size_t msg_tree_send(struct msg_tree *tree, struct ep_sink *s);
+
+
+/*
  * apply from buffer
  */
-void msg_tree_delta(struct ep_buffer *b, struct msg_tree *tree);
+void msg_tree_recv(struct ep_buffer *b, struct msg_tree *t);
 
 
 #endif
