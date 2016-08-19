@@ -21,8 +21,10 @@ void msg_tree_print(struct msg_tree *t) {
     printf("tree structure:\n");
     printf("%s\n", t->self.name);
     printf("%d nodes\n", t->size);
-    for (int i = 0; i < t->size; ++i) {
 
+    // print each node
+    for (int i = 0; i < t->size; ++i) {
+        printf("%s\n", t->subnodes[i].name);
     }
 }
 

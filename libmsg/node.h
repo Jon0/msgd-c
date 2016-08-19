@@ -7,13 +7,19 @@
 #include <libutil/queue.h>
 
 
+struct msg_node_attr {
+    int node_id;
+    char name [64];
+};
+
+
 /*
  * processes and published nodes
  */
 struct msg_tree_node {
-    int node_id;
+    struct msg_node_attr   attr;
     struct msg_tree_node  *subnodes;
-    size_t subnode_count;
+    size_t                 subnode_count;
 };
 
 
