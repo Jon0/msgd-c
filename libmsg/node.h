@@ -7,18 +7,14 @@
 #include <libutil/queue.h>
 
 
-struct msg_node_attr {
-    int node_id;
-    char name [64];
-};
-
-
 /*
  * processes and published nodes
  */
-struct msg_tree_node {
-    struct msg_node_attr   attr;
-    struct msg_tree_node  *subnodes;
+struct msg_node {
+    int64_t   id;
+    int64_t   mode;
+    char      name [256];
+    struct msg_node  *subnodes;
     size_t                 subnode_count;
 };
 
@@ -27,7 +23,7 @@ struct msg_tree_node {
  * allocated memory for nodes
  */
 struct msg_node_buffer {
-    struct msg_tree_node *arr;
+    struct msg_node *arr;
     size_t size;
     size_t avail;
 };
@@ -52,27 +48,12 @@ struct node_routes {
 };
 
 
-struct node_base {
-    int64_t   id;
-    int64_t   mode;
-    char      name [256];
-};
-
-
-struct node_src {
-    struct node_base   node;
-    int64_t            fd;
-    struct node_dest  *sinks;
-    int64_t            sinks_count;
-    char               pipetype [256];
-};
-
-
+/*
+ * tree of all nodes from a single host
+ */
 struct msg_tree {
     struct msg_node_buffer buf;
-    struct msg_tree_node  *root;
-    struct node_base   self;
-    struct node_base  *subnodes;
+    struct msg_node  *root;
     int64_t            size;
 };
 
@@ -84,6 +65,7 @@ struct msg_delta_header {
 
 
 void msg_node_buffer_init(struct msg_node_buffer *buf);
+struct msg_node *msg_node_buffer_insert(struct msg_node_buffer *buf);
 
 /*
  * include in client requests,
@@ -108,9 +90,9 @@ void msg_tree_add_proc(struct msg_tree *t, const char *procname, size_t count);
  * serialise node tree
  */
 void msg_read_tree(struct ep_buffer *b, struct msg_tree *tree);
-void msg_read_node(struct ep_buffer *b, struct msg_tree_node *n);
+void msg_read_node(struct ep_buffer *b, struct msg_node *n);
 void msg_write_tree(struct ep_buffer *b, struct msg_tree *tree);
-void msg_write_node(struct ep_buffer *b, struct msg_tree_node *n);
+void msg_write_node(struct ep_buffer *b, struct msg_node *n);
 
 /*
  * send to sink
