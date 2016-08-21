@@ -20,17 +20,17 @@ struct msg_node *msg_node_buffer_insert(struct msg_node_buffer *buf) {
 
 
 int msg_tree_hash(struct msg_tree *t) {
-    return t->size;
+    return t->root->subnode_count;
 }
 
 
 void msg_tree_print(struct msg_tree *t) {
     printf("tree structure:\n");
     printf("%s\n", t->root->name);
-    printf("%d nodes\n", t->size);
+    printf("%d nodes\n", t->root->subnode_count);
 
     // print each node
-    for (int i = 0; i < t->size; ++i) {
+    for (int i = 0; i < t->root->subnode_count; ++i) {
         printf("%s\n", t->root->subnodes[i].name);
     }
 }
@@ -50,7 +50,7 @@ void msg_tree_set_name(struct msg_tree *t, const char *hostname) {
 
 
 void msg_tree_add_proc(struct msg_tree *t, const char *procname, size_t count) {
-    int index = t->size++;
+    int index = t->root->subnode_count++;
     struct msg_node *node = &t->root->subnodes[index];
     memset(node->name, 0, 256);
     memcpy(node->name, procname, count);
@@ -87,13 +87,13 @@ size_t msg_tree_send(struct msg_tree *tree, struct ep_sink *s) {
     struct msg_delta_header head;
     char buf [32];
 
-    head.size = tree->size * 32;
+    head.size = tree->root->subnode_count * 32;
     head.checksum = 0;
 
     // send delta of tree
-    printf("sending tree struct (%d, %d)\n", s->epid, tree->size);
+    printf("sending tree struct (%d, %d)\n", s->epid, tree->root->subnode_count);
     ep_write_blk(s, (char *) &head, sizeof(struct msg_delta_header));
-    for (int i = 0; i < tree->size; ++i) {
+    for (int i = 0; i < tree->root->subnode_count; ++i) {
         memcpy(buf, tree->root->subnodes[i].name, 32);
         ep_write_blk(s, buf, 32);
     }

@@ -15,7 +15,7 @@ struct msg_node {
     int64_t   mode;
     char      name [256];
     struct msg_node  *subnodes;
-    size_t                 subnode_count;
+    size_t            subnode_count;
 };
 
 
@@ -53,8 +53,7 @@ struct node_routes {
  */
 struct msg_tree {
     struct msg_node_buffer buf;
-    struct msg_node  *root;
-    int64_t            size;
+    struct msg_node       *root;
 };
 
 
