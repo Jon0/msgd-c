@@ -43,6 +43,15 @@ void msg_tree_init(struct msg_tree *t) {
 }
 
 
+struct msg_node *msg_tree_add_node(struct msg_tree *t, struct msg_node *p) {
+    struct msg_node *newnode = msg_node_buffer_insert(&t->buf);
+
+    // add to array
+    ++p->subnode_count;
+    return newnode;
+}
+
+
 void msg_tree_set_name(struct msg_tree *t, const char *hostname) {
     strcpy(t->root->name, hostname);
     printf("[%s] init\n", t->root->name);

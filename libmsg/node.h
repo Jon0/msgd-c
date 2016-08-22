@@ -81,6 +81,11 @@ void msg_tree_print(struct msg_tree *t);
 
 
 void msg_tree_init(struct msg_tree *t);
+
+/*
+ * add a subnode
+ */
+struct msg_node *msg_tree_add_node(struct msg_tree *t, struct msg_node *p);
 void msg_tree_set_name(struct msg_tree *t, const char *hostname);
 void msg_tree_add_proc(struct msg_tree *t, const char *procname, size_t count);
 
