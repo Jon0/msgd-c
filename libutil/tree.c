@@ -4,10 +4,10 @@
 void ep_tree_alloc(struct ep_tree *t, size_t elemsize, size_t maxnodes) {
     size_t link_alloc = sizeof(int) * maxnodes;
     size_t elem_alloc = elemsize * maxnodes;
-    size_t total_alloc = link_size + elem_size;
-    char *mem = malloc(total_size);
+    size_t total_alloc = link_alloc + elem_alloc;
+    char *mem = malloc(total_alloc);
     t->links = (struct ep_link *) mem;
-    t->elems = &mem[link_size];
+    t->elems = &mem[link_alloc];
     t->elem_size = elemsize;
     t->elem_count = 0;
     t->link_count = 0;

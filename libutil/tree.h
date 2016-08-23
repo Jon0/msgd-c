@@ -7,7 +7,7 @@
 struct ep_link {
     int node_id;
     int sub_count;
-}
+};
 
 
 struct ep_tree {
