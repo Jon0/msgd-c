@@ -17,6 +17,10 @@ void ep_tree_alloc(struct ep_tree *t, size_t elemsize, size_t maxnodes) {
 
 void *ep_tree_find(struct ep_tree *t, int id) {
 
+    // check each element
+    for (int i = 0; i < t->elem_count; ++i) {
+
+    }
 }
 
 
