@@ -27,7 +27,11 @@ void *ep_tree_find(struct ep_tree *t, int id) {
 
 
 void *ep_tree_insert(struct ep_tree *t, int id) {
-
+    for (int i = 0; i < t->link_count; ++i) {
+        if (t->links[i] == id) {
+            // add the element
+        }
+    }
 }
 
 
