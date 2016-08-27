@@ -19,22 +19,44 @@ void *ep_tree_find(struct ep_tree *t, int id) {
 
     // check each element
     for (int i = 0; i < t->link_count; ++i) {
-        if (t->links[i] == id) {
-            return &t->elems[i];
+        struct ep_link *lk = &t->links[i];
+        if (lk->elem_id == id) {
+            return &t->elems[t->elem_size * lk->elem_index];
         }
     }
+    return NULL;
 }
 
 
 void *ep_tree_insert(struct ep_tree *t, int id) {
     for (int i = 0; i < t->link_count; ++i) {
-        if (t->links[i] == id) {
-            // add the element
+        struct ep_link *lk = &t->links[i];
+        if (lk->elem_id == id) {
+            ++lk->sub_count;
         }
+        int new_index = t->elem_count++;
+        return &t->elems[t->elem_size * new_index];
     }
+    return NULL;
 }
 
 
 void ep_tree_remove(struct ep_tree *t, int id) {
+    for (int i = 0; i < t->link_count; ++i) {
+        struct ep_link *lk = &t->links[i];
+        if (lk->elem_id == id) {
+            // lk->elem_index
+        }
+    }
+
+}
+
+
+void ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
+
+}
+
+
+void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
 
 }

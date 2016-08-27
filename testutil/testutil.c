@@ -3,6 +3,13 @@
 #include <libutil/endpoint.h>
 #include <libutil/socket.h>
 #include <libutil/thread.h>
+#include <libutil/tree.h>
+
+
+void tree_test() {
+    struct ep_tree tree;
+    ep_tree_alloc(&tree, sizeof(int), 256);
+}
 
 
 void callback_test(int e, struct ep_event_view *v) {
@@ -31,6 +38,6 @@ void thread_test() {
 
 
 int main(int argc, char *argv[]) {
-    thread_test();
+    tree_test();
     return 0;
 }
