@@ -20,8 +20,7 @@ struct ep_tree {
     struct ep_link *links;
     char           *elems;
     size_t elem_size;
-    size_t elem_count;
-    size_t link_count;
+    size_t count;
     size_t avail;
     int next_id;
 };
@@ -31,6 +30,10 @@ void ep_tree_alloc(struct ep_tree *t, size_t elem, size_t maxnodes);
 int ep_tree_link(struct ep_tree *t, int parent, int index);
 void *ep_tree_find(struct ep_tree *t, int id);
 int ep_tree_insert(struct ep_tree *t, int id);
+
+/*
+ * remove node and all subnodes from the tree
+ */
 void ep_tree_remove(struct ep_tree *t, int id);
 
 
@@ -41,5 +44,6 @@ void ep_tree_read(struct ep_tree *t, struct ep_buffer *b);
 void ep_tree_write(struct ep_tree *t, struct ep_buffer *b);
 
 void ep_tree_print(struct ep_tree *t);
+void ep_tree_print_rec(struct ep_link *l, int depth);
 
 #endif

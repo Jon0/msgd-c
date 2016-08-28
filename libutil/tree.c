@@ -12,8 +12,7 @@ void ep_tree_alloc(struct ep_tree *t, size_t elemsize, size_t maxnodes) {
     t->links = (struct ep_link *) mem;
     t->elems = &mem[link_alloc];
     t->elem_size = elemsize;
-    t->elem_count = 0;
-    t->link_count = 0;
+    t->count = 0;
     t->avail = maxnodes;
     t->next_id = 0;
 }
@@ -21,13 +20,12 @@ void ep_tree_alloc(struct ep_tree *t, size_t elemsize, size_t maxnodes) {
 
 int ep_tree_link(struct ep_tree *t, int parent, int index) {
     int new_id = t->next_id++;
-    int new_index = t->elem_count++;
+    int new_index = t->count++;
 
     // make space for the new element
-    size_t movesize = sizeof(struct ep_link) * (t->link_count - index);
+    size_t movesize = sizeof(struct ep_link) * (t->count - index);
     memmove(&t->links[index + 1], &t->links[index], movesize);
 
-    ++t->link_count;
     struct ep_link *lk = &t->links[index];
     lk->parent_id = parent;
     lk->elem_id = new_id;
@@ -40,7 +38,7 @@ int ep_tree_link(struct ep_tree *t, int parent, int index) {
 void *ep_tree_find(struct ep_tree *t, int id) {
 
     // check each element
-    for (int i = 0; i < t->link_count; ++i) {
+    for (int i = 0; i < t->count; ++i) {
         struct ep_link *lk = &t->links[i];
         if (lk->elem_id == id) {
             return &t->elems[t->elem_size * lk->elem_index];
@@ -51,7 +49,7 @@ void *ep_tree_find(struct ep_tree *t, int id) {
 
 
 int ep_tree_insert(struct ep_tree *t, int id) {
-    for (int i = 0; i < t->link_count; ++i) {
+    for (int i = 0; i < t->count; ++i) {
         struct ep_link *parent = &t->links[i];
         if (parent->elem_id == id) {
             int pid = parent->elem_id;
@@ -74,24 +72,24 @@ int ep_tree_insert(struct ep_tree *t, int id) {
 
 
 void ep_tree_remove(struct ep_tree *t, int id) {
-    for (int i = 0; i < t->link_count; ++i) {
+    for (int i = 0; i < t->count; ++i) {
         struct ep_link *elem = &t->links[i];
         if (elem->elem_id == id) {
             int pid = elem->parent_id;
+            printf("removing %d %d\n", id, pid);
 
             // shift elements down
             size_t rmcount = elem->sub_count + 1;
-            size_t movesize = sizeof(struct ep_link) * (t->link_count - i - rmcount);
+            size_t movesize = sizeof(struct ep_link) * (t->count - i - rmcount);
             memmove(&t->links[i], &t->links[i + rmcount], movesize);
-            t->link_count -= rmcount;
-            t->elem_count -= rmcount;
+            t->count -= rmcount;
 
             // decrement counters
             while (i >= 0 && pid != -1) {
                 elem = &t->links[i];
                 if (elem->elem_id == pid) {
                     pid = elem->parent_id;
-                    --elem->sub_count;
+                    elem->sub_count -= rmcount;
                 }
                 --i;
             }
@@ -112,8 +110,27 @@ void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
 
 
 void ep_tree_print(struct ep_tree *t) {
-    for (int i = 0; i < t->link_count; ++i) {
-        struct ep_link *lk = &t->links[i];
-        printf("link %d, %d, %d\n", lk->elem_id, lk->elem_index, lk->sub_count);
+    if (t->count > 0) {
+        ep_tree_print_rec(t->links, 0);
+    }
+}
+
+
+void ep_tree_print_rec(struct ep_link *l, int depth) {
+    for (int s = 0; s < depth; ++s) {
+        printf("|");
+    }
+    if (l->sub_count) {
+        printf("+");
+    }
+    else {
+        printf("-");
+    }
+    printf("(%d)\n", l->elem_id);
+    int i = 0;
+    while (i < l->sub_count) {
+        struct ep_link *sub = &l[i + 1];
+        ep_tree_print_rec(sub, depth + 1);
+        i += (sub->sub_count + 1);
     }
 }

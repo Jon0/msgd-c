@@ -17,11 +17,13 @@ void tree_test() {
     ep_tree_insert(&tree, 0);
     ep_tree_insert(&tree, 0);
     int l = ep_tree_insert(&tree, 1);
+    ep_tree_insert(&tree, l);
     ep_tree_print(&tree);
 
     printf("remove subnodes\n\n");
-    ep_tree_remove(&tree, 0);
+    ep_tree_remove(&tree, l);
     ep_tree_print(&tree);
+
 }
 
 
