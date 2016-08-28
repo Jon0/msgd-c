@@ -6,6 +6,7 @@
 #include "buffer.h"
 
 struct ep_link {
+    int parent_id;
     int elem_id;
     int elem_index;
     int sub_count;
@@ -22,12 +23,14 @@ struct ep_tree {
     size_t elem_count;
     size_t link_count;
     size_t avail;
+    int next_id;
 };
 
 
 void ep_tree_alloc(struct ep_tree *t, size_t elem, size_t maxnodes);
+int ep_tree_link(struct ep_tree *t, int parent, int index);
 void *ep_tree_find(struct ep_tree *t, int id);
-void *ep_tree_insert(struct ep_tree *t, int id);
+int ep_tree_insert(struct ep_tree *t, int id);
 void ep_tree_remove(struct ep_tree *t, int id);
 
 
@@ -36,5 +39,7 @@ void ep_tree_remove(struct ep_tree *t, int id);
  */
 void ep_tree_read(struct ep_tree *t, struct ep_buffer *b);
 void ep_tree_write(struct ep_tree *t, struct ep_buffer *b);
+
+void ep_tree_print(struct ep_tree *t);
 
 #endif
