@@ -76,7 +76,6 @@ void ep_tree_remove(struct ep_tree *t, int id) {
         struct ep_link *elem = &t->links[i];
         if (elem->elem_id == id) {
             int pid = elem->parent_id;
-            printf("removing %d %d\n", id, pid);
 
             // shift elements down
             size_t rmcount = elem->sub_count + 1;
@@ -100,12 +99,34 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 
 
 void ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
+    ep_buffer_erase(b, (char *) &t->count, sizeof(size_t));
 
+    // write each link
+    for (int i = 0; i < t->count; ++i) {
+        ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
+    }
 }
 
 
 void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
+    // write count first
+    ep_buffer_insert(b, (char *) &t->count, sizeof(size_t));
 
+    // write each link
+    for (int i = 0; i < t->count; ++i) {
+        ep_buffer_insert(b, (char *) &t->links[i], sizeof(struct ep_link));
+    }
+}
+
+
+void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
+    // write count first
+    ep_write_blk(s, (char *) &t->count, sizeof(size_t));
+
+    // write each link
+    for (int i = 0; i < t->count; ++i) {
+        ep_write_blk(s, (char *) &t->links[i], sizeof(struct ep_link));
+    }
 }
 
 

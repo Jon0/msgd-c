@@ -14,19 +14,19 @@ int msg_server_accept(struct ep_table *t, void *in, int *out) {
 
 
 void msg_server_recv(int ex, struct ep_event_view *ev) {
-    struct msg_tree *tree = (struct msg_tree *) ev->self->data;
+    struct ep_tree *tree = (struct ep_tree *) ev->self->data;
     struct msg_request req;
     req.buf = &ev->self->buf;
     req.src = &ev->src;
     msg_poll_apply(tree, &req);
-    msg_tree_print(tree);
+    ep_tree_print(tree);
 }
 
 
 void msg_server_run(struct msg_server_state *s, const char *sockpath) {
     msg_tree_init(&s->tree);
     msg_tree_set_name(&s->tree, "testhost");
-    msg_tree_print(&s->tree);
+    ep_tree_print(&s->tree);
     ep_table_init(&s->tb, 256);
     ep_thread_pool_create(&s->pool, &s->tb, 4);
 

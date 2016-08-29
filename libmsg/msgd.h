@@ -14,7 +14,7 @@
 struct msg_client_state {
     struct ep_table       tb;
     struct ep_thread_pool pool;
-    struct msg_tree       tree;
+    struct ep_tree        tree;
     int              epid;
     int              hdlid;
     int              connected;

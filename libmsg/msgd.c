@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <libutil/socket.h>
+#include <libutil/tree.h>
 
 #include "msgd.h"
 #include "protocol.h"
@@ -52,8 +53,8 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
         // init tree
         msg_tree_init(&cs->tree);
-        msg_tree_recv(&cs->recv_buf, &cs->tree);
-        msg_tree_print(&cs->tree);
+        ep_tree_read(&cs->tree, &cs->recv_buf);
+        ep_tree_print(&cs->tree);
     }
     else {
         printf("no connection\n");
@@ -93,8 +94,8 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
 
     // wait for reply
     ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
-    msg_tree_recv(&cs->recv_buf, &cs->tree);
-    msg_tree_print(&cs->tree);
+    ep_tree_read(&cs->tree, &cs->recv_buf);
+    ep_tree_print(&cs->tree);
     return 0;
 }
 

@@ -24,6 +24,16 @@ void tree_test() {
     ep_tree_remove(&tree, l);
     ep_tree_print(&tree);
 
+
+    struct ep_buffer buf;
+    ep_buffer_init(&buf, malloc(1024), 1024);
+
+    printf("write\n\n");
+    ep_tree_write(&tree, &buf);
+
+    printf("read\n\n");
+    ep_tree_read(&tree, &buf);
+    ep_tree_print(&tree);
 }
 
 

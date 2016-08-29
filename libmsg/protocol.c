@@ -4,7 +4,7 @@
 #include "protocol.h"
 
 
-void msg_poll_apply(struct msg_tree *tree, struct msg_request *r) {
+void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
     struct msg_message m;
     ep_sink_print(r->src);
 
@@ -20,15 +20,15 @@ void msg_poll_apply(struct msg_tree *tree, struct msg_request *r) {
 }
 
 
-void msg_parse(struct msg_tree *tree, struct msg_message *m, struct ep_sink *out) {
+void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out) {
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_proc:
         msg_tree_add_proc(tree, m->body, m->head.size);
-        msg_tree_send(tree, out);
+        ep_tree_send(tree, out);
         break;
     case msg_type_avail:
-        msg_tree_send(tree, out);
+        ep_tree_send(tree, out);
         break;
     }
 }
@@ -55,7 +55,7 @@ void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
 }
 
 
-void msg_req_avail(struct ep_buffer *b, struct msg_tree *t) {
+void msg_req_avail(struct ep_buffer *b, struct ep_tree *t) {
     struct msg_header head;
     head.id = msg_type_avail;
     head.state = msg_tree_hash(t);

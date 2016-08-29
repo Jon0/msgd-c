@@ -13,7 +13,7 @@
 struct msg_server_state {
     struct ep_table tb;
     struct ep_thread_pool pool;
-    struct msg_tree tree;
+    struct ep_tree tree;
 };
 
 int msg_server_accept(struct ep_table *t, void *in, int *out);
