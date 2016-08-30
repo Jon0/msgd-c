@@ -16,6 +16,16 @@ void msg_tree_init(struct ep_tree *t) {
 }
 
 
+void msg_tree_elems(struct ep_tree *t) {
+    for (int i = 0; i < t->count; ++i) {
+        struct ep_link *lk = &t->links[i];
+        struct msg_node *n = ep_tree_find(t, lk->elem_id);
+        printf("%d => %s\n", lk->elem_id, n->name);
+
+    }
+}
+
+
 struct msg_node *msg_tree_add_node(struct ep_tree *t, struct msg_node *p) {
     int newid = ep_tree_insert(t, 0);
     struct msg_node *newnode = ep_tree_find(t, newid);

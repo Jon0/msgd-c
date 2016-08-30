@@ -48,6 +48,7 @@ struct msg_delta_header {
  */
 int msg_tree_hash(struct ep_tree *t);
 void msg_tree_init(struct ep_tree *t);
+void msg_tree_elems(struct ep_tree *t);
 
 /*
  * add a subnode

@@ -19,7 +19,10 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
     req.buf = &ev->self->buf;
     req.src = &ev->src;
     msg_poll_apply(tree, &req);
+
+    // print tree state
     ep_tree_print(tree);
+    msg_tree_elems(tree);
 }
 
 

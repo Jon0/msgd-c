@@ -48,7 +48,6 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
         cs->writepos = ep_write_buf(&cs->out, &cs->send_buf, cs->writepos);
 
         // hostname will be returned
-        printf("wait for tree state\n");
         ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
 
         // init tree
@@ -96,6 +95,7 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
     ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
     ep_tree_read(&cs->tree, &cs->recv_buf);
     ep_tree_print(&cs->tree);
+    msg_tree_elems(&cs->tree);
     return 0;
 }
 

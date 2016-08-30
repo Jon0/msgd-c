@@ -104,6 +104,7 @@ void ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
     // write each link
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
+        ep_buffer_erase(b, &t->elems[i * t->elem_size], t->elem_size);
     }
 }
 
@@ -115,6 +116,7 @@ void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
     // write each link
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_insert(b, (char *) &t->links[i], sizeof(struct ep_link));
+        ep_buffer_insert(b, &t->elems[i * t->elem_size], t->elem_size);
     }
 }
 
@@ -126,6 +128,7 @@ void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
     // write each link
     for (int i = 0; i < t->count; ++i) {
         ep_write_blk(s, (char *) &t->links[i], sizeof(struct ep_link));
+        ep_write_blk(s, &t->elems[i * t->elem_size], t->elem_size);
     }
 }
 
