@@ -13,7 +13,7 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
 }
 
 
-void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
+int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_table_init(&cs->tb, 256);
     ep_thread_pool_create(&cs->pool, &cs->tb, 4);
     cs->writepos = 0;
@@ -27,7 +27,7 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     int err = ep_init_channel(&ch);
     if (err == -1) {
         cs->connected = 0;
-        return;
+        return err;
     }
     cs->epid = ep_add_channel(&cs->tb, &ch);
     ep_sink_init(&cs->pool.queue, cs->epid, &cs->out);
@@ -37,6 +37,7 @@ void msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->hdlid = ep_add_handler(&cs->tb, &hdl);
     ep_table_ctl(&cs->tb, cs->epid, cs->hdlid);
     cs->connected = 1;
+    return 0;
 }
 
 

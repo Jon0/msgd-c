@@ -18,11 +18,13 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
     struct msg_request req;
     req.buf = &ev->self->buf;
     req.src = &ev->src;
+    printf("initial bytes: %d\n", ev->self->buf.size);
     msg_poll_apply(tree, &req);
 
     // print tree state
     ep_tree_print(tree);
     msg_tree_elems(tree);
+    printf("remaining bytes: %d\n", ev->self->buf.size);
 }
 
 

@@ -26,7 +26,7 @@ struct msg_client_state {
 };
 
 
-void msg_connect(struct msg_client_state *cs, const char *addr, short port);
+int msg_connect(struct msg_client_state *cs, const char *addr, short port);
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 
