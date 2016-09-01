@@ -23,6 +23,11 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
 
 /*
+ * remove all content from the buffer
+ */
+void ep_buffer_clear(struct ep_buffer *b);
+
+/*
  * copy from one buffer to another
  */
 size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start);

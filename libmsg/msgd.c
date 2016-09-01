@@ -37,6 +37,7 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->hdlid = ep_add_handler(&cs->tb, &hdl);
     ep_table_ctl(&cs->tb, cs->epid, cs->hdlid);
     cs->connected = 1;
+    msg_tree_init(&cs->tree);
     return 0;
 }
 
@@ -46,15 +47,20 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
         // send connect request
         msg_req_addproc(&cs->send_buf, name, strlen(name));
-        cs->writepos = ep_write_buf(&cs->out, &cs->send_buf, cs->writepos);
+        printf("sent msg length: %d\n", cs->send_buf.size);
+        ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
+        ep_buffer_clear(&cs->send_buf);
 
         // hostname will be returned
         ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
+        printf("recv msg length: %d\n", cs->recv_buf.size);
 
-        // init tree
-        msg_tree_init(&cs->tree);
+        // read tree state
         ep_tree_read(&cs->tree, &cs->recv_buf);
+
+        printf("\ncurrent tree state:\n");
         ep_tree_print(&cs->tree);
+        msg_tree_elems(&cs->tree);
     }
     else {
         printf("no connection\n");
@@ -87,14 +93,17 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
         printf("no connection\n");
         return 0;
     }
-
-
     msg_req_avail(&cs->send_buf, &cs->tree);
-    cs->writepos = ep_write_buf(&cs->out, &cs->send_buf, cs->writepos);
+    ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
+    ep_buffer_clear(&cs->send_buf);
 
     // wait for reply
     ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
+    printf("recv msg length: %d\n", cs->recv_buf.size);
+
     ep_tree_read(&cs->tree, &cs->recv_buf);
+
+    printf("\ncurrent tree state:\n");
     ep_tree_print(&cs->tree);
     msg_tree_elems(&cs->tree);
     return 0;

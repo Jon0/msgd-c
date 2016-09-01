@@ -27,6 +27,11 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
 }
 
 
+void ep_buffer_clear(struct ep_buffer *b) {
+    b->begin = 0;
+    b->size = 0;
+}
+
 size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start) {
     printf("TODO: copy\n");
     return 0;

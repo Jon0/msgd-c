@@ -13,10 +13,12 @@ void read_command(struct msg_client_state *ns) {
     scanf("%s", inbuf);
 
     //
+    printf("adding %s\n", inbuf);
     msg_init_proc(ns, inbuf, 0);
 
     // get available nodes
     // block until result is recieved
+    printf("requesting available\n");
     msg_available(ns, &nds);
 }
 

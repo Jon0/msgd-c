@@ -101,7 +101,8 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 void ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
     ep_buffer_erase(b, (char *) &t->count, sizeof(size_t));
 
-    // write each link
+    // read each link
+    printf("reading %u nodes\n", t->count);
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
         ep_buffer_erase(b, &t->elems[i * t->elem_size], t->elem_size);
@@ -126,6 +127,7 @@ void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
     ep_write_blk(s, (char *) &t->count, sizeof(size_t));
 
     // write each link
+    printf("sending %u nodes\n", t->count);
     for (int i = 0; i < t->count; ++i) {
         ep_write_blk(s, (char *) &t->links[i], sizeof(struct ep_link));
         ep_write_blk(s, &t->elems[i * t->elem_size], t->elem_size);
@@ -134,6 +136,7 @@ void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
 
 
 void ep_tree_print(struct ep_tree *t) {
+    printf("%d nodes\n", t->count);
     if (t->count > 0) {
         ep_tree_print_rec(t->links, 0);
     }
