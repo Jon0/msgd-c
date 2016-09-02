@@ -52,6 +52,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
         ep_buffer_clear(&cs->send_buf);
 
         // hostname will be returned
+        // TODO: read enough to recreate the tree
         ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
         printf("recv msg length: %d\n", cs->recv_buf.size);
 
