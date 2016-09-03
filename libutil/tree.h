@@ -42,7 +42,7 @@ void ep_tree_remove(struct ep_tree *t, int id);
 /*
  * read and write to streams
  */
-void ep_tree_read(struct ep_tree *t, struct ep_buffer *b);
+int ep_tree_read(struct ep_tree *t, struct ep_buffer *b);
 void ep_tree_write(struct ep_tree *t, struct ep_buffer *b);
 void ep_tree_send(struct ep_tree *t, struct ep_sink *s);
 

@@ -15,6 +15,7 @@ struct msg_client_state {
     struct ep_table       tb;
     struct ep_thread_pool pool;
     struct ep_tree        tree;
+    int              tree_update; // is tree awaiting an update
     int              epid;
     int              hdlid;
     int              connected;

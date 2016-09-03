@@ -37,8 +37,15 @@ size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t 
  */
 size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
 
+
 /*
- * take bytes from the buffer
+ * take bytes from the start of the buffer, but do not erase
+ */
+size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t count);
+
+
+/*
+ * take bytes from the start of the buffer, and erase from buffer
  */
 size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count);
 

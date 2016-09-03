@@ -98,15 +98,24 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 }
 
 
-void ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
-    ep_buffer_erase(b, (char *) &t->count, sizeof(size_t));
+int ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
+    size_t new_size;
+    size_t r = ep_buffer_peek(b, (char *) &new_size, sizeof(size_t));
+    size_t total_size = sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * new_size;
+    if (r != sizeof(size_t) || b->size < total_size) {
+        printf("incomplete read\n");
+        return -1;
+    }
 
     // read each link
+    t->count = new_size;
     printf("reading %u nodes\n", t->count);
+    ep_buffer_release(b, sizeof(size_t));
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
         ep_buffer_erase(b, &t->elems[i * t->elem_size], t->elem_size);
     }
+    return 0;
 }
 
 

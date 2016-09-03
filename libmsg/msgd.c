@@ -9,13 +9,26 @@
 
 
 void msg_client_recv(int ex, struct ep_event_view *ev) {
-    printf("recv\n");
+    struct msg_client_state *cs = (struct msg_client_state *) ev->self->data;
+    struct ep_buffer *recv_buf = &ev->self->buf;
+    struct msg_request req;
+    req.buf = recv_buf;
+    req.src = &ev->src;
+    printf("recv msg length: %d\n", recv_buf->size);
+
+    // read tree state
+    //msg_poll_apply(&cs->tree, &req);
+    while (ep_tree_read(&cs->tree, recv_buf) == 0) {}
+
+    printf("\ncurrent tree state:\n");
+    ep_tree_print(&cs->tree);
+    msg_tree_elems(&cs->tree);
 }
 
 
 int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_table_init(&cs->tb, 256);
-    ep_thread_pool_create(&cs->pool, &cs->tb, 4);
+    ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
     cs->writepos = 0;
 
     size_t bufsize = 4096;
@@ -33,7 +46,7 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_sink_init(&cs->pool.queue, cs->epid, &cs->out);
 
     struct ep_handler hdl;
-    ep_handler_init(&hdl, 4096, msg_client_recv, NULL);
+    ep_handler_init(&hdl, 4096, msg_client_recv, cs);
     cs->hdlid = ep_add_handler(&cs->tb, &hdl);
     ep_table_ctl(&cs->tb, cs->epid, cs->hdlid);
     cs->connected = 1;
@@ -50,18 +63,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
         printf("sent msg length: %d\n", cs->send_buf.size);
         ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
         ep_buffer_clear(&cs->send_buf);
-
-        // hostname will be returned
-        // TODO: read enough to recreate the tree
-        ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
-        printf("recv msg length: %d\n", cs->recv_buf.size);
-
-        // read tree state
-        ep_tree_read(&cs->tree, &cs->recv_buf);
-
-        printf("\ncurrent tree state:\n");
-        ep_tree_print(&cs->tree);
-        msg_tree_elems(&cs->tree);
+        printf("wait for reply\n");
     }
     else {
         printf("no connection\n");
@@ -95,18 +97,10 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
         return 0;
     }
     msg_req_avail(&cs->send_buf, &cs->tree);
+    printf("sent msg length: %d\n", cs->send_buf.size);
     ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
     ep_buffer_clear(&cs->send_buf);
-
-    // wait for reply
-    ep_table_read_buf(&cs->tb, cs->epid, &cs->recv_buf);
-    printf("recv msg length: %d\n", cs->recv_buf.size);
-
-    ep_tree_read(&cs->tree, &cs->recv_buf);
-
-    printf("\ncurrent tree state:\n");
-    ep_tree_print(&cs->tree);
-    msg_tree_elems(&cs->tree);
+    printf("wait for reply\n");
     return 0;
 }
 

@@ -33,7 +33,7 @@ void msg_server_run(struct msg_server_state *s, const char *sockpath) {
     msg_tree_set_name(&s->tree, "testhost");
     ep_tree_print(&s->tree);
     ep_table_init(&s->tb, 256);
-    ep_thread_pool_create(&s->pool, &s->tb, 4);
+    ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
 
     // create an acceptor
     struct ep_acceptor acc;

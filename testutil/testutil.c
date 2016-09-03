@@ -52,7 +52,7 @@ void thread_test() {
     struct ep_thread_pool tp;
     struct ep_table table;
     ep_table_init(&table, 16);
-    ep_thread_pool_create(&tp, &table, 4);
+    ep_thread_pool_create(&tp, &table, 4, 0);
 
 
     // listen for incoming events

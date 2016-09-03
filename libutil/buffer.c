@@ -66,7 +66,7 @@ size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
 }
 
 
-size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
+size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t count) {
     size_t end = b->begin + b->size;
     if (count > b->size) {
         count = b->size;
@@ -81,8 +81,14 @@ size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
     else {
         memcpy(outbuf, start, count);
     }
-    ep_buffer_release(b, count);
     return count;
+}
+
+
+size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
+    size_t s = ep_buffer_peek(b, outbuf, count);
+    ep_buffer_release(b, s);
+    return s;
 }
 
 

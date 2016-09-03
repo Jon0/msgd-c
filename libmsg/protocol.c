@@ -12,11 +12,17 @@ void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
 
     // recieving requests to the local server
     size_t hs = sizeof(struct msg_header);
-    size_t s;
+    size_t read_header;
+    size_t read_body;
     while (r->buf->size >= hs) {
-        s = ep_buffer_erase(r->buf, (char *) &m.head, hs);
-        s = ep_buffer_erase(r->buf, m.body, m.head.size);
-        msg_parse(tree, &m, r->src);
+        read_header = ep_buffer_peek(r->buf, (char *) &m.head, hs);
+        if (read_header == hs) {
+            read_body = ep_buffer_peek(r->buf, m.body, m.head.size);
+            if (read_body == m.head.size) {
+                ep_buffer_release(r->buf, hs + m.head.size);
+                msg_parse(tree, &m, r->src);
+            }
+        }
     }
 }
 
@@ -26,10 +32,10 @@ void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out)
     switch (m->head.id) {
     case msg_type_proc:
         msg_tree_add_proc(tree, m->body, m->head.size);
-        ep_tree_send(tree, out);
+        msg_tree_send(tree, out);
         break;
     case msg_type_avail:
-        ep_tree_send(tree, out);
+        msg_tree_send(tree, out);
         break;
     }
 }
@@ -71,4 +77,9 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
     head.size = len;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, name, len);
+}
+
+
+void msg_tree_send(struct ep_tree *tree, struct ep_sink *out) {
+    ep_tree_send(tree, out);
 }

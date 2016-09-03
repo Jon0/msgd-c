@@ -6,6 +6,11 @@
 #include "queue.h"
 
 
+enum ep_thread_pool_flag {
+    EP_EPOLL = 1
+};
+
+
 /*
  * collection of handler threads
  */
@@ -18,8 +23,9 @@ struct ep_thread_pool {
 
 /*
  * alloc memory for the pool
+ * flags, 1 to create a thread to respond to epoll events
  */
-void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t threads);
+void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t threads, int flags);
 
 
 /*
