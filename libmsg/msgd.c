@@ -60,7 +60,7 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
 
         // send connect request
         msg_req_addproc(&cs->send_buf, name, strlen(name));
-        printf("sent msg length: %d\n", cs->send_buf.size);
+        printf("sent msg length: %d, %d\n", cs->send_buf.begin, cs->send_buf.size);
         ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
         ep_buffer_clear(&cs->send_buf);
         printf("wait for reply\n");

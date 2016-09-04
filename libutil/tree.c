@@ -100,7 +100,7 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 
 int ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
     size_t new_size;
-    size_t r = ep_buffer_peek(b, (char *) &new_size, sizeof(size_t));
+    size_t r = ep_buffer_peek(b, (char *) &new_size, 0, sizeof(size_t));
     size_t total_size = sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * new_size;
     if (r != sizeof(size_t) || b->size < total_size) {
         printf("incomplete read\n");

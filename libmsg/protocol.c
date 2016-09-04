@@ -15,9 +15,9 @@ void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
     size_t read_header;
     size_t read_body;
     while (r->buf->size >= hs) {
-        read_header = ep_buffer_peek(r->buf, (char *) &m.head, hs);
+        read_header = ep_buffer_peek(r->buf, (char *) &m.head, 0, hs);
         if (read_header == hs) {
-            read_body = ep_buffer_peek(r->buf, m.body, m.head.size);
+            read_body = ep_buffer_peek(r->buf, m.body, hs, m.head.size);
             if (read_body == m.head.size) {
                 ep_buffer_release(r->buf, hs + m.head.size);
                 msg_parse(tree, &m, r->src);
@@ -29,6 +29,7 @@ void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
 
 void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out) {
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
+    printf("str %s\n", m->body);
     switch (m->head.id) {
     case msg_type_proc:
         msg_tree_add_proc(tree, m->body, m->head.size);
@@ -57,6 +58,7 @@ void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
     head.id = msg_type_proc;
     head.size = count;
+    printf("request add %s\n", msg);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, msg, count);
 }

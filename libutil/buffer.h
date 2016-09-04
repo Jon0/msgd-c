@@ -41,7 +41,7 @@ size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count);
 /*
  * take bytes from the start of the buffer, but do not erase
  */
-size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t count);
+size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t offset, size_t count);
 
 
 /*

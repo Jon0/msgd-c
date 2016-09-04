@@ -66,27 +66,39 @@ size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
 }
 
 
-size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t count) {
+size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t offset, size_t count) {
+    size_t begin = b->begin + offset;
     size_t end = b->begin + b->size;
-    if (count > b->size) {
-        count = b->size;
+    size_t total = offset + count;
+    size_t cs = b->avail - begin; // length of first continuous block
+    char *data = &b->ptr[begin];
+
+    // check size of copy matches size of buffer
+    if (total > b->size) {
+        total = b->size;
+        if (b->size > offset) {
+            count = b->size - offset;
+        }
+        else {
+            return 0;
+        }
     }
 
-    char *start = &b->ptr[b->begin];
-    size_t cs = b->avail - b->begin;
+    // copy in one or two operations
+    // depending how data is aligned in buffer
     if (count > cs) {
-        memcpy(outbuf, start, cs);
+        memcpy(outbuf, data, cs);
         memcpy(&outbuf[cs], b->ptr, count - cs);
     }
     else {
-        memcpy(outbuf, start, count);
+        memcpy(outbuf, data, count);
     }
     return count;
 }
 
 
 size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
-    size_t s = ep_buffer_peek(b, outbuf, count);
+    size_t s = ep_buffer_peek(b, outbuf, 0, count);
     ep_buffer_release(b, s);
     return s;
 }
