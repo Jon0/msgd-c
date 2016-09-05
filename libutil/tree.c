@@ -109,7 +109,7 @@ int ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
 
     // read each link
     t->count = new_size;
-    printf("reading %u nodes\n", t->count);
+    printf("reading %u nodes, from %d bytes\n", t->count, b->size);
     ep_buffer_release(b, sizeof(size_t));
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
