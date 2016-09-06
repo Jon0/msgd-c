@@ -97,6 +97,7 @@ int ep_table_wait(struct ep_table *t, int *src, size_t count) {
     if (count > 32) {
         count = 32;
     }
+    printf("wait for epoll events\n");
     int p = epoll_wait(t->epoll_fd, event, count, -1);
     if (p == -1) {
         perror("epoll_wait");

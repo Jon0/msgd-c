@@ -6,7 +6,7 @@
 
 void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
     struct msg_message m;
-    printf("recv message from ");
+    printf("recv update from ");
     ep_sink_print(r->src);
 
 
@@ -29,7 +29,6 @@ void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
 
 void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out) {
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
-    printf("str %s\n", m->body);
     switch (m->head.id) {
     case msg_type_proc:
         msg_tree_add_proc(tree, m->body, m->head.size);
