@@ -20,7 +20,7 @@ void msg_tree_elems(struct ep_tree *t) {
     for (int i = 0; i < t->count; ++i) {
         struct ep_link *lk = &t->links[i];
         struct msg_node *n = ep_tree_find(t, lk->elem_id);
-        printf("%d => %s\n", lk->elem_id, n->name);
+        printf("%d => %s (%d)\n", lk->elem_id, n->name, n->mode);
 
     }
 }
