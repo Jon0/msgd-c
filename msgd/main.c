@@ -4,7 +4,7 @@
 
 
 int main(int argc, const char *argv[]) {
-    struct msg_server_state cs;
+    struct msg_server cs;
     msg_server_run(&cs, "msgd-local");
     return 0;
 }

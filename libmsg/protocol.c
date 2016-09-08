@@ -4,7 +4,7 @@
 #include "protocol.h"
 
 
-void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
+void msg_poll_apply(struct msg_server *srv, struct msg_request *r) {
     struct msg_message m;
     printf("recv update from ");
     ep_sink_print(r->src);
@@ -20,22 +20,22 @@ void msg_poll_apply(struct ep_tree *tree, struct msg_request *r) {
             read_body = ep_buffer_peek(r->buf, m.body, hs, m.head.size);
             if (read_body == m.head.size) {
                 ep_buffer_release(r->buf, hs + m.head.size);
-                msg_parse(tree, &m, r->src);
+                msg_parse(srv, &m, r->src);
             }
         }
     }
 }
 
 
-void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out) {
+void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *out) {
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_proc:
-        msg_tree_add_proc(tree, m->body, m->head.size);
-        msg_tree_send(tree, out);
+        msg_tree_add_proc(&srv->tree, m->body, m->head.size);
+        msg_tree_send(&srv->tree, out);
         break;
     case msg_type_avail:
-        msg_tree_send(tree, out);
+        msg_tree_send(&srv->tree, out);
         break;
     }
 }

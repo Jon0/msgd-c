@@ -4,6 +4,7 @@
 #include <libutil/buffer.h>
 #include <libutil/queue.h>
 
+#include "channel.h"
 #include "node.h"
 
 typedef int32_t prot_size_t;
@@ -52,8 +53,8 @@ struct msg_request {
 /*
  * server responding to events
  */
-void msg_poll_apply(struct ep_tree *tree, struct msg_request *r);
-void msg_parse(struct ep_tree *tree, struct msg_message *m, struct ep_sink *out);
+void msg_poll_apply(struct msg_server *tree, struct msg_request *r);
+void msg_parse(struct msg_server *tree, struct msg_message *m, struct ep_sink *out);
 int msg_read(struct ep_table *t, int epid, struct msg_message *out);
 
 
