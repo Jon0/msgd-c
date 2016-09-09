@@ -27,8 +27,9 @@ struct ep_table_entry {
 
 
 /*
- * todo: include map of acceptors to channels
- * and channels to handlers
+ * TODO: include multimap of acceptors to channels
+ * and channels to handlers and remove the limited
+ * implementation currently used
  */
 struct ep_table {
     int                next_id;

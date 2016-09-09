@@ -3,33 +3,82 @@
 #include "hashmap.h"
 
 
-void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count) {
-    size_t pair_mem = sizeof(struct ep_pair) * m->array_max;
-    size_t value_mem = m->elem_size * m->array_max;
-    size_t total_mem = pair_mem + value_mem;
+int ep_subarray_key(void *p) {
+    struct ep_subarray *sa = p;
+    return sa->key;
+}
 
-    // allocate both arrays together
-    m->pair_count = 0;
+
+void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count) {
+    ep_map_alloc(&m->keys, ep_subarray_key, sizeof(struct ep_subarray), count);
+    size_t value_mem = m->elem_size * m->array_max;
     m->value_count = 0;
     m->elem_size = esize;
     m->array_max = count;
-    m->values = malloc(total_mem);
-    memset(m->values, 0, total_mem);
-    m->pairs = (struct ep_pair *) &m->values[value_mem];
+    m->values = malloc(value_mem);
+    memset(m->values, 0, value_mem);
 }
 
 
-void *ep_multimap_alloc(struct ep_multimap *m, int key, size_t count) {
-    struct ep_pair *p = &m->pairs[m->pair_count];
-    void *result = &m->values[m->value_count * m->elem_size];
-    p->key = key;
-    p->count = count;
-    p->value = result;
-    m->pair_count += 1;
-    m->value_count += count;
+int ep_multimap_size(struct ep_multimap *m, int key) {
+    struct ep_subarray *arr = ep_map_get(&m->keys, key);
+    if (arr == NULL) {
+        return 0;
+    }
+    return arr->end - arr->begin;
+}
+
+
+void ep_multimap_create_key(struct ep_multimap *m, int key) {
+    struct ep_subarray new_sa;
+    new_sa.key = key;
+    new_sa.begin = 0;
+    new_sa.end = 0;
+    ep_map_insert(&m->keys, &new_sa);
+}
+
+
+int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
+    struct ep_subarray *arr = ep_map_get(&m->keys, key);
+    if (arr == NULL) {
+        ep_multimap_create_key(m, key);
+        arr = ep_map_get(&m->keys, key);
+    }
+
+    // move elements to make space
+    size_t movesize = m->elem_size * (m->value_count - arr->end);
+    memmove(&m->values[arr->end + (count * m->elem_size)], &m->values[arr->end], movesize);
+
+    // increment all other subarrays
+    for (int i = 0; i < m->keys.elem_count; ++i) {
+        if (ep_map_id(&m->keys, i) != 0) {
+            struct ep_subarray *isa = (struct ep_subarray *) &m->keys.array[i * m->keys.elem_size];
+            if (isa->begin >= arr->end) {
+                isa->begin += count;
+                isa->end += count;
+            }
+        }
+    }
+    int result = arr->end;
+    arr->end += count;
     return result;
 }
 
+
+void *ep_multimap_get(struct ep_multimap *m, int key, int index) {
+    struct ep_subarray *arr = ep_map_get(&m->keys, key);
+    if (arr == NULL) {
+        return NULL;
+    }
+
+    // check index is within bounds
+    int arr_size = arr->end - arr->begin;
+    if (0 > index || index >= arr_size) {
+        return NULL;
+    }
+
+    return &m->values[(arr->begin + index) * m->elem_size];
+}
 
 
 size_t ep_int_hash(int i) {
@@ -50,6 +99,12 @@ void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count) {
 
 void ep_map_free(struct ep_map *m) {
     free(m->array);
+}
+
+
+int ep_map_id(struct ep_map *m, int index) {
+    void *item = &m->array[index * m->elem_size];
+    return m->idfn(item);
 }
 
 
