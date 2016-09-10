@@ -11,10 +11,10 @@ int ep_subarray_key(void *p) {
 
 void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count) {
     ep_map_alloc(&m->keys, ep_subarray_key, sizeof(struct ep_subarray), count);
-    size_t value_mem = m->elem_size * m->array_max;
     m->value_count = 0;
     m->elem_size = esize;
     m->array_max = count;
+    size_t value_mem = m->elem_size * m->array_max;
     m->values = malloc(value_mem);
     memset(m->values, 0, value_mem);
 }

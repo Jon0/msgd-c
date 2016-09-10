@@ -8,6 +8,17 @@
  * returns a unique identifier for elements
  */
 typedef int (*ep_id_t)(void *);
+typedef int (*ep_cmp_t)(void *, void *);
+
+
+/*
+ * hash pairs,
+ * allow used elements to be stored continuously
+ */
+struct ep_keypair {
+    int key;
+    int index;
+};
 
 
 /*
@@ -16,6 +27,7 @@ typedef int (*ep_id_t)(void *);
  * TODO: how should the map check which space is free?
  */
 struct ep_map {
+    struct ep_keypair *pair;
     char     *array;
     ep_id_t   idfn;
     size_t    elem_size;

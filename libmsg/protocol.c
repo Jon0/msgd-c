@@ -28,10 +28,12 @@ void msg_poll_apply(struct msg_server *srv, struct msg_request *r) {
 
 
 void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *out) {
+    int newid;
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_proc:
-        msg_tree_add_proc(&srv->tree, m->body, m->head.size);
+        newid = msg_tree_add_proc(&srv->tree, m->body, m->head.size);
+        msg_server_connect(srv, out->epid, newid);
         msg_tree_send(&srv->tree, out);
         break;
     case msg_type_avail:

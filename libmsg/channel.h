@@ -20,7 +20,8 @@ struct msg_server {
     struct ep_multimap  host_to_tree;
 };
 
-void msg_server_connect(struct msg_server *s, int i);
+
+void msg_server_connect(struct msg_server *s, int epid, int nodeid);
 void msg_server_disconnect(struct msg_server *s, int i);
 
 int msg_server_accept(struct ep_table *t, void *in, int *out);
