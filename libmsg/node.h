@@ -56,5 +56,6 @@ void msg_tree_elems(struct ep_tree *t);
 struct msg_node *msg_tree_add_node(struct ep_tree *t, struct msg_node *p);
 void msg_tree_set_name(struct ep_tree *t, const char *hostname);
 int msg_tree_add_proc(struct ep_tree *t, const char *procname, size_t count);
+int msg_tree_subnode(struct ep_tree *t, const char *nodename, size_t count, int id);
 
 #endif

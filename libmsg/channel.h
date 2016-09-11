@@ -18,9 +18,11 @@ struct msg_server {
     struct ep_thread_pool pool;
     struct ep_tree tree;
     struct ep_multimap  host_to_tree;
+    struct ep_multimap  node_to_sub;
 };
 
 
+int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_connect(struct msg_server *s, int epid, int nodeid);
 void msg_server_disconnect(struct msg_server *s, int i);
 

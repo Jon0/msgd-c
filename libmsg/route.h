@@ -5,7 +5,7 @@
 /*
  * each process recieves updates from nodes
  */
-struct msg_reciever {
+struct msg_subscriber {
     int host;
     int nodes_ids [32];
 };

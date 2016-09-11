@@ -4,6 +4,11 @@
 #include "protocol.h"
 
 
+int msg_node_of_host(struct msg_server *s, int epid) {
+    printf("TODO: node_of_host\n");
+    return 0;
+}
+
 void msg_server_connect(struct msg_server *s, int epid, int nodeid) {
     printf("connect epid %d => %d\n", epid, nodeid);
     ep_multimap_insert(&s->host_to_tree, epid, 1);

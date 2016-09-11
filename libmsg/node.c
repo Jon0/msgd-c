@@ -44,10 +44,20 @@ void msg_tree_set_name(struct ep_tree *t, const char *hostname) {
 
 
 int msg_tree_add_proc(struct ep_tree *t, const char *procname, size_t count) {
-    int id = ep_tree_insert(t, 0);
-    struct msg_node *node = ep_tree_find(t, id);
+    int newid = ep_tree_insert(t, 0);
+    struct msg_node *node = ep_tree_find(t, newid);
     memset(node->name, 0, 256);
     memcpy(node->name, procname, count);
     printf("adding %s\n", node->name);
-    return id;
+    return newid;
+}
+
+
+int msg_tree_subnode(struct ep_tree *t, const char *nodename, size_t count, int id) {
+    int newid = ep_tree_insert(t, id);
+    struct msg_node *node = ep_tree_find(t, newid);
+    memset(node->name, 0, 256);
+    memcpy(node->name, nodename, count);
+    printf("adding %s\n", node->name);
+    return newid;
 }

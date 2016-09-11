@@ -28,10 +28,15 @@ struct msg_client_state {
 
 
 int msg_connect(struct msg_client_state *cs, const char *addr, short port);
+
+/*
+ * a process connects to the system deamon
+ * this should occur after connecting
+ */
 void msg_init_proc(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 
-void msg_publish(struct msg_client_state *cs, const struct node_attr_set *ns);
+void msg_publish(struct msg_client_state *cs, const char *name, int mode);
 void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns);
 
 /*
