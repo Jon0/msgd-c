@@ -46,8 +46,9 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     }
 
     // move elements to make space
+    size_t newsize = count * m->elem_size;
     size_t movesize = m->elem_size * (m->value_count - arr->end);
-    memmove(&m->values[arr->end + (count * m->elem_size)], &m->values[arr->end], movesize);
+    memmove(&m->values[arr->end + newsize], &m->values[arr->end], movesize);
 
     // increment all other subarrays
     for (int i = 0; i < m->keys.elem_count; ++i) {
@@ -61,6 +62,7 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     }
     int result = arr->end;
     arr->end += count;
+    m->value_count += count;
     return result;
 }
 
