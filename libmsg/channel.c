@@ -20,6 +20,11 @@ void msg_server_disconnect(struct msg_server *s, int i) {
 }
 
 
+void msg_server_subscribe(struct msg_server *s, int i) {
+    printf("subscribe node id %d\n", i);
+}
+
+
 int msg_server_accept(struct ep_table *t, void *in, int *out) {
     printf("accept\n");
     struct ep_handler hdl;
