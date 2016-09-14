@@ -20,8 +20,11 @@ void msg_server_disconnect(struct msg_server *s, int i) {
 }
 
 
-void msg_server_subscribe(struct msg_server *s, int i) {
-    printf("subscribe node id %d\n", i);
+void msg_server_subscribe(struct msg_server *s, int key, int epid) {
+    printf("subscribe node id %d\n", key);
+    int index = ep_multimap_insert(&s->node_to_sub, key, 1);
+    int *i = ep_multimap_get(&s->node_to_sub, key, index);
+    *i = epid;
 }
 
 
@@ -55,6 +58,7 @@ void msg_server_run(struct msg_server *s, const char *sockpath) {
 
     // alloc structures
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
+    ep_multimap_init(&s->node_to_sub, sizeof(int), 1024);
     msg_tree_init(&s->tree);
     msg_tree_set_name(&s->tree, "testhost");
     ep_tree_print(&s->tree);
