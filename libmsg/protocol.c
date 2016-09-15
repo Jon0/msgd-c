@@ -41,6 +41,10 @@ void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *ou
         msg_tree_subnode(&srv->tree, m->body, m->head.size, newid);
         msg_tree_send(&srv->tree, out);
         break;
+    case msg_type_subs:
+        newid = msg_node_of_host(srv, out->epid);
+        msg_server_subscribe(srv, out->epid, newid);
+        msg_tree_send(&srv->tree, out);
     case msg_type_avail:
         msg_tree_send(&srv->tree, out);
         break;
