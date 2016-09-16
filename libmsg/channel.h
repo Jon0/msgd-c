@@ -7,6 +7,14 @@
 
 #include "node.h"
 
+/*
+ * a client which requires updates when events occur
+ */
+struct msg_subscriber {
+    int epid;
+    int subid;
+};
+
 
 /*
  * complete server state
