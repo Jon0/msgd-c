@@ -92,6 +92,15 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
 }
 
 
+void msg_req_subscribe(struct ep_buffer *b, int nodeid) {
+    struct msg_header head;
+    head.id = msg_type_subs;
+    head.size = sizeof(int);
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
+    ep_buffer_insert(b, (char *) &nodeid, sizeof(int));
+}
+
+
 void msg_tree_send(struct ep_tree *tree, struct ep_sink *out) {
     ep_tree_send(tree, out);
 }

@@ -23,11 +23,11 @@ void msg_server_disconnect(struct msg_server *s, int i) {
 void msg_server_subscribe(struct msg_server *s, int key, int epid) {
     printf("subscribe node id %d\n", key);
     int index = ep_multimap_insert(&s->node_to_sub, key, 1);
-    struct msg_subscriber *s = ep_multimap_get(&s->node_to_sub, key, index);
-    s->epid = epid;
+    struct msg_subscriber *sub = ep_multimap_get(&s->node_to_sub, key, index);
+    sub->epid = epid;
 
     // TODO recieve subid from client
-    s->subid = 0;
+    sub->subid = 0;
 }
 
 
