@@ -37,7 +37,8 @@ void msg_init_proc(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 
 void msg_publish(struct msg_client_state *cs, const char *name, int mode);
-void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns);
+void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid);
+
 
 /*
  * take a copy of the servers nodes

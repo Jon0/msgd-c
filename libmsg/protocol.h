@@ -7,7 +7,11 @@
 #include "channel.h"
 #include "node.h"
 
-typedef int32_t prot_size_t;
+/*
+ * TODO send a fixed width type
+ */
+typedef int32_t msg_int_t;
+
 
 /*
  * types of messages
@@ -64,7 +68,7 @@ int msg_read(struct ep_table *t, int epid, struct msg_message *out);
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len);
-void msg_req_subscribe(struct ep_buffer *b, int nodeid);
+void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
 
 /*
  * send tree with header

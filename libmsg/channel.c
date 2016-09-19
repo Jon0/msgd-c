@@ -4,6 +4,11 @@
 #include "protocol.h"
 
 
+void msg_server_printsub(struct msg_server *s) {
+    printf("%d sub nodes\n", s->node_to_sub.keys.elem_count);
+}
+
+
 int msg_node_of_host(struct msg_server *s, int epid) {
     printf("TODO: node_of_host\n");
     return 0;
@@ -20,14 +25,12 @@ void msg_server_disconnect(struct msg_server *s, int i) {
 }
 
 
-void msg_server_subscribe(struct msg_server *s, int key, int epid) {
-    printf("subscribe node id %d\n", key);
-    int index = ep_multimap_insert(&s->node_to_sub, key, 1);
-    struct msg_subscriber *sub = ep_multimap_get(&s->node_to_sub, key, index);
+void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid) {
+    printf("subscribe node id %d\n", sendnode);
+    int index = ep_multimap_insert(&s->node_to_sub, sendnode, 1);
+    struct msg_subscriber *sub = ep_multimap_get(&s->node_to_sub, sendnode, index);
     sub->epid = epid;
-
-    // TODO recieve subid from client
-    sub->subid = 0;
+    sub->subid = subid;
 }
 
 
@@ -53,6 +56,7 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
     // print tree state
     ep_tree_print(tree);
     msg_tree_elems(tree);
+    msg_server_printsub(serv);
     printf("remaining bytes: %d\n", ev->self->buf.size);
 }
 

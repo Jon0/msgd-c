@@ -97,8 +97,19 @@ void msg_publish(struct msg_client_state *cs, const char *name, int mode) {
 }
 
 
-void msg_subscribe(struct msg_client_state *cs, const struct node_attr_set *ns) {
+void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid) {
+    if (cs->connected) {
 
+        // send subscribe request
+        msg_req_subscribe(&cs->send_buf, nodeid, subid);
+        printf("sent msg length: %d\n", cs->send_buf.size);
+        ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
+        ep_buffer_clear(&cs->send_buf);
+        printf("wait for reply\n");
+    }
+    else {
+        printf("no connection\n");
+    }
 }
 
 

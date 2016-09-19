@@ -29,6 +29,7 @@ void msg_poll_apply(struct msg_server *srv, struct msg_request *r) {
 
 void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *out) {
     int newid;
+    int *subints;
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_proc:
@@ -42,8 +43,8 @@ void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *ou
         msg_tree_send(&srv->tree, out);
         break;
     case msg_type_subs:
-        newid = msg_node_of_host(srv, out->epid);
-        msg_server_subscribe(srv, out->epid, newid);
+        subints = (int *) m->body;
+        msg_server_subscribe(srv, subints[0], out->epid, subints[1]);
         msg_tree_send(&srv->tree, out);
     case msg_type_avail:
         msg_tree_send(&srv->tree, out);
@@ -92,12 +93,13 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
 }
 
 
-void msg_req_subscribe(struct ep_buffer *b, int nodeid) {
+void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
     struct msg_header head;
     head.id = msg_type_subs;
-    head.size = sizeof(int);
+    head.size = sizeof(int) * 2;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, (char *) &nodeid, sizeof(int));
+    ep_buffer_insert(b, (char *) &subid, sizeof(int));
 }
 
 

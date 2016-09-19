@@ -30,10 +30,11 @@ struct msg_server {
 };
 
 
+void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_connect(struct msg_server *s, int epid, int nodeid);
 void msg_server_disconnect(struct msg_server *s, int i);
-void msg_server_subscribe(struct msg_server *s, int key, int epid);
+void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid);
 
 int msg_server_accept(struct ep_table *t, void *in, int *out);
 

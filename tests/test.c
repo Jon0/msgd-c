@@ -4,11 +4,17 @@
 #include <libmsg/msgd.h>
 
 
+void read_string(char *buf, size_t count) {
+    fgets(buf, count, stdin);
+    buf[strlen(buf) - 1] = 0;
+}
+
+
 int read_int() {
     char *end;
     char inbuf [32];
-    fgets(inbuf, sizeof(inbuf), stdin);
-    return strtol(inbuf, &end, sizeof(inbuf));
+    read_string(inbuf, sizeof(inbuf));
+    return strtol(inbuf, &end, 10);
 }
 
 
@@ -20,10 +26,10 @@ void read_command(struct msg_client_state *ns) {
     // read input
     // either connect or create a nodes
     printf("enter cmd (init, add or sub)\n");
-    scanf("%s", inbuf);
+    read_string(inbuf, sizeof(inbuf));
     if (strcmp(inbuf, "init") == 0) {
         printf("enter process name\n");
-        scanf("%s", inbuf);
+        read_string(inbuf, sizeof(inbuf));
         printf("initalising %s\n", inbuf);
         msg_init_proc(ns, inbuf, 0);
 
@@ -34,13 +40,17 @@ void read_command(struct msg_client_state *ns) {
     }
     else if (strcmp(inbuf, "add") == 0) {
         printf("enter node name\n");
-        scanf("%s", inbuf);
+        read_string(inbuf, sizeof(inbuf));
         printf("adding %s\n", inbuf);
     }
     else if (strcmp(inbuf, "sub") == 0) {
         printf("enter node id\n");
         nodebuf = read_int();
         printf("subscribing %d\n", nodebuf);
+        msg_subscribe(ns, nodebuf, 42);
+    }
+    else {
+        printf("cannot match %s\n", inbuf);
     }
 }
 
