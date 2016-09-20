@@ -25,11 +25,13 @@ struct ep_keypair {
  * hash map attributes
  * requires a function to return int ids
  * TODO: how should the map check which space is free?
+ * TODO store key value pairs like c++ unordered maps
  */
 struct ep_map {
     struct ep_keypair *pair;
     char     *array;
     ep_id_t   idfn;
+    size_t    key_size;
     size_t    elem_size;
     size_t    elem_count;
     size_t    array_max;

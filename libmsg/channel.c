@@ -6,6 +6,9 @@
 
 void msg_server_printsub(struct msg_server *s) {
     printf("%d sub nodes\n", s->node_to_sub.keys.elem_count);
+    printf("%d sub values\n", s->node_to_sub.value_count);
+
+    // TODO find all the keys
 }
 
 

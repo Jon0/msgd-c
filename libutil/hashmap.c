@@ -117,6 +117,7 @@ int ep_map_insert(struct ep_map *m, void *elem) {
         void *item = &m->array[index];
         if (m->idfn(item) == 0) {
             memcpy(item, elem, m->elem_size);
+            ++m->elem_count;
             return 1;
         }
     }
