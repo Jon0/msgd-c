@@ -9,6 +9,10 @@ void msg_server_printsub(struct msg_server *s) {
     printf("%d sub values\n", s->node_to_sub.value_count);
 
     // TODO find all the keys
+    for (int i = 0; i < s->node_to_sub.value_count; ++i) {
+        struct msg_subscriber *sub = s->values[sizeof(struct msg_subscriber) * i];
+        printf("sub %d => %d %d", i, sub->subid, sub->epid);
+    }
 }
 
 
