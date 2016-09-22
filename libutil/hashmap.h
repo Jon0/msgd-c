@@ -26,6 +26,10 @@ struct ep_keypair {
  * requires a function to return int ids
  * TODO: how should the map check which space is free?
  * TODO store key value pairs like c++ unordered maps
+ *
+ * The id function returns and int key for each value.
+ * Array stores values continuously allowing iterators
+ * to check each element.
  */
 struct ep_map {
     struct ep_keypair *pair;
