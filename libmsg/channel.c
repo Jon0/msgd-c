@@ -10,7 +10,8 @@ void msg_server_printsub(struct msg_server *s) {
 
     // TODO find all the keys
     for (int i = 0; i < s->node_to_sub.value_count; ++i) {
-        struct msg_subscriber *sub = s->values[sizeof(struct msg_subscriber) * i];
+        size_t addr = sizeof(struct msg_subscriber) * i;
+        struct msg_subscriber *sub = (struct msg_subscriber *) &s->node_to_sub.values[addr];
         printf("sub %d => %d %d", i, sub->subid, sub->epid);
     }
 }
@@ -20,6 +21,7 @@ int msg_node_of_host(struct msg_server *s, int epid) {
     printf("TODO: node_of_host\n");
     return 0;
 }
+
 
 void msg_server_connect(struct msg_server *s, int epid, int nodeid) {
     printf("connect epid %d => %d\n", epid, nodeid);
