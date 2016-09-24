@@ -14,6 +14,7 @@ typedef int (*ep_cmp_t)(void *, void *);
 /*
  * hash pairs,
  * allow used elements to be stored continuously
+ * negative index indicates free pair space
  */
 struct ep_keypair {
     int key;

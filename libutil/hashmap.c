@@ -42,10 +42,10 @@ int ep_map_id(struct ep_map *m, int index) {
 int ep_map_insert(struct ep_map *m, void *elem) {
     size_t array_pos = ep_int_hash(m->idfn(elem)) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
-        size_t index = ((array_pos + i) % m->array_max) * m->elem_size;
+        size_t index = (array_pos + i) % m->array_max;
         struct ep_keypair *keypair = &m->pair[index];
-        void *item = &m->array[index];
-        if (m->idfn(item) == 0) {
+        if (keypair->index < 0) {
+            void *item = &m->array[keypair->index * m->elem_size];
             memcpy(item, elem, m->elem_size);
             ++m->elem_count;
             return 1;
