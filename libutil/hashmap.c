@@ -45,9 +45,11 @@ int ep_map_insert(struct ep_map *m, void *elem) {
         size_t index = (array_pos + i) % m->array_max;
         struct ep_keypair *keypair = &m->pair[index];
         if (keypair->index < 0) {
+
+            // place at the end of the value array
+            keypair->index = m->elem_count++;
             void *item = &m->array[keypair->index * m->elem_size];
             memcpy(item, elem, m->elem_size);
-            ++m->elem_count;
             return 1;
         }
     }
@@ -55,17 +57,18 @@ int ep_map_insert(struct ep_map *m, void *elem) {
 }
 
 
-int ep_map_erase(struct ep_map *m, int elem) {
+int ep_map_erase(struct ep_map *m, int key) {
     return 0;
 }
 
 
-void *ep_map_get(struct ep_map *m, int elem) {
-    size_t array_pos = ep_int_hash(elem) % m->array_max;
+void *ep_map_get(struct ep_map *m, int key) {
+    size_t array_pos = ep_int_hash(key) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
-        size_t index = ((array_pos + i) % m->array_max) * m->elem_size;
-        void *item = &m->array[index];
-        if (m->idfn(item) == elem) {
+        size_t index = (array_pos + i) % m->array_max;
+        struct ep_keypair *keypair = &m->pair[index];
+        if (key == keypair->key && keypair->index >= 0) {
+            void *item = &m->array[keypair->index * m->elem_size];
             return item;
         }
     }
