@@ -58,6 +58,18 @@ int ep_map_insert(struct ep_map *m, void *elem) {
 
 
 int ep_map_erase(struct ep_map *m, int key) {
+    size_t array_pos = ep_int_hash(key) % m->array_max;
+    for (size_t i = 0; i < m->array_max; ++i) {
+        size_t index = (array_pos + i) % m->array_max;
+        struct ep_keypair *keypair = &m->pair[index];
+
+        // match the key, and ensure pair is in use
+        if (key == keypair->key && keypair->index >= 0) {
+            // TODO remove item from value array
+            keypair->index = -1;
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -67,6 +79,8 @@ void *ep_map_get(struct ep_map *m, int key) {
     for (size_t i = 0; i < m->array_max; ++i) {
         size_t index = (array_pos + i) % m->array_max;
         struct ep_keypair *keypair = &m->pair[index];
+
+        // match the key, and ensure pair is in use
         if (key == keypair->key && keypair->index >= 0) {
             void *item = &m->array[keypair->index * m->elem_size];
             return item;
