@@ -8,7 +8,12 @@ void msg_server_printsub(struct msg_server *s) {
     printf("%d sub nodes\n", s->node_to_sub.keys.elem_count);
     printf("%d sub values\n", s->node_to_sub.value_count);
 
-    // TODO find all the keys
+    // find all the keys
+    struct ep_map *keymap = &s->node_to_sub.keys;
+    for (int i = 0; i < keymap->elem_count; ++i) {
+        int *key = (int *) &keymap->array[keymap->elem_size * i];
+        printf("key %d", *key);
+    }
     for (int i = 0; i < s->node_to_sub.value_count; ++i) {
         size_t addr = sizeof(struct msg_subscriber) * i;
         struct msg_subscriber *sub = (struct msg_subscriber *) &s->node_to_sub.values[addr];

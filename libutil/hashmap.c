@@ -65,8 +65,16 @@ int ep_map_erase(struct ep_map *m, int key) {
 
         // match the key, and ensure pair is in use
         if (key == keypair->key && keypair->index >= 0) {
-            // TODO remove item from value array
+
+            // remove item from value array
+            size_t movesize = m->elem_size * (m->elem_count - keypair->index);
+            size_t dest_index = m->elem_size * keypair->index;
+            size_t src_index = dest_index + m->elem_size;
+            memmove(&m->array[dest_index], &m->array[src_index], movesize);
+
+            // indicate the pair is no longer used
             keypair->index = -1;
+            --m->elem_count;
             return 1;
         }
     }
