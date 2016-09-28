@@ -9,15 +9,15 @@ void msg_server_printsub(struct msg_server *s) {
     printf("%d sub values\n", s->node_to_sub.value_count);
 
     // find all the keys
-    struct ep_map *keymap = &s->node_to_sub.keys;
-    for (int i = 0; i < keymap->elem_count; ++i) {
-        int *key = (int *) &keymap->array[keymap->elem_size * i];
-        printf("key %d", *key);
+    for (int i = 0; i < s->node_to_sub.keys.elem_count; ++i) {
+        struct ep_subarray *sa = ep_multimap_get_index(&s->node_to_sub, i);
+
+        printf("key %d (%d to %d)\n", sa->key, sa->begin, sa->end);
     }
     for (int i = 0; i < s->node_to_sub.value_count; ++i) {
         size_t addr = sizeof(struct msg_subscriber) * i;
         struct msg_subscriber *sub = (struct msg_subscriber *) &s->node_to_sub.values[addr];
-        printf("sub %d => %d %d", i, sub->subid, sub->epid);
+        printf("sub %d => %d %d\n", i, sub->subid, sub->epid);
     }
 }
 

@@ -85,6 +85,8 @@ void *ep_map_get(struct ep_map *m, int key);
 void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count);
 int ep_multimap_size(struct ep_multimap *m, int key);
 void ep_multimap_create_key(struct ep_multimap *m, int key);
+struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index);
+
 
 /*
  * return the starting index of the keys subarray

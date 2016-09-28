@@ -127,11 +127,19 @@ void ep_multimap_create_key(struct ep_multimap *m, int key) {
 }
 
 
+struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index) {
+    return (struct ep_subarray *) &m->keys.array[sizeof(struct ep_subarray) * index];
+}
+
+
 int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     struct ep_subarray *arr = ep_map_get(&m->keys, key);
     if (arr == NULL) {
         ep_multimap_create_key(m, key);
         arr = ep_map_get(&m->keys, key);
+        arr->key = key;
+        arr->begin = m->value_count;
+        arr->end = m->value_count;
     }
 
     // move elements to make space
@@ -140,15 +148,16 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     memmove(&m->values[arr->end + newsize], &m->values[arr->end], movesize);
 
     // increment all other subarrays
+
     for (int i = 0; i < m->keys.elem_count; ++i) {
-        if (ep_map_id(&m->keys, i) != 0) {
-            struct ep_subarray *isa = (struct ep_subarray *) &m->keys.array[i * m->keys.elem_size];
-            if (isa->begin >= arr->end) {
-                isa->begin += count;
-                isa->end += count;
-            }
+        struct ep_subarray *isa = ep_multimap_get_index(m, i);
+        if (isa->begin >= arr->end) {
+            isa->begin += count;
+            isa->end += count;
         }
     }
+
+
     int result = arr->end;
     arr->end += count;
     m->value_count += count;
