@@ -121,8 +121,8 @@ int ep_multimap_size(struct ep_multimap *m, int key) {
 void ep_multimap_create_key(struct ep_multimap *m, int key) {
     struct ep_subarray new_sa;
     new_sa.key = key;
-    new_sa.begin = 0;
-    new_sa.end = 0;
+    new_sa.begin = m->value_count;
+    new_sa.end = m->value_count;
     ep_map_insert(&m->keys, &new_sa);
 }
 
@@ -135,11 +135,9 @@ struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index) {
 int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     struct ep_subarray *arr = ep_map_get(&m->keys, key);
     if (arr == NULL) {
+        // create and init key
         ep_multimap_create_key(m, key);
         arr = ep_map_get(&m->keys, key);
-        arr->key = key;
-        arr->begin = m->value_count;
-        arr->end = m->value_count;
     }
 
     // move elements to make space

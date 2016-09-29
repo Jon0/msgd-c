@@ -84,7 +84,15 @@ void *ep_map_get(struct ep_map *m, int key);
  */
 void ep_multimap_init(struct ep_multimap *m, size_t esize, size_t count);
 int ep_multimap_size(struct ep_multimap *m, int key);
+
+/*
+ * create new key and init to empty subarray
+ */
 void ep_multimap_create_key(struct ep_multimap *m, int key);
+
+/*
+ * get subarray by index (0 to multimap value count)
+ */
 struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index);
 
 
