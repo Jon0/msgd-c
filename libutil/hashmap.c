@@ -22,9 +22,15 @@ void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count) {
     size_t memsize = m->elem_size * m->array_max;
     size_t pairsize = sizeof(struct ep_keypair) * m->array_max;
     char *mem = malloc(memsize + pairsize);
-    memset(mem, 0, memsize + pairsize);
     m->pair = (struct ep_keypair *) mem;
     m->array = &mem[pairsize];
+
+    // init pair array to empty
+    for (size_t i = 0; i < m->array_max; ++i) {
+        struct ep_keypair *keypair = &m->pair[i];
+        keypair->key = 0;
+        keypair->index = -1;
+    }
 }
 
 
@@ -40,13 +46,15 @@ int ep_map_id(struct ep_map *m, int index) {
 
 
 int ep_map_insert(struct ep_map *m, void *elem) {
-    size_t array_pos = ep_int_hash(m->idfn(elem)) % m->array_max;
+    int key = m->idfn(elem);
+    size_t array_pos = ep_int_hash(key) % m->array_max;
     for (size_t i = 0; i < m->array_max; ++i) {
         size_t index = (array_pos + i) % m->array_max;
         struct ep_keypair *keypair = &m->pair[index];
         if (keypair->index < 0) {
 
             // place at the end of the value array
+            keypair->key = key;
             keypair->index = m->elem_count++;
             void *item = &m->array[keypair->index * m->elem_size];
             memcpy(item, elem, m->elem_size);

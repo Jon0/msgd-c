@@ -1,9 +1,31 @@
 #include <stdio.h>
 
 #include <libutil/endpoint.h>
+#include <libutil/hashmap.h>
 #include <libutil/socket.h>
 #include <libutil/thread.h>
 #include <libutil/tree.h>
+
+
+int test_key(void *p) {
+    int *i = (int *) p;
+    return *i;
+}
+
+
+void map_test() {
+    struct ep_map map;
+    ep_map_alloc(&map, test_key, sizeof(int), 32);
+
+    // should return NULL
+    void *x = ep_map_get(&map, 123);
+    printf("map get %x\n", x);
+
+    int number = 123;
+    ep_map_insert(&map, &number);
+    x = ep_map_get(&map, 123);
+    printf("map get %x\n", x);
+}
 
 
 void tree_test() {
@@ -63,6 +85,7 @@ void thread_test() {
 
 
 int main(int argc, char *argv[]) {
+    map_test();
     tree_test();
     return 0;
 }
