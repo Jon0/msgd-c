@@ -17,7 +17,7 @@ void msg_server_printsub(struct msg_server *s) {
         for (int i = sa->begin; i < sa->end; ++i) {
             size_t addr = sizeof(struct msg_subscriber) * i;
             struct msg_subscriber *sub = (struct msg_subscriber *) &s->node_to_sub.values[addr];
-            printf("\nsub %d => %d %d\n", i, sub->subid, sub->epid);
+            printf("\tsub %d => %d\n", sub->subid, sub->epid);
         }
     }
 }
