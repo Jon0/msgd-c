@@ -21,18 +21,18 @@ void map_test() {
     void *x = ep_map_get(&map, 123);
     printf("map get %x\n", x);
 
-    int number = 123;
-    ep_map_insert(&map, &number);
-    x = ep_map_get(&map, 123);
+    int key = 123;
+    ep_map_insert(&map, &key);
+    x = ep_map_get(&map, key);
     printf("map get %x\n", x);
 
     // should return null again
-    ep_map_erase(&map, 123);
-    x = ep_map_get(&map, 123);
+    ep_map_erase(&map, key);
+    x = ep_map_get(&map, key);
     printf("map get %x\n", x);
 
     // cannot remove twice
-    int err = ep_map_erase(&map, 123);
+    int err = ep_map_erase(&map, key);
     printf("map erase %d\n", err);
 }
 
