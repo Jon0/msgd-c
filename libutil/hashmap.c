@@ -135,6 +135,11 @@ void ep_multimap_create_key(struct ep_multimap *m, int key) {
 }
 
 
+struct ep_subarray *ep_multimap_get_key(struct ep_multimap *m, int key) {
+    return (struct ep_subarray *) ep_map_get(&m->keys, key);
+}
+
+
 struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index) {
     return (struct ep_subarray *) &m->keys.array[sizeof(struct ep_subarray) * index];
 }
@@ -164,10 +169,10 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     }
 
 
-    int result = arr->end;
+    int newstart = arr->end;
     arr->end += count;
     m->value_count += count;
-    return result;
+    return newstart - arr->begin;
 }
 
 

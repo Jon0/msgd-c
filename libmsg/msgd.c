@@ -48,7 +48,7 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_client_recv, cs);
     cs->hdlid = ep_add_handler(&cs->tb, &hdl);
-    ep_table_ctl(&cs->tb, cs->epid, cs->hdlid);
+    ep_table_route(&cs->tb, cs->epid, cs->hdlid);
     cs->connected = 1;
     msg_tree_init(&cs->tree);
     return 0;

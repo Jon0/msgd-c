@@ -57,7 +57,7 @@ void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev) {
     if (e) {
         switch(e->type) {
         case ep_type_acceptor:
-            ep_queue_accept(q->table, &e->data.acc);
+            ep_queue_accept(q->table, ev->epid, &e->data.acc);
             break;
         case ep_type_channel:
             ep_queue_read_ch(q, ev, &e->data.ch);
@@ -70,7 +70,7 @@ void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev) {
 }
 
 
-int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
+int ep_queue_accept(struct ep_table *t, int epid, struct ep_acceptor *a) {
     struct ep_channel newc;
     newc.addr.len = 32;
     newc.fd = accept(a->fd, (struct sockaddr *) &newc.addr.data, &newc.addr.len);
@@ -78,7 +78,9 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
         perror("accept");
         return 0;
     }
-    newc.outcount = a->create_hdl(t, a->data, newc.output);
+
+    // init handler and output channels
+    a->on_accept(t, epid, a->data);
     return ep_add_channel(t, &newc);
 }
 
@@ -90,8 +92,9 @@ void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_c
     s.srcid = ev->epid;
     int r = read(c->fd, buf, 1024);
     if (r > 0) {
-        for (int i = 0; i < c->outcount; ++i) {
-            s.epid = c->output[i];
+        struct ep_subarray *sa = ep_multimap_get_key(&q->table->chanout, ev->epid);
+        for (int i = sa->begin; i < sa->end; ++i) {
+            s.epid = (int) q->table->chanout.values[sizeof(int) * i];
             ep_write_blk(&s, buf, r);
         }
     }

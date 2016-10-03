@@ -90,6 +90,13 @@ int ep_multimap_size(struct ep_multimap *m, int key);
  */
 void ep_multimap_create_key(struct ep_multimap *m, int key);
 
+
+/*
+ * get subarray by key
+ */
+struct ep_subarray *ep_multimap_get_key(struct ep_multimap *m, int key);
+
+
 /*
  * get subarray by index (0 to multimap value count)
  */

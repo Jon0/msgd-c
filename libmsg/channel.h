@@ -36,7 +36,7 @@ void msg_server_connect(struct msg_server *s, int epid, int nodeid);
 void msg_server_disconnect(struct msg_server *s, int i);
 void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid);
 
-int msg_server_accept(struct ep_table *t, void *in, int *out);
+void msg_server_accept(struct ep_table *t, int epid, void *in);
 
 void msg_server_recv(int ex, struct ep_event_view *ev);
 

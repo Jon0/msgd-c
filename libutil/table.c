@@ -16,6 +16,8 @@ void ep_table_init(struct ep_table *t, size_t max) {
     size_t es = sizeof(struct ep_table_entry);
     printf("alloc table (%d bytes)\n", es * max);
     ep_map_alloc(&t->entries, ep_entry_id, es, max);
+    ep_multimap_init(&t->accepted, sizeof(int), max);
+    ep_multimap_init(&t->chanout, sizeof(int), max);
 }
 
 
@@ -30,6 +32,8 @@ int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a) {
     e.type = ep_type_acceptor;
     e.data.acc = *a;
     ep_map_insert(&t->entries, &e);
+    ep_multimap_create_key(&t->accepted, e.epid);
+    ep_multimap_create_key(&t->chanout, e.epid);
     ep_enable_fd(t, e.epid, a->fd);
     return e.epid;
 }
@@ -64,11 +68,12 @@ void ep_close(struct ep_table *t, int epid) {
 }
 
 
-void ep_table_ctl(struct ep_table *t, int in, int out) {
+void ep_table_route(struct ep_table *t, int in, int out) {
     struct ep_table_entry *e = ep_map_get(&t->entries, in);
     if (e->type == ep_type_channel) {
-        int ind = e->data.ch.outcount++;
-        e->data.ch.output[ind] = out;
+        int index = ep_multimap_insert(&t->chanout, in, 1);
+        int *chan = ep_multimap_get(&t->chanout, in, index);
+        *chan = out;
     }
 }
 
@@ -171,7 +176,7 @@ void ep_table_fwd(struct ep_table *t, int epid) {
     if (e) {
         switch(e->type) {
         case ep_type_channel:
-            return ep_channel_fwd(t, &e->data.ch);
+            return ep_channel_fwd(t, epid, &e->data.ch);
         }
     }
     else {
@@ -180,12 +185,14 @@ void ep_table_fwd(struct ep_table *t, int epid) {
 }
 
 
-void ep_channel_fwd(struct ep_table *t, struct ep_channel *c) {
+void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c) {
     char buf [1024];
     int r = read(c->fd, buf, 1024);
     if (r > 0) {
-        for (int i = 0; i < c->outcount; ++i) {
-            struct ep_table_entry *e = ep_map_get(&t->entries, c->output[i]);
+        struct ep_subarray *sa = ep_multimap_get_key(&t->chanout, epid);
+        for (int i = sa->begin; i < sa->end; ++i) {
+            int out_epid = (int) t->chanout.values[sizeof(int) * i];
+            struct ep_table_entry *e = ep_map_get(&t->entries, out_epid);
             if (e) {
                 ep_fwd_blk(e, buf, r);
             }

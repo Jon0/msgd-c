@@ -27,15 +27,21 @@ struct ep_table_entry {
 
 
 /*
- * TODO: include multimap of acceptors to channels
- * and channels to handlers and remove the limited
- * implementation currently used
+ * Table of active connections,
+ * making use of kernel epoll functionality.
+ * Includes basic routing of recieved data to handlers
  */
 struct ep_table {
     int                next_id;
     int                epoll_fd;
+
+    // int -> struct ep_table_entry
     struct ep_map      entries;
+
+    // int -> int[]
     struct ep_multimap accepted;
+
+    // int -> int[]
     struct ep_multimap chanout;
 };
 
@@ -56,9 +62,9 @@ void ep_close(struct ep_table *t, int epid);
 
 
 /*
- * modify endpoints
+ * automatically send input from one epid to another
  */
-void ep_table_ctl(struct ep_table *t, int in, int out);
+void ep_table_route(struct ep_table *t, int in, int out);
 
 
 /*
@@ -90,7 +96,7 @@ size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b);
  * move from readable endpoint to handlers
  */
 void ep_table_fwd(struct ep_table *t, int epid);
-void ep_channel_fwd(struct ep_table *t, struct ep_channel *c);
+void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c);
 
 
 /*

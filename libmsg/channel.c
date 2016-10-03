@@ -49,12 +49,13 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 }
 
 
-int msg_server_accept(struct ep_table *t, void *in, int *out) {
+void msg_server_accept(struct ep_table *t, int epid, void *in) {
     printf("accept\n");
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_server_recv, in);
+    int index = ep_multimap_insert(&t->chanout, epid, 1);
+    int *out = ep_multimap_get(&t->chanout, epid, index);
     *out = ep_add_handler(t, &hdl);
-    return 1;
 }
 
 
