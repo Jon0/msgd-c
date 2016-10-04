@@ -33,7 +33,6 @@ int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a) {
     e.data.acc = *a;
     ep_map_insert(&t->entries, &e);
     ep_multimap_create_key(&t->accepted, e.epid);
-    ep_multimap_create_key(&t->chanout, e.epid);
     ep_enable_fd(t, e.epid, a->fd);
     return e.epid;
 }
@@ -45,6 +44,7 @@ int ep_add_channel(struct ep_table *t, struct ep_channel *c) {
     e.type = ep_type_channel;
     e.data.ch = *c;
     ep_map_insert(&t->entries, &e);
+    ep_multimap_create_key(&t->chanout, e.epid);
     ep_enable_fd(t, e.epid, c->fd);
     return e.epid;
 }

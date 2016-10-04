@@ -57,7 +57,7 @@ void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev) {
     if (e) {
         switch(e->type) {
         case ep_type_acceptor:
-            ep_queue_accept(q->table, ev->epid, &e->data.acc);
+            ep_queue_accept(q->table, &e->data.acc);
             break;
         case ep_type_channel:
             ep_queue_read_ch(q, ev, &e->data.ch);
@@ -70,7 +70,7 @@ void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev) {
 }
 
 
-int ep_queue_accept(struct ep_table *t, int epid, struct ep_acceptor *a) {
+int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
     struct ep_channel newc;
     newc.addr.len = 32;
     newc.fd = accept(a->fd, (struct sockaddr *) &newc.addr.data, &newc.addr.len);
@@ -80,8 +80,10 @@ int ep_queue_accept(struct ep_table *t, int epid, struct ep_acceptor *a) {
     }
 
     // init handler and output channels
+    // TODO add to accepted multimap
+    int epid = ep_add_channel(t, &newc);
     a->on_accept(t, epid, a->data);
-    return ep_add_channel(t, &newc);
+    return epid;
 }
 
 

@@ -65,7 +65,7 @@ void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev);
 /*
  * apply accept event
  */
-int ep_queue_accept(struct ep_table *t, int epid, struct ep_acceptor *a);
+int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a);
 
 
 /*

@@ -5,7 +5,7 @@
 
 
 void msg_server_printsub(struct msg_server *s) {
-    printf("%d sub nodes\n", s->node_to_sub.keys.elem_count);
+    printf("%d sub keys\n", s->node_to_sub.keys.elem_count);
     printf("%d sub values\n", s->node_to_sub.value_count);
 
     // find all the keys
@@ -41,16 +41,21 @@ void msg_server_disconnect(struct msg_server *s, int i) {
 
 
 void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid) {
-    printf("subscribe node id %d\n", sendnode);
+    printf("subscribe updates on node id %d to epid %d\n", sendnode, epid);
     int index = ep_multimap_insert(&s->node_to_sub, sendnode, 1);
     struct msg_subscriber *sub = ep_multimap_get(&s->node_to_sub, sendnode, index);
-    sub->epid = epid;
-    sub->subid = subid;
+    if (sub) {
+        sub->epid = epid;
+        sub->subid = subid;
+    }
+    else {
+        printf("id %d not found\n", sendnode);
+    }
 }
 
 
 void msg_server_accept(struct ep_table *t, int epid, void *in) {
-    printf("accept\n");
+    printf("accept id %d\n", epid);
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_server_recv, in);
     int index = ep_multimap_insert(&t->chanout, epid, 1);
@@ -70,10 +75,11 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
     msg_poll_apply(serv, &req);
 
     // print tree state
+    printf("\n=== New server state ===\n");
     ep_tree_print(tree);
     msg_tree_elems(tree);
     msg_server_printsub(serv);
-    printf("remaining bytes: %d\n", ev->self->buf.size);
+    printf("remaining bytes: %d\n\n", ev->self->buf.size);
 }
 
 
