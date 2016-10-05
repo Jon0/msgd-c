@@ -25,7 +25,7 @@ void read_command(struct msg_client_state *ns) {
 
     // read input
     // either connect or create a nodes
-    printf("enter cmd (init, add or sub)\n");
+    printf("enter cmd (init, add, pub or sub)\n");
     read_string(inbuf, sizeof(inbuf));
     if (strcmp(inbuf, "init") == 0) {
         printf("enter process name\n");
@@ -42,6 +42,11 @@ void read_command(struct msg_client_state *ns) {
         printf("enter node name\n");
         read_string(inbuf, sizeof(inbuf));
         printf("adding %s\n", inbuf);
+    }
+    else if (strcmp(inbuf, "pub") == 0) {
+        printf("enter node name\n");
+        read_string(inbuf, sizeof(inbuf));
+        msg_publish(ns, inbuf, 0);
     }
     else if (strcmp(inbuf, "sub") == 0) {
         printf("enter node id\n");
