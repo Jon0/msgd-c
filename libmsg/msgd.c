@@ -55,7 +55,7 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
 }
 
 
-void msg_init_proc(struct msg_client_state *cs, const char *name, int mode) {
+void msg_create_node(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
 
         // send connect request
@@ -81,18 +81,21 @@ void msg_free_proc(struct msg_client_state *cs) {
 }
 
 
-void msg_publish(struct msg_client_state *cs, const char *name, int mode) {
+int msg_publish(struct msg_client_state *cs, const char *name, int nodeid) {
     if (cs->connected) {
 
         // send connect request
-        msg_req_publish(&cs->send_buf, name, strlen(name));
+        msg_req_publish(&cs->send_buf, name, strlen(name), nodeid);
         printf("sent msg length: %d\n", cs->send_buf.size);
         ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
         ep_buffer_clear(&cs->send_buf);
         printf("wait for reply\n");
+        // TODO create handler to send updates back to server
+        return -1;
     }
     else {
         printf("no connection\n");
+        return -1;
     }
 }
 

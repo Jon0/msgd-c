@@ -31,7 +31,7 @@ void read_command(struct msg_client_state *ns) {
         printf("enter process name\n");
         read_string(inbuf, sizeof(inbuf));
         printf("initalising %s\n", inbuf);
-        msg_init_proc(ns, inbuf, 0);
+        msg_create_node(ns, inbuf, 0);
 
         // get available nodes
         // block until result is recieved

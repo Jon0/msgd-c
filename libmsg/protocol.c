@@ -84,7 +84,7 @@ void msg_req_avail(struct ep_buffer *b, struct ep_tree *t) {
 }
 
 
-void msg_req_publish(struct ep_buffer *b, const char *name, size_t len) {
+void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int nodeid) {
     struct msg_header head;
     head.id = msg_type_publ;
     head.size = len;

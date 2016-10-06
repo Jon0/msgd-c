@@ -33,10 +33,14 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port);
  * a process connects to the system deamon
  * this should occur after connecting
  */
-void msg_init_proc(struct msg_client_state *cs, const char *name, int mode);
+void msg_create_node(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 
-void msg_publish(struct msg_client_state *cs, const char *name, int mode);
+/*
+ * create a node to send updates
+ * return the table element to write updates to
+ */
+int msg_publish(struct msg_client_state *cs, const char *name, int nodeid);
 void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid);
 
 

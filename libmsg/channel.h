@@ -25,6 +25,8 @@ struct msg_server {
     struct ep_table tb;
     struct ep_thread_pool pool;
     struct ep_tree tree;
+
+    // int -> int
     struct ep_multimap  host_to_tree;
     struct ep_multimap  node_to_sub;
 };
