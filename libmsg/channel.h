@@ -20,13 +20,15 @@ struct msg_subscriber {
  * complete server state
  * includes map from host input ids to tree node ids
  * nodes should be removed when connection is ended
+ * TODO record each socket, and the type of connection (peer or client)
  */
 struct msg_server {
     struct ep_table tb;
     struct ep_thread_pool pool;
     struct ep_tree tree;
 
-    // int -> int
+    // the nodes owned by each socket connection
+    // int -> int[]
     struct ep_multimap  host_to_tree;
     struct ep_multimap  node_to_sub;
 };

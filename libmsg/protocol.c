@@ -65,11 +65,18 @@ int msg_read(struct ep_table *t, int epid, struct msg_message *out) {
 }
 
 
+void msg_req_peers(struct ep_buffer *b) {
+    struct msg_header head;
+    head.id = msg_type_peer;
+    head.size = 0;
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
+}
+
+
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
     head.id = msg_type_proc;
     head.size = count;
-    printf("request add %s\n", msg);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, msg, count);
 }

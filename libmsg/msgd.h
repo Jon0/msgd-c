@@ -27,7 +27,10 @@ struct msg_client_state {
 };
 
 
+int msg_wait(struct msg_client_state *cs, int type);
+
 int msg_connect(struct msg_client_state *cs, const char *addr, short port);
+int msg_get_peers(struct msg_client_state *cs);
 
 /*
  * a process connects to the system deamon

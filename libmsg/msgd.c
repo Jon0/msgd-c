@@ -26,6 +26,11 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
 }
 
 
+int msg_wait(struct msg_client_state *cs, int type) {
+
+}
+
+
 int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_table_init(&cs->tb, 256);
     ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
@@ -52,6 +57,20 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->connected = 1;
     msg_tree_init(&cs->tree);
     return 0;
+}
+
+
+int msg_get_peers(struct msg_client_state *cs) {
+    if (cs->connected) {
+        // send peer request
+        msg_req_peers(&cs->send_buf);
+        printf("sent msg length: %d\n", cs->send_buf.size);
+        ep_write_buf(&cs->out, &cs->send_buf, cs->send_buf.begin);
+        ep_buffer_clear(&cs->send_buf);
+    }
+    else {
+        printf("no connection\n");
+    }
 }
 
 
