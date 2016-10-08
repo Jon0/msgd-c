@@ -17,6 +17,15 @@ struct msg_subscriber {
 
 
 /*
+ * TODO replace ep_table with specific functions
+ */
+struct msg_channel {
+    int type;
+    int subs;
+}
+
+
+/*
  * complete server state
  * includes map from host input ids to tree node ids
  * nodes should be removed when connection is ended
@@ -27,9 +36,14 @@ struct msg_server {
     struct ep_thread_pool pool;
     struct ep_tree tree;
 
+    // type of socket
+    struct ep_map socket_type;
+
     // the nodes owned by each socket connection
     // int -> int[]
     struct ep_multimap  host_to_tree;
+
+    // nodeid -> struct msg_subscriber
     struct ep_multimap  node_to_sub;
 };
 

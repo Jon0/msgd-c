@@ -10,6 +10,7 @@
 
 /*
  * state held by client processes
+ * include queue of requests awaiting a response
  */
 struct msg_client_state {
     struct ep_table       tb;
