@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "poll.h"
 #include "queue.h"
+
 
 void ep_event_queue_init(struct ep_event_queue *q, struct ep_table *t, size_t max_queue) {
     q->table = t;
@@ -42,7 +44,7 @@ void ep_queue_from_table(struct ep_event_queue *q) {
     struct ep_event ev;
     int src [32];
     while (1) {
-        int r = ep_table_wait(q->table, src, 32);
+        int r = ep_poll_wait(q->table->epoll_fd, src, 32);
         for (int i = 0; i < r; ++i) {
             ev.epid = src[i];
             ev.srcid = 0;

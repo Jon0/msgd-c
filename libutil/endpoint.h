@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <netinet/in.h>
-#include <sys/epoll.h>
 
 #include "buffer.h"
 #include "hashmap.h"

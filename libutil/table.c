@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "poll.h"
 #include "table.h"
 
 
@@ -12,7 +13,7 @@ int ep_entry_id(void *p) {
 
 void ep_table_init(struct ep_table *t, size_t max) {
     t->next_id = 1;
-    t->epoll_fd = epoll_create1(0);
+    t->epoll_fd = ep_poll_create();
     size_t es = sizeof(struct ep_table_entry);
     printf("alloc table (%d bytes)\n", es * max);
     ep_map_alloc(&t->entries, ep_entry_id, es, max);
@@ -33,7 +34,7 @@ int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a) {
     e.data.acc = *a;
     ep_map_insert(&t->entries, &e);
     ep_multimap_create_key(&t->accepted, e.epid);
-    ep_enable_fd(t, e.epid, a->fd);
+    ep_poll_enable(t->epoll_fd, e.epid, a->fd);
     return e.epid;
 }
 
@@ -45,7 +46,7 @@ int ep_add_channel(struct ep_table *t, struct ep_channel *c) {
     e.data.ch = *c;
     ep_map_insert(&t->entries, &e);
     ep_multimap_create_key(&t->chanout, e.epid);
-    ep_enable_fd(t, e.epid, c->fd);
+    ep_poll_enable(t->epoll_fd, e.epid, c->fd);
     return e.epid;
 }
 
@@ -94,39 +95,6 @@ int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
         printf("%d not found\n", epid);
     }
     return 0;
-}
-
-
-int ep_table_wait(struct ep_table *t, int *src, size_t count) {
-    struct epoll_event event [32];
-    if (count > 32) {
-        count = 32;
-    }
-    printf("wait for epoll events\n");
-    int p = epoll_wait(t->epoll_fd, event, count, -1);
-    if (p == -1) {
-        perror("epoll_wait");
-    }
-    else {
-        for (int i = 0; i < p; ++i) {
-            src[i] = event[i].data.u32;
-        }
-        return p;
-    }
-    return 0;
-}
-
-
-void ep_enable_fd(struct ep_table *t, int epid, int fd) {
-    struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLET;
-    ev.data.u32 = epid;
-
-    // add to epoll
-    int err = epoll_ctl(t->epoll_fd, EPOLL_CTL_ADD, fd, &ev);
-    if (err == -1) {
-        perror("epoll_ctl");
-    }
 }
 
 

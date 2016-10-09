@@ -4,6 +4,12 @@
 #include "protocol.h"
 
 
+int msg_channel_id(void *p) {
+    struct msg_channel *c = (struct msg_channel *) p;
+    return c->epid;
+}
+
+
 void msg_server_printsub(struct msg_server *s) {
     printf("%d sub keys\n", s->node_to_sub.keys.elem_count);
     printf("%d sub values\n", s->node_to_sub.value_count);
@@ -66,7 +72,7 @@ void msg_server_accept(struct ep_table *t, int epid, void *in) {
 
 void msg_server_recv(int ex, struct ep_event_view *ev) {
     struct msg_server *serv = (struct msg_server *) ev->self->data;
-    struct ep_tree *tree = &serv->tree;
+    struct ep_tree *tree = &serv->shared_tree;
     struct msg_request req;
     req.buf = &ev->self->buf;
     req.src = &ev->src;
@@ -86,11 +92,11 @@ void msg_server_recv(int ex, struct ep_event_view *ev) {
 void msg_server_run(struct msg_server *s, const char *sockpath) {
 
     // alloc structures
+    ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
-    msg_tree_init(&s->tree);
-    msg_tree_set_name(&s->tree, "testhost");
-    ep_tree_print(&s->tree);
+    msg_tree_init(&s->shared_tree);
+    msg_tree_set_name(&s->shared_tree, "testhost");
     ep_table_init(&s->tb, 256);
 
     // start threads

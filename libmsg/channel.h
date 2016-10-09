@@ -20,9 +20,10 @@ struct msg_subscriber {
  * TODO replace ep_table with specific functions
  */
 struct msg_channel {
+    int epid;
     int type;
     int subs;
-}
+};
 
 
 /*
@@ -34,9 +35,10 @@ struct msg_channel {
 struct msg_server {
     struct ep_table tb;
     struct ep_thread_pool pool;
-    struct ep_tree tree;
+    struct ep_tree shared_tree;
 
     // type of socket
+    // epid -> struct msg_channel
     struct ep_map socket_type;
 
     // the nodes owned by each socket connection

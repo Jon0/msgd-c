@@ -46,7 +46,11 @@ struct ep_table {
 };
 
 
+/*
+ * returns epid of struct ep_table_entry
+ */
 int ep_entry_id(void *p);
+
 
 /*
  * init the table
@@ -71,18 +75,6 @@ void ep_table_route(struct ep_table *t, int in, int out);
  * return the network address of one endpoint
  */
 int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out);
-
-
-/*
- * wait for events and return the sources
- */
-int ep_table_wait(struct ep_table *t, int *src, size_t count);
-
-
-/*
- * add a file descriptor to epoll
- */
-void ep_enable_fd(struct ep_table *t, int epid, int fd);
 
 
 /*

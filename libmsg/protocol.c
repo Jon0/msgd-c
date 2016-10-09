@@ -33,21 +33,21 @@ void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *ou
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_proc:
-        newid = msg_tree_add_proc(&srv->tree, m->body, m->head.size);
+        newid = msg_tree_add_proc(&srv->shared_tree, m->body, m->head.size);
         msg_server_connect(srv, out->epid, newid);
-        msg_tree_send(&srv->tree, out);
+        msg_tree_send(&srv->shared_tree, out);
         break;
     case msg_type_publ:
         newid = msg_node_of_host(srv, out->epid);
-        msg_tree_subnode(&srv->tree, m->body, m->head.size, newid);
-        msg_tree_send(&srv->tree, out);
+        msg_tree_subnode(&srv->shared_tree, m->body, m->head.size, newid);
+        msg_tree_send(&srv->shared_tree, out);
         break;
     case msg_type_subs:
         subints = (int *) m->body;
         msg_server_subscribe(srv, subints[0], out->epid, subints[1]);
-        msg_tree_send(&srv->tree, out);
+        msg_tree_send(&srv->shared_tree, out);
     case msg_type_avail:
-        msg_tree_send(&srv->tree, out);
+        msg_tree_send(&srv->shared_tree, out);
         break;
     }
 }
