@@ -7,6 +7,7 @@
 
 #include "node.h"
 
+
 /*
  * a client which requires updates when events occur
  */
@@ -23,6 +24,12 @@ struct msg_channel {
     int epid;
     int type;
     int subs;
+};
+
+
+struct msg_known_host {
+    char addr [32];
+    char name [256];
 };
 
 
@@ -56,10 +63,21 @@ void msg_server_connect(struct msg_server *s, int epid, int nodeid);
 void msg_server_disconnect(struct msg_server *s, int i);
 void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid);
 
+
+/*
+ * run generic server
+ */
+void msg_server_run(struct msg_server *serv, const char *sockpath);
+void msg_server_recv(struct msg_server *serv, int epid);
+void msg_server_peer_reply(struct msg_server *serv);
+void msg_server_client_reply(struct msg_server *serv);
+void msg_server_print_debug(struct msg_server *serv);
+
+/*
+ * implementing table functions
+ */
 void msg_server_accept(struct ep_table *t, int epid, void *in);
+void msg_server_handler(int ex, struct ep_event_view *ev);
 
-void msg_server_recv(int ex, struct ep_event_view *ev);
-
-void msg_server_run(struct msg_server *s, const char *sockpath);
 
 #endif

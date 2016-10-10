@@ -60,35 +60,6 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 }
 
 
-void msg_server_accept(struct ep_table *t, int epid, void *in) {
-    printf("accept id %d\n", epid);
-    struct ep_handler hdl;
-    ep_handler_init(&hdl, 4096, msg_server_recv, in);
-    int index = ep_multimap_insert(&t->chanout, epid, 1);
-    int *out = ep_multimap_get(&t->chanout, epid, index);
-    *out = ep_add_handler(t, &hdl);
-}
-
-
-void msg_server_recv(int ex, struct ep_event_view *ev) {
-    struct msg_server *serv = (struct msg_server *) ev->self->data;
-    struct ep_tree *tree = &serv->shared_tree;
-    struct msg_request req;
-    req.buf = &ev->self->buf;
-    req.src = &ev->src;
-    printf("recv from: %d\n", ev->epid);
-    printf("initial bytes: %d\n", ev->self->buf.size);
-    msg_poll_apply(serv, &req);
-
-    // print tree state
-    printf("\n=== New server state ===\n");
-    ep_tree_print(tree);
-    msg_tree_elems(tree);
-    msg_server_printsub(serv);
-    printf("remaining bytes: %d\n\n", ev->self->buf.size);
-}
-
-
 void msg_server_run(struct msg_server *s, const char *sockpath) {
 
     // alloc structures
@@ -114,4 +85,59 @@ void msg_server_run(struct msg_server *s, const char *sockpath) {
     // wait until threads complete
     ep_thread_pool_join(&s->pool);
     ep_table_free(&s->tb);
+}
+
+
+void msg_server_recv(struct msg_server *serv, int epid) {
+
+}
+
+
+void msg_server_peer_reply(struct msg_server *serv) {
+
+}
+
+
+void msg_server_client_reply(struct msg_server *serv, int src_epid) {
+    struct msg_request req;
+    req.buf = &ev->self->buf;
+    req.src = &ev->src;
+    printf("recv from: %d\n", epid);
+    printf("initial bytes: %d\n", ev->self->buf.size);
+    msg_poll_apply(serv, &req);
+    msg_server_print_debug(serv);
+    printf("remaining bytes: %d\n\n", ev->self->buf.size);
+}
+
+
+void msg_server_print_debug(struct msg_server *serv) {
+    printf("\n=== server state ===\n");
+    ep_tree_print(&serv->shared_tree);
+    msg_tree_elems(&serv->shared_tree);
+    msg_server_printsub(serv);
+}
+
+
+void msg_server_accept(struct ep_table *t, int epid, void *in) {
+    // check known hosts
+    // otherwise wait for remote to send id
+
+
+    printf("accept id %d\n", epid);
+    struct ep_handler hdl;
+    ep_handler_init(&hdl, 4096, msg_server_handler, in);
+    int index = ep_multimap_insert(&t->chanout, epid, 1);
+    int *out = ep_multimap_get(&t->chanout, epid, index);
+    *out = ep_add_handler(t, &hdl);
+}
+
+
+void msg_server_handler(int ex, struct ep_event_view *ev) {
+    if (ex) {
+        printf("exception %d\n", ex);
+    }
+    else {
+        struct msg_server *serv = (struct msg_server *) ev->self->data;
+        msg_server_recv(serv, ev->epid);
+    }
 }
