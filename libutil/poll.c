@@ -14,7 +14,6 @@ int ep_poll_wait(int epfd, int *src, size_t count) {
     if (count > 32) {
         count = 32;
     }
-    printf("wait for epoll events\n");
     int p = epoll_wait(epfd, event, count, -1);
     if (p == -1) {
         perror("epoll_wait");

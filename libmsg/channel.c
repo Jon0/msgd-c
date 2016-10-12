@@ -89,7 +89,7 @@ void msg_server_run(struct msg_server *s, const char *sockpath) {
 
 
 void msg_server_recv(struct msg_server *serv, int epid) {
-
+    printf("TODO recv\n");
 }
 
 
@@ -100,13 +100,16 @@ void msg_server_peer_reply(struct msg_server *serv) {
 
 void msg_server_client_reply(struct msg_server *serv, int src_epid) {
     struct msg_request req;
-    req.buf = &ev->self->buf;
-    req.src = &ev->src;
-    printf("recv from: %d\n", epid);
-    printf("initial bytes: %d\n", ev->self->buf.size);
+
+    // TODO find buffer from epid
+    struct ep_buffer *buf;
+    //req.buf = buf;
+    //req.src = &ev->src;
+    printf("recv from: %d\n", src_epid);
+    printf("initial bytes: %d\n", buf->size);
     msg_poll_apply(serv, &req);
     msg_server_print_debug(serv);
-    printf("remaining bytes: %d\n\n", ev->self->buf.size);
+    printf("remaining bytes: %d\n\n", buf->size);
 }
 
 
@@ -119,11 +122,14 @@ void msg_server_print_debug(struct msg_server *serv) {
 
 
 void msg_server_accept(struct ep_table *t, int epid, void *in) {
+    printf("new connection id %d\n", epid);
+    ep_table_print_id(t, epid);
+
+
+
     // check known hosts
     // otherwise wait for remote to send id
 
-
-    printf("accept id %d\n", epid);
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_server_handler, in);
     int index = ep_multimap_insert(&t->chanout, epid, 1);

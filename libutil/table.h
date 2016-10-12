@@ -66,6 +66,12 @@ void ep_close(struct ep_table *t, int epid);
 
 
 /*
+ * print status of one node
+ */
+void ep_table_print_id(struct ep_table *t, int epid);
+
+
+/*
  * automatically send input from one epid to another
  */
 void ep_table_route(struct ep_table *t, int in, int out);

@@ -70,7 +70,7 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 void msg_server_run(struct msg_server *serv, const char *sockpath);
 void msg_server_recv(struct msg_server *serv, int epid);
 void msg_server_peer_reply(struct msg_server *serv);
-void msg_server_client_reply(struct msg_server *serv);
+void msg_server_client_reply(struct msg_server *serv, int src_epid);
 void msg_server_print_debug(struct msg_server *serv);
 
 /*

@@ -69,6 +69,33 @@ void ep_close(struct ep_table *t, int epid) {
 }
 
 
+void ep_table_print_id(struct ep_table *t, int epid) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    if (e) {
+        switch(e->type) {
+        case ep_type_acceptor:
+            printf("[%d] Acceptor ");
+            ep_address_print(&e->data.acc.addr);
+            printf("\n");
+            break;
+        case ep_type_channel:
+            printf("[%d] Channel ");
+            ep_address_print(&e->data.acc.addr);
+            printf("\n");
+            break;
+        case ep_type_handler:
+            printf("[%d] Handler\n");
+            ep_address_print(&e->data.acc.addr);
+            printf("\n");
+            break;
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+}
+
+
 void ep_table_route(struct ep_table *t, int in, int out) {
     struct ep_table_entry *e = ep_map_get(&t->entries, in);
     if (e->type == ep_type_channel) {
