@@ -35,13 +35,13 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 }
 
 
-void msg_server_connect(struct msg_server *s, int epid, int nodeid) {
+void msg_server_add_client(struct msg_server *s, int epid, int nodeid) {
     printf("connect epid %d => %d\n", epid, nodeid);
     ep_multimap_insert(&s->host_to_tree, epid, 1);
 }
 
 
-void msg_server_disconnect(struct msg_server *s, int i) {
+void msg_server_rm_client(struct msg_server *s, int i) {
 
 }
 
@@ -60,7 +60,7 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 }
 
 
-void msg_server_run(struct msg_server *s, const char *sockpath) {
+void msg_server_init(struct msg_server *s, const char *sockpath) {
 
     // alloc structures
     ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
@@ -78,13 +78,35 @@ void msg_server_run(struct msg_server *s, const char *sockpath) {
     ep_listen_remote(&acc.addr, 2204);
     ep_init_acceptor(&acc, msg_server_accept, s);
     ep_add_acceptor(&s->tb, &acc);
+}
+
+
+int msg_server_connect(struct msg_server *serv, const char *addr) {
+    struct ep_channel ch;
+    ep_connect_remote(&ch.addr, addr, 2204);
+    int err = ep_init_channel(&ch);
+    if (err == -1) {
+        return err;
+    }
+    int remote = ep_add_channel(&serv->tb, &ch);
+
+    struct ep_handler hdl;
+    ep_handler_init(&hdl, 4096, msg_server_handler, serv);
+    int hid = ep_add_handler(&serv->tb, &hdl);
+    ep_table_route(&serv->tb, remote, hid);
+
+    // TODO request table of known addresses
+}
+
+
+void msg_server_run(struct msg_server *serv) {
 
     // main loop
-    ep_queue_from_table(&s->pool.queue);
+    ep_queue_from_table(&serv->pool.queue);
 
     // wait until threads complete
-    ep_thread_pool_join(&s->pool);
-    ep_table_free(&s->tb);
+    ep_thread_pool_join(&serv->pool);
+    ep_table_free(&serv->tb);
 }
 
 
@@ -124,12 +146,6 @@ void msg_server_print_debug(struct msg_server *serv) {
 void msg_server_accept(struct ep_table *t, int epid, void *in) {
     printf("new connection id %d\n", epid);
     ep_table_print_id(t, epid);
-
-
-
-    // check known hosts
-    // otherwise wait for remote to send id
-
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_server_handler, in);
     int index = ep_multimap_insert(&t->chanout, epid, 1);

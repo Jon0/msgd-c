@@ -59,15 +59,17 @@ struct msg_server {
 
 void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);
-void msg_server_connect(struct msg_server *s, int epid, int nodeid);
-void msg_server_disconnect(struct msg_server *s, int i);
+void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
+void msg_server_rm_client(struct msg_server *s, int i);
 void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid);
 
 
 /*
  * run generic server
  */
-void msg_server_run(struct msg_server *serv, const char *sockpath);
+void msg_server_init(struct msg_server *serv, const char *sockpath);
+int msg_server_connect(struct msg_server *serv, const char *addr);
+void msg_server_run(struct msg_server *serv);
 void msg_server_recv(struct msg_server *serv, int epid);
 void msg_server_peer_reply(struct msg_server *serv);
 void msg_server_client_reply(struct msg_server *serv, int src_epid);

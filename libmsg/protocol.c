@@ -34,7 +34,7 @@ void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *ou
     switch (m->head.id) {
     case msg_type_proc:
         newid = msg_tree_add_proc(&srv->shared_tree, m->body, m->head.size);
-        msg_server_connect(srv, out->epid, newid);
+        msg_server_add_client(srv, out->epid, newid);
         msg_tree_send(&srv->shared_tree, out);
         break;
     case msg_type_publ:
