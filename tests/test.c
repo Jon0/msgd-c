@@ -1,21 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libmsg/cmdline.h>
 #include <libmsg/msgd.h>
-
-
-void read_string(char *buf, size_t count) {
-    fgets(buf, count, stdin);
-    buf[strlen(buf) - 1] = 0;
-}
-
-
-int read_int() {
-    char *end;
-    char inbuf [32];
-    read_string(inbuf, sizeof(inbuf));
-    return strtol(inbuf, &end, 10);
-}
 
 
 void read_command(struct msg_client_state *ns) {
@@ -26,10 +13,10 @@ void read_command(struct msg_client_state *ns) {
     // read input
     // either connect or create a nodes
     printf("enter cmd (init, add, pub or sub)\n");
-    read_string(inbuf, sizeof(inbuf));
+    msg_read_string(inbuf, sizeof(inbuf));
     if (strcmp(inbuf, "init") == 0) {
         printf("enter process name\n");
-        read_string(inbuf, sizeof(inbuf));
+        msg_read_string(inbuf, sizeof(inbuf));
         printf("initalising %s\n", inbuf);
         msg_create_node(ns, inbuf, 0);
 
@@ -40,17 +27,17 @@ void read_command(struct msg_client_state *ns) {
     }
     else if (strcmp(inbuf, "add") == 0) {
         printf("enter node name\n");
-        read_string(inbuf, sizeof(inbuf));
+        msg_read_string(inbuf, sizeof(inbuf));
         printf("adding %s\n", inbuf);
     }
     else if (strcmp(inbuf, "pub") == 0) {
         printf("enter node name\n");
-        read_string(inbuf, sizeof(inbuf));
+        msg_read_string(inbuf, sizeof(inbuf));
         msg_publish(ns, inbuf, 0);
     }
     else if (strcmp(inbuf, "sub") == 0) {
         printf("enter node id\n");
-        nodebuf = read_int();
+        nodebuf = msg_read_int();
         printf("subscribing %d\n", nodebuf);
         msg_subscribe(ns, nodebuf, 42);
     }
