@@ -156,7 +156,7 @@ void ep_sink_print(struct ep_sink *s) {
 size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
     struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
     if (e) {
-        size_t wr = ep_fwd_buf(e, b, start);
+        size_t wr = ep_entry_write_buf(e, b, start);
         ep_queue_notify(s->q, e, s->srcid);
         return wr;
     }
@@ -170,7 +170,7 @@ size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
 size_t ep_write_blk(struct ep_sink *s, char *b, size_t count) {
     struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
     if (e) {
-        size_t wr = ep_fwd_blk(e, b, count);
+        size_t wr = ep_entry_write_blk(e, b, count);
         ep_queue_notify(s->q, e, s->srcid);
         return wr;
     }

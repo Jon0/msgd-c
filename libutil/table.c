@@ -189,14 +189,14 @@ void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c) {
             int out_epid = (int) t->chanout.values[sizeof(int) * i];
             struct ep_table_entry *e = ep_map_get(&t->entries, out_epid);
             if (e) {
-                ep_fwd_blk(e, buf, r);
+                ep_entry_write_blk(e, buf, r);
             }
         }
     }
 }
 
 
-size_t ep_fwd_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start) {
+size_t ep_entry_write_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start) {
     switch(e->type) {
     case ep_type_channel:
         return ep_buffer_write(b, e->data.ch.fd, start);
@@ -206,7 +206,7 @@ size_t ep_fwd_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start) {
 }
 
 
-size_t ep_fwd_blk(struct ep_table_entry *e, char *b, size_t count) {
+size_t ep_entry_write_blk(struct ep_table_entry *e, char *b, size_t count) {
     switch(e->type) {
     case ep_type_channel:
         return ep_ch_write_blk(&e->data.ch, b, count);

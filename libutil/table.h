@@ -100,8 +100,8 @@ void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c);
 /*
  * write data to endpoints
  */
-size_t ep_fwd_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start);
-size_t ep_fwd_blk(struct ep_table_entry *e, char *b, size_t count);
+size_t ep_entry_write_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start);
+size_t ep_entry_write_blk(struct ep_table_entry *e, char *b, size_t count);
 
 
 #endif
