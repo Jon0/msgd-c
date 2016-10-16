@@ -46,6 +46,15 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 }
 
 
+void msg_server_init_channel(struct msg_server *s, int epid) {
+    struct msg_channel ch;
+    ch.epid = epid;
+    ch.type = 0;
+    ch.subs = 0;
+    ep_map_insert(&s->socket_type, &ch);
+}
+
+
 void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid) {
     printf("subscribe updates on node id %d to epid %d\n", sendnode, epid);
     int index = ep_multimap_insert(&s->node_to_sub, sendnode, 1);
@@ -94,6 +103,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     ep_handler_init(&hdl, 4096, msg_server_handler, serv);
     int hid = ep_add_handler(&serv->tb, &hdl);
     ep_table_route(&serv->tb, remote, hid);
+    msg_server_init_channel(serv, remote);
 
     // request table of known addresses
     msg_req_peers(&ch.write_buf);
@@ -113,8 +123,13 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-void msg_server_recv(struct msg_server *serv, int epid) {
-    printf("TODO recv\n");
+void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
+    printf("recv from: %d\n", src_epid);
+    printf("initial bytes: %d\n", buf->size);
+
+    //
+
+    printf("remaining bytes: %d\n\n", buf->size);
 }
 
 
@@ -123,18 +138,15 @@ void msg_server_peer_reply(struct msg_server *serv) {
 }
 
 
-void msg_server_client_reply(struct msg_server *serv, int src_epid) {
-    struct msg_request req;
-
-    // TODO find buffer from epid
-    struct ep_buffer *buf;
-    //req.buf = buf;
-    //req.src = &ev->src;
-    printf("recv from: %d\n", src_epid);
-    printf("initial bytes: %d\n", buf->size);
-    msg_poll_apply(serv, &req);
-    msg_server_print_debug(serv);
-    printf("remaining bytes: %d\n\n", buf->size);
+void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
+    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
+    if (e) {
+        struct msg_request req;
+        req.in = buf;
+        req.out = ep_entry_get_buffer(e);
+        msg_poll_apply(serv, src_epid, &req);
+        msg_server_print_debug(serv);
+    }
 }
 
 
@@ -146,14 +158,15 @@ void msg_server_print_debug(struct msg_server *serv) {
 }
 
 
-void msg_server_accept(struct ep_table *t, int epid, void *in) {
+void msg_server_accept(struct ep_table *t, int epid, void *serv) {
     printf("new connection id %d\n", epid);
     ep_table_print_id(t, epid);
     struct ep_handler hdl;
-    ep_handler_init(&hdl, 4096, msg_server_handler, in);
+    ep_handler_init(&hdl, 4096, msg_server_handler, serv);
     int index = ep_multimap_insert(&t->chanout, epid, 1);
     int *out = ep_multimap_get(&t->chanout, epid, index);
     *out = ep_add_handler(t, &hdl);
+    msg_server_init_channel(serv, epid);
 }
 
 
@@ -163,6 +176,6 @@ void msg_server_handler(int ex, struct ep_event_view *ev) {
     }
     else {
         struct msg_server *serv = (struct msg_server *) ev->self->data;
-        msg_server_recv(serv, ev->epid);
+        msg_server_recv(serv, ev->epid, &ev->self->buf);
     }
 }

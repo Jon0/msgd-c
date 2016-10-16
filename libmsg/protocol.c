@@ -4,47 +4,51 @@
 #include "protocol.h"
 
 
-void msg_poll_apply(struct msg_server *srv, struct msg_request *r) {
+void msg_poll_apply(struct msg_server *srv, int srcid, struct msg_request *r) {
     struct msg_message m;
-    printf("recv update from ");
-    ep_sink_print(r->src);
-
+    m.srcid = srcid;
+    printf("recv update from %d\n", srcid);
 
     // recieving requests to the local server
     size_t hs = sizeof(struct msg_header);
     size_t read_header;
     size_t read_body;
-    while (r->buf->size >= hs) {
-        read_header = ep_buffer_peek(r->buf, (char *) &m.head, 0, hs);
+    while (r->in->size >= hs) {
+        read_header = ep_buffer_peek(r->in, (char *) &m.head, 0, hs);
         if (read_header == hs) {
-            read_body = ep_buffer_peek(r->buf, m.body, hs, m.head.size);
+            read_body = ep_buffer_peek(r->in, m.body, hs, m.head.size);
             if (read_body == m.head.size) {
-                ep_buffer_release(r->buf, hs + m.head.size);
-                msg_parse(srv, &m, r->src);
+                ep_buffer_release(r->in, hs + m.head.size);
+                msg_parse(srv, &m, r->out);
             }
         }
     }
 }
 
 
-void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_sink *out) {
+void msg_parse(struct msg_server *srv, struct msg_message *m, struct ep_buffer *out) {
     int newid;
     int *subints;
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
+    case msg_type_peer:
+        newid = msg_tree_add_proc(&srv->shared_tree, m->body, m->head.size);
+        msg_server_add_client(srv, m->srcid, newid);
+        msg_tree_send(&srv->shared_tree, out);
+        break;
     case msg_type_proc:
         newid = msg_tree_add_proc(&srv->shared_tree, m->body, m->head.size);
-        msg_server_add_client(srv, out->epid, newid);
+        msg_server_add_client(srv, m->srcid, newid);
         msg_tree_send(&srv->shared_tree, out);
         break;
     case msg_type_publ:
-        newid = msg_node_of_host(srv, out->epid);
+        newid = msg_node_of_host(srv, m->srcid);
         msg_tree_subnode(&srv->shared_tree, m->body, m->head.size, newid);
         msg_tree_send(&srv->shared_tree, out);
         break;
     case msg_type_subs:
         subints = (int *) m->body;
-        msg_server_subscribe(srv, subints[0], out->epid, subints[1]);
+        msg_server_subscribe(srv, subints[0], m->srcid, subints[1]);
         msg_tree_send(&srv->shared_tree, out);
     case msg_type_avail:
         msg_tree_send(&srv->shared_tree, out);
@@ -110,6 +114,6 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
 }
 
 
-void msg_tree_send(struct ep_tree *tree, struct ep_sink *out) {
-    ep_tree_send(tree, out);
+void msg_tree_send(struct ep_tree *tree, struct ep_buffer *out) {
+    ep_tree_write(tree, out);
 }

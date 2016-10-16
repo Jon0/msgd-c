@@ -15,6 +15,7 @@ struct ep_table;
 
 /*
  * writable endpoint
+ * no longer used, use buffer instead
  */
 struct ep_sink {
     struct ep_event_queue *q;
@@ -27,8 +28,8 @@ struct ep_sink {
  * data visible inside each thread
  */
 struct ep_event_view {
+    int                 src;
     int                 epid;
-    struct ep_sink      src;
     struct ep_handler  *self;
 };
 

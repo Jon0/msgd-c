@@ -17,7 +17,8 @@ typedef int32_t msg_int_t;
  * types of messages
  */
 enum msg_type_id {
-    msg_type_init,
+    msg_type_server,
+    msg_type_client,
     msg_type_peer,
     msg_type_proc,
     msg_type_publ,
@@ -40,25 +41,26 @@ struct msg_header {
 
 
 struct msg_message {
+    int               srcid;
     struct msg_header head;
     char              body [256];
 };
 
 
 /*
- * required to create responses
+ * read messages from in, write responses to out
  */
 struct msg_request {
-    struct ep_buffer   *buf;
-    struct ep_sink     *src;
+    struct ep_buffer   *in;
+    struct ep_buffer   *out;
 };
 
 
 /*
  * server responding to events
  */
-void msg_poll_apply(struct msg_server *tree, struct msg_request *r);
-void msg_parse(struct msg_server *tree, struct msg_message *m, struct ep_sink *out);
+void msg_poll_apply(struct msg_server *tree, int srcid, struct msg_request *r);
+void msg_parse(struct msg_server *tree, struct msg_message *m, struct ep_buffer *out);
 int msg_read(struct ep_table *t, int epid, struct msg_message *out);
 
 
@@ -74,7 +76,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
 /*
  * send tree with header
  */
-void msg_tree_send(struct ep_tree *tree, struct ep_sink *out);
+void msg_tree_send(struct ep_tree *tree, struct ep_buffer *out);
 
 
 #endif

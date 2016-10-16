@@ -16,15 +16,11 @@ struct msg_client_state {
     struct ep_table       tb;
     struct ep_thread_pool pool;
     struct ep_tree        tree;
-    int              tree_update; // is tree awaiting an update
-    int              epid;
-    int              hdlid;
-    int              connected;
-    struct ep_buffer send_buf;
-    struct ep_buffer recv_buf;
-    struct ep_sink   out;
-    size_t           writepos;
-    char             proc_name [256];
+    int                tree_update; // is tree awaiting an update
+    int                server_id;   // used to write messages to server
+    int                hdlid;
+    int                connected;
+    char               proc_name [256];
 };
 
 

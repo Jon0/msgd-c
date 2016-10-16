@@ -74,24 +74,24 @@ void ep_table_print_id(struct ep_table *t, int epid) {
     if (e) {
         switch(e->type) {
         case ep_type_acceptor:
-            printf("[%d] Acceptor ");
+            printf("[%d] Acceptor ", epid);
             ep_address_print(&e->data.acc.addr);
             printf("\n");
             break;
         case ep_type_channel:
-            printf("[%d] Channel ");
+            printf("[%d] Channel ", epid);
             ep_address_print(&e->data.acc.addr);
             printf("\n");
             break;
         case ep_type_handler:
-            printf("[%d] Handler\n");
+            printf("[%d] Handler\n", epid);
             ep_address_print(&e->data.acc.addr);
             printf("\n");
             break;
         }
     }
     else {
-        printf("%d not found\n", epid);
+        printf("[%d] Not found\n", epid);
     }
 }
 
@@ -104,24 +104,6 @@ void ep_table_route(struct ep_table *t, int in, int out) {
         *chan = out;
     }
 }
-
-
-struct ep_buffer *ep_table_get_buffer(struct ep_table *t, int epid) {
-    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
-    if (e) {
-        switch(e->type) {
-        case ep_type_handler:
-            return &e->data.hdl.buf;
-        case ep_type_channel:
-            return &e->data.ch.write_buf;
-        }
-    }
-    else {
-        printf("%d not found\n", epid);
-    }
-    return NULL;
-}
-
 
 
 int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
@@ -211,6 +193,17 @@ void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c) {
             }
         }
     }
+}
+
+
+struct ep_buffer *ep_entry_get_buffer(struct ep_table_entry *e) {
+    switch(e->type) {
+    case ep_type_handler:
+        return &e->data.hdl.buf;
+    case ep_type_channel:
+        return &e->data.ch.write_buf;
+    }
+    return NULL;
 }
 
 

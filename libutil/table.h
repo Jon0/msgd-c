@@ -81,12 +81,6 @@ void ep_table_route(struct ep_table *t, int in, int out);
 
 
 /*
- * buffer to write new data to
- */
-struct ep_buffer *ep_table_get_buffer(struct ep_table *t, int epid);
-
-
-/*
  * return the network address of one endpoint
  */
 int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out);
@@ -104,6 +98,12 @@ size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b);
  */
 void ep_table_fwd(struct ep_table *t, int epid);
 void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c);
+
+
+/*
+ * buffer to write new data to
+ */
+struct ep_buffer *ep_entry_get_buffer(struct ep_table_entry *e);
 
 
 /*

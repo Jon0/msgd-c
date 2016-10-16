@@ -114,10 +114,8 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
     else {
         if (h->min_input <= h->buf.size) {
             struct ep_event_view v;
+            v.src = ev->srcid;
             v.epid = ev->epid;
-            v.src.q = q;
-            v.src.epid = ev->srcid;
-            v.src.srcid = ev->epid;
             v.self = h;
             h->callback(0, &v);
         }
@@ -136,21 +134,6 @@ void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int src
         break;
     }
 }
-
-
-void ep_sink_init(struct ep_event_queue *q, int epid, struct ep_sink *out) {
-    out->q = q;
-    out->epid = epid;
-    out->srcid = q->table->next_id++;
-}
-
-
-void ep_sink_print(struct ep_sink *s) {
-    struct ep_address addr;
-    ep_table_addr(s->q->table, s->epid, &addr);
-    ep_address_print(&addr);
-}
-
 
 
 size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
