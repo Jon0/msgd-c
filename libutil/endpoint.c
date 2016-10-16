@@ -13,6 +13,12 @@ void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d
 }
 
 
+size_t ep_channel_flush(struct ep_channel *c) {
+    ep_buffer_write(&c->write_buf, c->fd, c->write_buf.begin);
+    ep_buffer_clear(&c->write_buf);
+}
+
+
 void ep_address_print(struct ep_address *a) {
     struct sockaddr_in *s = (struct sockaddr_in *) &a->data;
     char *addr = (char *) &s->sin_addr;

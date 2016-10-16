@@ -106,6 +106,24 @@ void ep_table_route(struct ep_table *t, int in, int out) {
 }
 
 
+struct ep_buffer *ep_table_get_buffer(struct ep_table *t, int epid) {
+    struct ep_table_entry *e = ep_map_get(&t->entries, epid);
+    if (e) {
+        switch(e->type) {
+        case ep_type_handler:
+            return &e->data.hdl.buf;
+        case ep_type_channel:
+            return &e->data.ch.write_buf;
+        }
+    }
+    else {
+        printf("%d not found\n", epid);
+    }
+    return NULL;
+}
+
+
+
 int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
     struct ep_table_entry *e = ep_map_get(&t->entries, epid);
     if (e) {
@@ -203,14 +221,16 @@ size_t ep_entry_write_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t 
     case ep_type_handler:
         return ep_buffer_copy(&e->data.hdl.buf, b, start);
     }
+    return 0;
 }
 
 
 size_t ep_entry_write_blk(struct ep_table_entry *e, char *b, size_t count) {
     switch(e->type) {
     case ep_type_channel:
-        return ep_ch_write_blk(&e->data.ch, b, count);
+        return write(e->data.ch.fd, b, count);
     case ep_type_handler:
-        return ep_hdl_write_blk(&e->data.hdl, b, count);
+        return ep_buffer_insert(&e->data.hdl.buf, b, count);
     }
+    return 0;
 }

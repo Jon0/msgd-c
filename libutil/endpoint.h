@@ -80,6 +80,7 @@ struct ep_acceptor {
  * moves input from file descriptors into handlers
  */
 struct ep_channel {
+    struct ep_buffer  write_buf;
     struct ep_address addr;
     int               fd;
 };
@@ -87,9 +88,8 @@ struct ep_channel {
 
 void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d);
 
-void ep_address_print(struct ep_address *a);
+size_t ep_channel_flush(struct ep_channel *c);
 
-size_t ep_ch_write_blk(struct ep_channel *c, char *b, size_t count);
-size_t ep_hdl_write_blk(struct ep_handler *h, char *b, size_t count);
+void ep_address_print(struct ep_address *a);
 
 #endif

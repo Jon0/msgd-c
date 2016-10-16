@@ -87,5 +87,6 @@ int ep_init_channel(struct ep_channel *c) {
         close(c->fd);
         return -1;
     }
+    ep_buffer_init(&c->write_buf, malloc(4096), 4096);
     return c->fd;
 }

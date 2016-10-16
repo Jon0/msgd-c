@@ -96,8 +96,9 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     ep_table_route(&serv->tb, remote, hid);
 
     // request table of known addresses
-    // TODO request directly to channel
-    // msg_req_peers(struct ep_buffer *b);
+    msg_req_peers(&ch.write_buf);
+    ep_channel_flush(&ch);
+    return remote;
 }
 
 

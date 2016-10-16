@@ -59,6 +59,9 @@ void ep_table_init(struct ep_table *t, size_t max);
 void ep_table_free(struct ep_table *t);
 
 
+/*
+ * returns the id of the new element
+ */
 int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a);
 int ep_add_channel(struct ep_table *t, struct ep_channel *c);
 int ep_add_handler(struct ep_table *t, struct ep_handler *h);
@@ -75,6 +78,12 @@ void ep_table_print_id(struct ep_table *t, int epid);
  * automatically send input from one epid to another
  */
 void ep_table_route(struct ep_table *t, int in, int out);
+
+
+/*
+ * buffer to write new data to
+ */
+struct ep_buffer *ep_table_get_buffer(struct ep_table *t, int epid);
 
 
 /*
