@@ -28,12 +28,6 @@ struct msg_channel {
 };
 
 
-struct msg_known_host {
-    char addr [32];
-    char name [256];
-};
-
-
 /*
  * complete server state
  * includes map from host input ids to tree node ids
@@ -43,7 +37,7 @@ struct msg_known_host {
 struct msg_server {
     struct ep_table tb;
     struct ep_thread_pool pool;
-    struct ep_tree shared_tree;
+
 
     // type of socket
     // epid -> struct msg_channel
@@ -55,9 +49,14 @@ struct msg_server {
 
     // nodeid -> struct msg_subscriber
     struct ep_multimap  node_to_sub;
+
+    struct msg_host *hosts;
+    size_t host_count;
 };
 
 
+struct ep_tree *msg_server_self(struct msg_server *s);
+int msg_server_add_host(struct msg_server *s, const char *name);
 void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
@@ -80,8 +79,7 @@ void msg_server_run(struct msg_server *serv);
 int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out);
 void msg_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
-void msg_server_peer_reply(struct msg_server *serv);
-void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);
+void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);
 void msg_server_print_debug(struct msg_server *serv);
 
 /*

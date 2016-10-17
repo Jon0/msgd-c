@@ -14,6 +14,14 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
 }
 
 
+void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count) {
+    b->ptr = buf;
+    b->avail = count;
+    b->begin = 0;
+    b->size = count;
+}
+
+
 void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
     size_t end_index = b->begin + b->size;
     if (end_index < b->avail) {

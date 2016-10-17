@@ -16,11 +16,12 @@ int msg_read(struct ep_table *t, int epid, struct msg_message *out) {
 }
 
 
-void msg_req_peers(struct ep_buffer *b) {
+void msg_req_peers(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
-    head.id = msg_type_peer;
-    head.size = 0;
+    head.id = msg_type_peer_req;
+    head.size = ep_tree_serial_bytes(&h->shared_tree);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
+    msg_host_send(h, b);
 }
 
 
@@ -58,6 +59,23 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, (char *) &nodeid, sizeof(int));
     ep_buffer_insert(b, (char *) &subid, sizeof(int));
+}
+
+
+void msg_rsp_peers(struct ep_buffer *b, struct msg_host *h, size_t host_count) {
+    for (int i = 0; i < host_count; ++i) {
+        msg_host_send(&h[i], b);
+    }
+}
+
+
+void msg_host_send(struct msg_host *in, struct ep_buffer *out) {
+    msg_tree_send(&in->shared_tree, out);
+}
+
+
+void msg_host_recv(struct ep_buffer *in, struct msg_host *out) {
+    ep_tree_read(&out->shared_tree, in);
 }
 
 

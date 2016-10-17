@@ -144,6 +144,11 @@ void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
 }
 
 
+size_t ep_tree_serial_bytes(struct ep_tree *t) {
+    return sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * t->count;
+}
+
+
 void ep_tree_print(struct ep_tree *t) {
     printf("%d nodes\n", t->count);
     if (t->count > 0) {

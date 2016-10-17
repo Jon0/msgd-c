@@ -18,7 +18,8 @@ typedef int32_t msg_int_t;
 enum msg_type_id {
     msg_type_server,
     msg_type_client,
-    msg_type_peer,
+    msg_type_peer_req,
+    msg_type_peer_rsp,
     msg_type_proc,
     msg_type_publ,
     msg_type_subs,
@@ -49,13 +50,31 @@ struct msg_message {
 
 
 /*
+ * per remote host information
+ */
+struct msg_host {
+    int active_id;
+    char addr [32];
+    char hostname [256];
+    struct ep_tree shared_tree;
+};
+
+
+/*
  * request types
  */
-void msg_req_peers(struct ep_buffer *b);
+void msg_req_peers(struct ep_buffer *b, struct msg_host *h);
 void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int nodeid);
 void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
+
+/*
+ * response types
+ */
+void msg_rsp_peers(struct ep_buffer *b, struct msg_host *h, size_t host_count);
+void msg_host_send(struct msg_host *in, struct ep_buffer *out);
+void msg_host_recv(struct ep_buffer *in, struct msg_host *out);
 
 /*
  * send tree with header

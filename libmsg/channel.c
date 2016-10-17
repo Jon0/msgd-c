@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "channel.h"
 #include "protocol.h"
@@ -7,6 +8,21 @@
 int msg_channel_id(void *p) {
     struct msg_channel *c = (struct msg_channel *) p;
     return c->epid;
+}
+
+
+struct ep_tree *msg_server_self(struct msg_server *s) {
+    return &s->hosts[0].shared_tree;
+}
+
+
+int msg_server_add_host(struct msg_server *s, const char *name) {
+    int hostid = s->host_count++;
+    struct msg_host *h = &s->hosts[hostid];
+    h->active_id = 0;
+    strcpy(h->hostname, name);
+    msg_tree_init(&h->shared_tree);
+    return hostid;
 }
 
 
@@ -75,9 +91,12 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
-    msg_tree_init(&s->shared_tree);
-    msg_tree_set_name(&s->shared_tree, "testhost");
     ep_table_init(&s->tb, 256);
+
+    // init self as host
+    s->hosts = malloc(sizeof(struct msg_host) * 32);
+    s->host_count = 0;
+    msg_server_add_host(s, "testhost");
 
     // start threads
     ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
@@ -106,7 +125,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     msg_server_init_channel(serv, remote);
 
     // request table of known addresses
-    msg_req_peers(&ch.write_buf);
+    msg_req_peers(&ch.write_buf, &serv->hosts[0]);
     ep_channel_flush(&ch);
     return remote;
 }
@@ -144,31 +163,37 @@ int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out) {
 
 
 void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    struct ep_tree *self_tree = msg_server_self(serv);
+    struct ep_buffer tempbuf;
     int newid;
     int *subints;
+    ep_buffer_wrap(&tempbuf, m->body, m->head.size);
+
+    // apply actions based on message type
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
-    case msg_type_peer:
-        newid = msg_tree_add_proc(&serv->shared_tree, m->body, m->head.size);
-        msg_server_add_client(serv, srcid, newid);
-        msg_tree_send(&serv->shared_tree, out);
+    case msg_type_peer_req:
+        printf("recv peer\n");
+        newid = serv->host_count++;
+        msg_host_recv(&tempbuf, &serv->hosts[newid]);
+        msg_rsp_peers(out, serv->hosts, serv->host_count);
         break;
     case msg_type_proc:
-        newid = msg_tree_add_proc(&serv->shared_tree, m->body, m->head.size);
+        newid = msg_tree_add_proc(self_tree, m->body, m->head.size);
         msg_server_add_client(serv, srcid, newid);
-        msg_tree_send(&serv->shared_tree, out);
+        msg_tree_send(self_tree, out);
         break;
     case msg_type_publ:
         newid = msg_node_of_host(serv, srcid);
-        msg_tree_subnode(&serv->shared_tree, m->body, m->head.size, newid);
-        msg_tree_send(&serv->shared_tree, out);
+        msg_tree_subnode(self_tree, m->body, m->head.size, newid);
+        msg_tree_send(self_tree, out);
         break;
     case msg_type_subs:
         subints = (int *) m->body;
         msg_server_subscribe(serv, subints[0], srcid, subints[1]);
-        msg_tree_send(&serv->shared_tree, out);
+        msg_tree_send(self_tree, out);
     case msg_type_avail:
-        msg_tree_send(&serv->shared_tree, out);
+        msg_tree_send(self_tree, out);
         break;
     }
 }
@@ -180,19 +205,14 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
 
     struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
     if (e) {
-        msg_server_client_reply(serv, src_epid, buf, &e->data.ch);
+        msg_server_reply(serv, src_epid, buf, &e->data.ch);
         msg_server_print_debug(serv);
     }
     printf("remaining bytes: %d\n\n", buf->size);
 }
 
 
-void msg_server_peer_reply(struct msg_server *serv) {
-
-}
-
-
-void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out) {
+void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out) {
     struct msg_message msg;
     while(msg_server_poll_message(in, &msg)) {
         msg_server_apply(serv, src_epid, &msg, &out->write_buf);
@@ -203,8 +223,11 @@ void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_bu
 
 void msg_server_print_debug(struct msg_server *serv) {
     printf("\n=== server state ===\n");
-    ep_tree_print(&serv->shared_tree);
-    msg_tree_elems(&serv->shared_tree);
+    for (int i = 0; i < serv->host_count; ++i) {
+        printf("Host id %d\n", i);
+        ep_tree_print(&serv->hosts[i].shared_tree);
+        msg_tree_elems(&serv->hosts[i].shared_tree);
+    }
     msg_server_printsub(serv);
 }
 
@@ -227,6 +250,6 @@ void msg_server_handler(int ex, struct ep_event_view *ev) {
     }
     else {
         struct msg_server *serv = (struct msg_server *) ev->self->data;
-        msg_server_recv(serv, ev->epid, &ev->self->buf);
+        msg_server_recv(serv, ev->src, &ev->self->buf);
     }
 }

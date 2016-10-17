@@ -54,22 +54,6 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
 }
 
 
-int msg_get_peers(struct msg_client_state *cs) {
-    if (cs->connected) {
-
-        // send peer request
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
-        struct ep_channel *ch = &e->data.ch;
-        msg_req_peers(&ch->write_buf);
-        printf("sent msg length: %d\n", ch->write_buf.size);
-        ep_channel_flush(ch);
-    }
-    else {
-        printf("no connection\n");
-    }
-}
-
-
 void msg_create_node(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
 

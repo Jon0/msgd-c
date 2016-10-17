@@ -17,6 +17,13 @@ struct ep_buffer {
  */
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 
+
+/*
+ * wraps a fixed size buffer
+ */
+void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count);
+
+
 /*
  * return end index and continuous bytes that can be used past the end
  */

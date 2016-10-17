@@ -35,7 +35,8 @@ struct msg_node *msg_tree_add_node(struct ep_tree *t, struct msg_node *p) {
 
 void msg_tree_set_name(struct ep_tree *t, const char *hostname) {
 
-    // create a root node
+    // create a root node containing a name
+    // no longer used
     ep_tree_link(t, -1, 0);
     struct msg_node *n = ep_tree_find(t, 0);
     strcpy(n->name, hostname);
