@@ -4,7 +4,6 @@
 #include <libutil/buffer.h>
 #include <libutil/queue.h>
 
-#include "channel.h"
 #include "node.h"
 
 /*
@@ -40,28 +39,13 @@ struct msg_header {
 };
 
 
+/*
+ * messages between client and server
+ */
 struct msg_message {
-    int               srcid;
     struct msg_header head;
     char              body [256];
 };
-
-
-/*
- * read messages from in, write responses to out
- */
-struct msg_request {
-    struct ep_buffer   *in;
-    struct ep_buffer   *out;
-};
-
-
-/*
- * server responding to events
- */
-void msg_poll_apply(struct msg_server *tree, int srcid, struct msg_request *r);
-void msg_parse(struct msg_server *tree, struct msg_message *m, struct ep_buffer *out);
-int msg_read(struct ep_table *t, int epid, struct msg_message *out);
 
 
 /*

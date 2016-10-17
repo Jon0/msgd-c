@@ -6,6 +6,7 @@
 #include <libutil/thread.h>
 
 #include "node.h"
+#include "protocol.h"
 
 
 /*
@@ -71,9 +72,16 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 void msg_server_init(struct msg_server *serv, const char *sockpath);
 int msg_server_connect(struct msg_server *serv, const char *addr);
 void msg_server_run(struct msg_server *serv);
+
+
+/*
+ * server responding to events
+ */
+int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out);
+void msg_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
 void msg_server_peer_reply(struct msg_server *serv);
-void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
+void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);
 void msg_server_print_debug(struct msg_server *serv);
 
 /*

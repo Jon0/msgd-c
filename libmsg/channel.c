@@ -123,12 +123,66 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
+int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out) {
+
+    // recieving requests to the local server
+    size_t hs = sizeof(struct msg_header);
+    size_t read_header;
+    size_t read_body;
+    if (in->size >= hs) {
+        read_header = ep_buffer_peek(in, (char *) &out->head, 0, hs);
+        if (read_header == hs) {
+            read_body = ep_buffer_peek(in, out->body, hs, out->head.size);
+            if (read_body == out->head.size) {
+                ep_buffer_release(in, hs + out->head.size);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
+void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    int newid;
+    int *subints;
+    printf("recv type %d (%d)\n", m->head.id, m->head.size);
+    switch (m->head.id) {
+    case msg_type_peer:
+        newid = msg_tree_add_proc(&serv->shared_tree, m->body, m->head.size);
+        msg_server_add_client(serv, srcid, newid);
+        msg_tree_send(&serv->shared_tree, out);
+        break;
+    case msg_type_proc:
+        newid = msg_tree_add_proc(&serv->shared_tree, m->body, m->head.size);
+        msg_server_add_client(serv, srcid, newid);
+        msg_tree_send(&serv->shared_tree, out);
+        break;
+    case msg_type_publ:
+        newid = msg_node_of_host(serv, srcid);
+        msg_tree_subnode(&serv->shared_tree, m->body, m->head.size, newid);
+        msg_tree_send(&serv->shared_tree, out);
+        break;
+    case msg_type_subs:
+        subints = (int *) m->body;
+        msg_server_subscribe(serv, subints[0], srcid, subints[1]);
+        msg_tree_send(&serv->shared_tree, out);
+    case msg_type_avail:
+        msg_tree_send(&serv->shared_tree, out);
+        break;
+    }
+}
+
+
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
     printf("recv from: %d\n", src_epid);
     printf("initial bytes: %d\n", buf->size);
 
-    //
-
+    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
+    if (e) {
+        msg_server_client_reply(serv, src_epid, buf, &e->data.ch);
+        msg_server_print_debug(serv);
+    }
     printf("remaining bytes: %d\n\n", buf->size);
 }
 
@@ -138,15 +192,12 @@ void msg_server_peer_reply(struct msg_server *serv) {
 }
 
 
-void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
-    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
-    if (e) {
-        struct msg_request req;
-        req.in = buf;
-        req.out = ep_entry_get_buffer(e);
-        msg_poll_apply(serv, src_epid, &req);
-        msg_server_print_debug(serv);
+void msg_server_client_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out) {
+    struct msg_message msg;
+    while(msg_server_poll_message(in, &msg)) {
+        msg_server_apply(serv, src_epid, &msg, &out->write_buf);
     }
+    ep_channel_flush(out);
 }
 
 

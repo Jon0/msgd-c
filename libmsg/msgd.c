@@ -13,9 +13,6 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
     struct ep_buffer *recv_buf = &ev->self->buf;
     struct ep_table_entry *e = ep_map_get(&cs->tb.entries, ev->src);
     if (e) {
-        struct msg_request req;
-        req.in = recv_buf;
-        req.out = ep_entry_get_buffer(e);
         printf("recv msg length: %d\n", recv_buf->size);
 
         // read tree state
