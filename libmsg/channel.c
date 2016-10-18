@@ -173,9 +173,10 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_peer_req:
-        printf("recv peer\n");
+        printf("recv host\n");
         newid = serv->host_count++;
         msg_host_recv(&tempbuf, &serv->hosts[newid]);
+        printf("return all hosts\n");
         msg_rsp_peers(out, serv->hosts, serv->host_count);
         break;
     case msg_type_proc:
@@ -196,6 +197,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
         msg_tree_send(self_tree, out);
         break;
     }
+    printf("message applied\n");
 }
 
 
