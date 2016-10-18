@@ -61,6 +61,12 @@ struct msg_host {
 
 
 /*
+ * verify a buffer contains a valid message
+ */
+int msg_invalid_buffer(struct ep_buffer *in);
+
+
+/*
  * request types
  */
 void msg_req_peers(struct ep_buffer *b, struct msg_host *h);

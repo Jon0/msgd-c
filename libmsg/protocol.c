@@ -4,15 +4,21 @@
 #include "protocol.h"
 
 
-int msg_read(struct ep_table *t, int epid, struct msg_message *out) {
-    // client reads replies
-    int r = ep_table_read(t, epid, (char *) &out->head, sizeof(struct msg_header));
-    if (r == sizeof(struct msg_header)) {
-        printf("recv reply (%d, %d)\n", out->head.id, out->head.size);
-        r = ep_table_read(t, epid, out->body, out->head.size);
-        return 1;
+int msg_invalid_buffer(struct ep_buffer *in) {
+    struct msg_message msg;
+    size_t hs = sizeof(struct msg_header);
+    size_t read_header;
+    size_t read_body;
+    if (in->size >= hs) {
+        read_header = ep_buffer_peek(in, (char *) &msg.head, 0, hs);
+        if (read_header == hs) {
+            read_body = ep_buffer_peek(in, msg.body, hs, msg.head.size);
+            if (in->size == hs + msg.head.size) {
+                return 0;
+            }
+        }
     }
-    return 0;
+    return -1;
 }
 
 
@@ -63,8 +69,21 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
 
 
 void msg_rsp_peers(struct ep_buffer *b, struct msg_host *h, size_t host_count) {
+    printf("send %d hosts\n", host_count);
+    struct msg_header head;
+    head.id = msg_type_peer_rsp;
+    head.size = 0;
+    for (int i = 0; i < host_count; ++i) {
+        head.size += ep_tree_serial_bytes(&h[i].shared_tree);
+    }
+    printf("send %d bytes\n", head.size);
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     for (int i = 0; i < host_count; ++i) {
         msg_host_send(&h[i], b);
+    }
+
+    if (msg_invalid_buffer(b)) {
+        printf("error sending buffer (%d should be %d)\n", b->size, head.size);
     }
 }
 
