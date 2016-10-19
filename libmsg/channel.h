@@ -56,7 +56,8 @@ struct msg_server {
 
 
 struct ep_tree *msg_server_self(struct msg_server *s);
-int msg_server_add_host(struct msg_server *s, const char *name);
+int msg_server_init_host(struct msg_server *s);
+int msg_server_add_host(struct msg_server *s, const char *addr, const char *name);
 void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);

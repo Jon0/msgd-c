@@ -16,10 +16,19 @@ struct ep_tree *msg_server_self(struct msg_server *s) {
 }
 
 
-int msg_server_add_host(struct msg_server *s, const char *name) {
+int msg_server_init_host(struct msg_server *s) {
+    // find own address and hostname
+    s->hosts = malloc(sizeof(struct msg_host) * 32);
+    s->host_count = 0;
+    msg_server_add_host(s, "127.0.0.1", "testhost");
+}
+
+
+int msg_server_add_host(struct msg_server *s, const char *addr, const char *name) {
     int hostid = s->host_count++;
     struct msg_host *h = &s->hosts[hostid];
     h->active_id = 0;
+    strcpy(h->addr, addr);
     strcpy(h->hostname, name);
     msg_tree_init(&h->shared_tree);
     return hostid;
@@ -92,11 +101,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
     ep_table_init(&s->tb, 256);
-
-    // init self as host
-    s->hosts = malloc(sizeof(struct msg_host) * 32);
-    s->host_count = 0;
-    msg_server_add_host(s, "testhost");
+    msg_server_init_host(s);
 
     // start threads
     ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
@@ -161,7 +166,6 @@ int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out) {
 
 void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
     struct ep_tree *self_tree = msg_server_self(serv);
-    struct ep_buffer tempbuf;
     int newid;
     int subints [2];
 
@@ -171,7 +175,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     case msg_type_peer_init:
         printf("recv host\n");
         newid = serv->host_count++;
-        msg_host_recv(&tempbuf, &serv->hosts[newid]);
+        msg_host_recv(m->body, &serv->hosts[newid]);
         printf("return all hosts\n");
         msg_send_peers(out, serv->hosts, serv->host_count);
         break;
@@ -230,9 +234,10 @@ void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *i
 void msg_server_print_debug(struct msg_server *serv) {
     printf("\n=== server state ===\n");
     for (int i = 0; i < serv->host_count; ++i) {
-        printf("Host id %d\n", i);
-        ep_tree_print(&serv->hosts[i].shared_tree);
-        msg_tree_elems(&serv->hosts[i].shared_tree);
+        struct msg_host *host = &serv->hosts[i];
+        printf("[%s] Host id %d: %s\n", host->addr, i, host->hostname);
+        ep_tree_print(&host->shared_tree);
+        msg_tree_elems(&host->shared_tree);
     }
     printf("current config:\n");
     msg_server_printsub(serv);
