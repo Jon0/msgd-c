@@ -22,7 +22,7 @@ int msg_invalid_buffer(struct ep_buffer *in) {
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
     head.id = msg_type_peer_init;
-    head.size = ep_tree_serial_bytes(&h->shared_tree);
+    head.size = 32 + 256 + ep_tree_serial_bytes(&h->shared_tree);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     msg_host_send(h, b);
 }
@@ -69,9 +69,9 @@ void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count
     printf("send %d hosts\n", host_count);
     struct msg_header head;
     head.id = msg_type_peer_all;
-    head.size = 0;
+    head.size = sizeof(size_t);
     for (int i = 0; i < host_count; ++i) {
-        head.size += ep_tree_serial_bytes(&h[i].shared_tree);
+        head.size += 32 + 256 + ep_tree_serial_bytes(&h[i].shared_tree);
     }
     printf("send %d bytes (%x)\n", head.size, buf);
     ep_buffer_insert(buf, (char *) &head, sizeof(struct msg_header));
@@ -88,7 +88,14 @@ void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count
 
 
 void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count, size_t host_limit) {
-
+    size_t recv_hosts;
+    struct msg_host temphost;
+    ep_buffer_peek(buf, (char *) &recv_hosts, 0, sizeof(recv_hosts));
+    printf("recv %d hosts\n", recv_hosts);
+    for (int i = 0; i < host_count; ++i) {
+        msg_host_recv(buf, &temphost);
+        printf("read host %d, %s, %s\n", i, temphost.addr, temphost.hostname);
+    }
 }
 
 
@@ -100,6 +107,7 @@ void msg_host_send(struct msg_host *in, struct ep_buffer *out) {
 
 
 void msg_host_recv(struct ep_buffer *in, struct msg_host *out) {
+    // one of these may segfault if buffer is too short
     ep_buffer_peek(in, out->addr, 0, 32);
     ep_buffer_peek(in, out->hostname, 32, 256);
     ep_tree_read(&out->shared_tree, in, 32 + 256);
