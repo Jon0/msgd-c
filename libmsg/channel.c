@@ -157,6 +157,7 @@ int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out) {
         read_header = ep_buffer_peek(in, (char *) &out->head, 0, hs);
         if (read_header == hs && in->size >= hs + out->head.size) {
             ep_buffer_release(in, hs);
+            out->body = in;
             return 1;
         }
     }
