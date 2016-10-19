@@ -15,6 +15,16 @@ struct ep_buffer {
 
 
 /*
+ * many streams may refer to a single buffer
+ */
+struct ep_stream {
+    struct ep_buffer *buf;
+    size_t begin;
+    size_t size;
+};
+
+
+/*
  * give the buffer some memory
  */
 void ep_buffer_init_default(struct ep_buffer *b);

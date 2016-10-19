@@ -98,11 +98,11 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 }
 
 
-int ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
+int ep_tree_read(struct ep_tree *t, struct ep_buffer *b, size_t offset) {
     size_t new_size;
-    size_t r = ep_buffer_peek(b, (char *) &new_size, 0, sizeof(size_t));
+    size_t r = ep_buffer_peek(b, (char *) &new_size, offset, sizeof(size_t));
     size_t total_size = sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * new_size;
-    if (r != sizeof(size_t) || b->size < total_size) {
+    if (r != sizeof(size_t) || b->size < (offset + total_size)) {
         printf("incomplete read, from %d / %d bytes\n", total_size, b->size);
         return -1;
     }
@@ -110,12 +110,14 @@ int ep_tree_read(struct ep_tree *t, struct ep_buffer *b) {
     // read each link
     t->count = new_size;
     printf("reading %u nodes, from %d / %d bytes\n", t->count, total_size, b->size);
-    ep_buffer_release(b, sizeof(size_t));
+    offset += sizeof(size_t);
     for (int i = 0; i < t->count; ++i) {
-        ep_buffer_erase(b, (char *) &t->links[i], sizeof(struct ep_link));
-        ep_buffer_erase(b, &t->elems[i * t->elem_size], t->elem_size);
+        ep_buffer_peek(b, (char *) &t->links[i], offset, sizeof(struct ep_link));
+        offset += sizeof(struct ep_link);
+        ep_buffer_peek(b, &t->elems[i * t->elem_size], offset, t->elem_size);
+        offset += t->elem_size;
     }
-    return 0;
+    return total_size;
 }
 
 

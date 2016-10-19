@@ -26,12 +26,6 @@ int msg_server_add_host(struct msg_server *s, const char *name) {
 }
 
 
-int msg_server_update_host(struct msg_server *s, struct ep_buffer *b) {
-    printf("recv host reply (%d bytes)\n", b->size);
-    ep_buffer_clear(b);
-}
-
-
 void msg_server_printsub(struct msg_server *s) {
     printf("%d sub keys\n", s->node_to_sub.keys.elem_count);
     printf("%d sub values\n", s->node_to_sub.value_count);
@@ -156,12 +150,9 @@ int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out) {
     size_t read_body;
     if (in->size >= hs) {
         read_header = ep_buffer_peek(in, (char *) &out->head, 0, hs);
-        if (read_header == hs) {
-            read_body = ep_buffer_peek(in, out->body, hs, out->head.size);
-            if (read_body == out->head.size) {
-                ep_buffer_release(in, hs + out->head.size);
-                return 1;
-            }
+        if (read_header == hs && in->size >= hs + out->head.size) {
+            ep_buffer_release(in, hs);
+            return 1;
         }
     }
     return 0;
@@ -172,25 +163,24 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     struct ep_tree *self_tree = msg_server_self(serv);
     struct ep_buffer tempbuf;
     int newid;
-    int *subints;
-    ep_buffer_wrap(&tempbuf, m->body, m->head.size);
+    int subints [2];
 
     // apply actions based on message type
-    printf("recv type %d (%d)\n", m->head.id, m->head.size);
+    printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_peer_init:
         printf("recv host\n");
         newid = serv->host_count++;
         msg_host_recv(&tempbuf, &serv->hosts[newid]);
         printf("return all hosts\n");
-        msg_rsp_all_peers(out, serv->hosts, serv->host_count);
+        msg_send_peers(out, serv->hosts, serv->host_count);
         break;
     case msg_type_peer_update:
         printf("TODO: peer update\n");
         break;
     case msg_type_peer_one:
     case msg_type_peer_all:
-        msg_server_update_host(serv, &tempbuf);
+        msg_merge_peers(m->body, serv->hosts, serv->host_count, 32);
         break;
     case msg_type_proc:
         newid = msg_tree_add_proc(self_tree, m->body, m->head.size);
@@ -203,7 +193,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
         msg_tree_send(self_tree, out);
         break;
     case msg_type_subs:
-        subints = (int *) m->body;
+        ep_buffer_peek(m->body, (char *) &subints, 0, sizeof(subints));
         msg_server_subscribe(serv, subints[0], srcid, subints[1]);
         msg_tree_send(self_tree, out);
     case msg_type_avail:
@@ -231,6 +221,7 @@ void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *i
     struct msg_message msg;
     while(msg_server_poll_message(in, &msg)) {
         msg_server_apply(serv, src_epid, &msg, &out->write_buf);
+        ep_buffer_release(msg.body, msg.head.size);
     }
     ep_channel_flush(out);
 }

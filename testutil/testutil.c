@@ -63,7 +63,7 @@ void tree_test() {
     ep_tree_write(&tree, &buf);
 
     printf("read\n\n");
-    ep_tree_read(&tree, &buf);
+    ep_tree_read(&tree, &buf, 0);
     ep_tree_print(&tree);
 }
 

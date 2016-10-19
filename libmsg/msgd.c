@@ -17,7 +17,10 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
 
         // read tree state
         //msg_poll_apply(&cs->tree, &req);
-        while (ep_tree_read(&cs->tree, recv_buf) == 0) {}
+        int read_size;
+        while ((read_size = ep_tree_read(&cs->tree, recv_buf, 0)) > 0) {
+            ep_buffer_release(recv_buf, read_size);
+        }
 
         printf("\ncurrent tree state:\n");
         ep_tree_print(&cs->tree);

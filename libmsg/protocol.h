@@ -47,9 +47,7 @@ struct msg_header {
  */
 struct msg_message {
     struct msg_header head;
-
-    // TODO use ep_buffer
-    char              body [256];
+    struct ep_buffer *body;
 };
 
 
@@ -82,7 +80,8 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
 /*
  * response types
  */
-void msg_rsp_all_peers(struct ep_buffer *b, struct msg_host *h, size_t host_count);
+void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count);
+void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count, size_t host_limit);
 void msg_host_send(struct msg_host *in, struct ep_buffer *out);
 void msg_host_recv(struct ep_buffer *in, struct msg_host *out);
 

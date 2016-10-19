@@ -11,11 +11,8 @@ int msg_invalid_buffer(struct ep_buffer *in) {
     size_t read_body;
     if (in->size >= hs) {
         read_header = ep_buffer_peek(in, (char *) &msg.head, 0, hs);
-        if (read_header == hs) {
-            read_body = ep_buffer_peek(in, msg.body, hs, msg.head.size);
-            if (in->size == hs + msg.head.size) {
-                return 0;
-            }
+        if (read_header == hs && in->size >= hs + msg.head.size) {
+            return 0;
         }
     }
     return -1;
@@ -68,7 +65,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
 }
 
 
-void msg_rsp_all_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count) {
+void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count) {
     printf("send %d hosts\n", host_count);
     struct msg_header head;
     head.id = msg_type_peer_all;
@@ -78,6 +75,7 @@ void msg_rsp_all_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_co
     }
     printf("send %d bytes (%x)\n", head.size, buf);
     ep_buffer_insert(buf, (char *) &head, sizeof(struct msg_header));
+    ep_buffer_insert(buf, (char *) &host_count, sizeof(size_t));
     for (int i = 0; i < host_count; ++i) {
         printf("send host %d\n", i);
         msg_host_send(&h[i], buf);
@@ -89,13 +87,22 @@ void msg_rsp_all_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_co
 }
 
 
+void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count, size_t host_limit) {
+
+}
+
+
 void msg_host_send(struct msg_host *in, struct ep_buffer *out) {
+    ep_buffer_insert(out, in->addr, 32);
+    ep_buffer_insert(out, in->hostname, 256);
     msg_tree_send(&in->shared_tree, out);
 }
 
 
 void msg_host_recv(struct ep_buffer *in, struct msg_host *out) {
-    ep_tree_read(&out->shared_tree, in);
+    ep_buffer_peek(in, out->addr, 0, 32);
+    ep_buffer_peek(in, out->hostname, 32, 256);
+    ep_tree_read(&out->shared_tree, in, 32 + 256);
 }
 
 
