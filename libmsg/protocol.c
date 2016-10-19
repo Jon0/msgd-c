@@ -76,7 +76,7 @@ void msg_rsp_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count)
     for (int i = 0; i < host_count; ++i) {
         head.size += ep_tree_serial_bytes(&h[i].shared_tree);
     }
-    printf("send %d bytes\n", head.size);
+    printf("send %d bytes (%x)\n", head.size, buf);
     ep_buffer_insert(buf, (char *) &head, sizeof(struct msg_header));
     for (int i = 0; i < host_count; ++i) {
         printf("send host %d\n", i);

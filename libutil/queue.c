@@ -83,6 +83,7 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
 
     // init handler and output channels
     // TODO add to accepted multimap
+    ep_buffer_init_default(&newc.write_buf);
     int epid = ep_add_channel(t, &newc);
     a->on_accept(t, epid, a->data);
     return epid;
