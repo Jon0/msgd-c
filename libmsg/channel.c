@@ -26,6 +26,12 @@ int msg_server_add_host(struct msg_server *s, const char *name) {
 }
 
 
+int msg_server_update_host(struct msg_server *s, struct ep_buffer *b) {
+    printf("recv host reply (%d bytes)\n", b->size);
+    ep_buffer_clear(b);
+}
+
+
 void msg_server_printsub(struct msg_server *s) {
     printf("%d sub keys\n", s->node_to_sub.keys.elem_count);
     printf("%d sub values\n", s->node_to_sub.value_count);
@@ -125,7 +131,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     msg_server_init_channel(serv, remote);
 
     // request table of known addresses
-    msg_req_peers(&ch.write_buf, &serv->hosts[0]);
+    msg_req_peer_init(&ch.write_buf, &serv->hosts[0]);
     ep_channel_flush(&ch);
     return remote;
 }
@@ -172,12 +178,19 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     // apply actions based on message type
     printf("recv type %d (%d)\n", m->head.id, m->head.size);
     switch (m->head.id) {
-    case msg_type_peer_req:
+    case msg_type_peer_init:
         printf("recv host\n");
         newid = serv->host_count++;
         msg_host_recv(&tempbuf, &serv->hosts[newid]);
         printf("return all hosts\n");
-        msg_rsp_peers(out, serv->hosts, serv->host_count);
+        msg_rsp_all_peers(out, serv->hosts, serv->host_count);
+        break;
+    case msg_type_peer_update:
+        printf("TODO: peer update\n");
+        break;
+    case msg_type_peer_one:
+    case msg_type_peer_all:
+        msg_server_update_host(serv, &tempbuf);
         break;
     case msg_type_proc:
         newid = msg_tree_add_proc(self_tree, m->body, m->head.size);
@@ -230,6 +243,7 @@ void msg_server_print_debug(struct msg_server *serv) {
         ep_tree_print(&serv->hosts[i].shared_tree);
         msg_tree_elems(&serv->hosts[i].shared_tree);
     }
+    printf("current config:\n");
     msg_server_printsub(serv);
 }
 

@@ -22,9 +22,9 @@ int msg_invalid_buffer(struct ep_buffer *in) {
 }
 
 
-void msg_req_peers(struct ep_buffer *b, struct msg_host *h) {
+void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
-    head.id = msg_type_peer_req;
+    head.id = msg_type_peer_init;
     head.size = ep_tree_serial_bytes(&h->shared_tree);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     msg_host_send(h, b);
@@ -68,10 +68,10 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
 }
 
 
-void msg_rsp_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count) {
+void msg_rsp_all_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count) {
     printf("send %d hosts\n", host_count);
     struct msg_header head;
-    head.id = msg_type_peer_rsp;
+    head.id = msg_type_peer_all;
     head.size = 0;
     for (int i = 0; i < host_count; ++i) {
         head.size += ep_tree_serial_bytes(&h[i].shared_tree);
