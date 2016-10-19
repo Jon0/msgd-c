@@ -2,6 +2,7 @@
 #define CHANNEL_H
 
 #include <libutil/hashmap.h>
+#include <libutil/network.h>
 #include <libutil/socket.h>
 #include <libutil/thread.h>
 

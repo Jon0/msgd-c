@@ -1,5 +1,5 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef NETWORK_H
+#define NETWORK_H
 
 #include <stdint.h>
 
@@ -12,13 +12,25 @@ enum ep_host_flags {
 };
 
 
+/*
+ * interface connects to addresses
+ * find a default
+ */
+struct ep_network_interface {
+
+};
+
 struct ep_host {
     char addr [32];
+    char hostname [256];
     int32_t flags;
 };
 
 
-int ep_read_host(struct ep_host *h, struct ep_buffer *b);
+void ep_host_init_self(struct ep_host *h);
+
+
+int ep_read_host(struct ep_host *h, struct ep_buffer *b, size_t offset);
 int ep_write_host(struct ep_host *h, struct ep_buffer *b);
 
 #endif

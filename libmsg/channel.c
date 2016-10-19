@@ -17,10 +17,14 @@ struct ep_tree *msg_server_self(struct msg_server *s) {
 
 
 int msg_server_init_host(struct msg_server *s) {
+    struct ep_host host;
+    ep_host_init_self(&host);
+
+
     // find own address and hostname
     s->hosts = malloc(sizeof(struct msg_host) * 32);
     s->host_count = 0;
-    msg_server_add_host(s, "127.0.0.1", "testhost");
+    msg_server_add_host(s, host.addr, host.hostname);
 }
 
 
