@@ -6,6 +6,11 @@
 #include "buffer.h"
 
 
+void ep_buffer_init_default(struct ep_buffer *b) {
+    ep_buffer_init(b, malloc(EP_BUFFER_DEFAULT_SIZE), EP_BUFFER_DEFAULT_SIZE);
+}
+
+
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
     b->ptr = mem;
     b->avail = count;
@@ -19,6 +24,28 @@ void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count) {
     b->avail = count;
     b->begin = 0;
     b->size = count;
+}
+
+
+void ep_buffer_resize(struct ep_buffer *b, size_t newsize) {
+    char *newmem = malloc(newsize);
+    if (newsize < b->size) {
+        b->size = ep_buffer_peek(b, newmem, 0, newsize);
+    }
+    else {
+        b->size = ep_buffer_peek(b, newmem, 0, b->size);
+    }
+    b->ptr = newmem;
+    b->avail = newsize;
+    b->begin = 0;
+}
+
+
+void ep_buffer_free(struct ep_buffer *b) {
+    b->avail = 0;
+    b->begin = 0;
+    b->size = 0;
+    free(b->ptr);
 }
 
 

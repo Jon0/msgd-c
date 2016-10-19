@@ -45,6 +45,8 @@ struct msg_header {
  */
 struct msg_message {
     struct msg_header head;
+
+    // TODO use ep_buffer
     char              body [256];
 };
 

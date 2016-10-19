@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#define EP_BUFFER_DEFAULT_SIZE 4096
+
 
 struct ep_buffer {
     char *ptr;
@@ -15,6 +17,7 @@ struct ep_buffer {
 /*
  * give the buffer some memory
  */
+void ep_buffer_init_default(struct ep_buffer *b);
 void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count);
 
 
@@ -25,9 +28,17 @@ void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count);
 
 
 /*
+ * modify buffer size and keeping existing data
+ */
+void ep_buffer_resize(struct ep_buffer *b, size_t newsize);
+void ep_buffer_free(struct ep_buffer *b);
+
+
+/*
  * return end index and continuous bytes that can be used past the end
  */
 void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space);
+
 
 /*
  * remove all content from the buffer
