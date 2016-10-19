@@ -180,7 +180,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     case msg_type_peer_init:
         printf("recv host\n");
         newid = serv->host_count++;
-        msg_host_recv(m->body, &serv->hosts[newid]);
+        msg_host_recv(m->body, &serv->hosts[newid], 0);
         printf("return all hosts\n");
         msg_send_peers(out, serv->hosts, serv->host_count);
         break;
