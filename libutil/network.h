@@ -20,6 +20,11 @@ struct ep_network_interface {
 
 };
 
+
+/*
+ * host may require multiple addresses
+ * one for each interface
+ */
 struct ep_host {
     char addr [32];
     char hostname [256];

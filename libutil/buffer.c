@@ -67,6 +67,7 @@ void ep_buffer_clear(struct ep_buffer *b) {
     b->size = 0;
 }
 
+
 size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start) {
     printf("TODO: copy\n");
     return 0;

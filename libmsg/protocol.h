@@ -81,9 +81,12 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
  * response types
  */
 void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count);
-void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count, size_t host_limit);
+void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit);
 void msg_host_send(struct msg_host *in, struct ep_buffer *out);
 size_t msg_host_recv(struct ep_buffer *in, struct msg_host *out, size_t offset);
+size_t msg_host_merge(struct ep_buffer *in, size_t offset, struct msg_host *h, size_t *host_count);
+struct msg_host *msg_host_match(struct msg_host *h, size_t host_count, const char *hostname);
+
 
 /*
  * send tree with header

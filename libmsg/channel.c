@@ -22,9 +22,13 @@ int msg_server_init_host(struct msg_server *s) {
 
 
     // find own address and hostname
-    s->hosts = malloc(sizeof(struct msg_host) * 32);
+    size_t host_max = 32;
+    s->hosts = malloc(sizeof(struct msg_host) * host_max);
     s->host_count = 0;
     msg_server_add_host(s, host.addr, host.hostname);
+    for (int i = 0; i < host_max; ++i) {
+        msg_tree_init(&s->hosts[i].shared_tree);
+    }
 }
 
 
@@ -34,7 +38,6 @@ int msg_server_add_host(struct msg_server *s, const char *addr, const char *name
     h->active_id = 0;
     strcpy(h->addr, addr);
     strcpy(h->hostname, name);
-    msg_tree_init(&h->shared_tree);
     return hostid;
 }
 
@@ -189,7 +192,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
         break;
     case msg_type_peer_one:
     case msg_type_peer_all:
-        msg_merge_peers(m->body, serv->hosts, serv->host_count, 32);
+        msg_merge_peers(m->body, serv->hosts, &serv->host_count, 32);
         break;
     case msg_type_proc:
         newid = msg_tree_add_proc(self_tree, m->body, m->head.size);

@@ -87,14 +87,16 @@ void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count
 }
 
 
-void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count, size_t host_limit) {
+void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit) {
     size_t recv_hosts;
+
+    // requires memory
     struct msg_host temphost;
     ep_buffer_peek(buf, (char *) &recv_hosts, 0, sizeof(recv_hosts));
     size_t offset = sizeof(recv_hosts);
     printf("recv %d hosts\n", recv_hosts);
     for (int i = 0; i < recv_hosts; ++i) {
-        offset += msg_host_recv(buf, &temphost, offset);
+        offset += msg_host_merge(buf, offset, h, host_count);
         printf("read host %d, %s, %s\n", i, temphost.addr, temphost.hostname);
     }
 }
@@ -113,6 +115,34 @@ size_t msg_host_recv(struct ep_buffer *in, struct msg_host *out, size_t offset) 
     ep_buffer_peek(in, out->hostname, offset + 32, 256);
     size_t treesize = ep_tree_read(&out->shared_tree, in, offset + 32 + 256);
     return 32 + 256 + treesize;
+}
+
+
+size_t msg_host_merge(struct ep_buffer *in, size_t offset, struct msg_host *h, size_t *host_count) {
+    char addr [32];
+    char hostname [256];
+    ep_buffer_peek(in, addr, offset + 0, 32);
+    ep_buffer_peek(in, hostname, offset + 32, 256);
+
+    // try match existing hosts
+    struct msg_host *out = msg_host_match(h, *host_count, hostname);
+    if (!out) {
+        out = &h[*host_count++];
+        strcpy(out->addr, addr);
+        strcpy(out->hostname, hostname);
+    }
+    size_t treesize = ep_tree_read(&out->shared_tree, in, offset + 32 + 256);
+    return 32 + 256 + treesize;
+}
+
+
+struct msg_host *msg_host_match(struct msg_host *h, size_t host_count, const char *hostname) {
+    for (int i = 0; i < host_count; ++i) {
+        if (strcmp(hostname, h[i].hostname) == 0) {
+            return &h[i];
+        }
+    }
+    return NULL;
 }
 
 
