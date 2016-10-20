@@ -35,6 +35,11 @@ int ep_tree_link(struct ep_tree *t, int parent, int index) {
 }
 
 
+int ep_tree_new_root(struct ep_tree *t) {
+    return ep_tree_link(t, -1, t->count);
+}
+
+
 void *ep_tree_find(struct ep_tree *t, int id) {
 
     // check each element

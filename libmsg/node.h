@@ -8,6 +8,14 @@
 #include <libutil/tree.h>
 
 
+enum msg_node_type {
+    msg_node_client,
+    msg_node_directory,
+    msg_node_socket,
+    msg_node_file
+};
+
+
 /*
  * processes and published nodes
  */
@@ -54,7 +62,6 @@ void msg_tree_elems(struct ep_tree *t);
  * add a subnode
  */
 struct msg_node *msg_tree_add_node(struct ep_tree *t, struct msg_node *p);
-void msg_tree_set_name(struct ep_tree *t, const char *hostname);
 int msg_tree_add_proc(struct ep_tree *t, struct ep_buffer *procname, size_t count);
 int msg_tree_subnode(struct ep_tree *t, struct ep_buffer *nodename, size_t count, int id);
 

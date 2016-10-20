@@ -12,23 +12,18 @@ void read_command(struct msg_client_state *ns) {
 
     // read input
     // either connect or create a nodes
-    printf("enter cmd (init, add, pub or sub)\n");
+    printf("enter cmd (reg, pub or sub)\n");
     msg_read_string(inbuf, sizeof(inbuf));
-    if (strcmp(inbuf, "init") == 0) {
+    if (strcmp(inbuf, "reg") == 0) {
         printf("enter process name\n");
         msg_read_string(inbuf, sizeof(inbuf));
         printf("initalising %s\n", inbuf);
-        msg_create_node(ns, inbuf, 0);
+        msg_register_proc(ns, inbuf, 0);
 
         // get available nodes
         // block until result is recieved
         printf("requesting available\n");
         msg_available(ns, &nds);
-    }
-    else if (strcmp(inbuf, "add") == 0) {
-        printf("enter node name\n");
-        msg_read_string(inbuf, sizeof(inbuf));
-        printf("adding %s\n", inbuf);
     }
     else if (strcmp(inbuf, "pub") == 0) {
         printf("enter node name\n");

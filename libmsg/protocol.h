@@ -22,7 +22,7 @@ enum msg_type_id {
     msg_type_peer_update,
     msg_type_peer_all,
     msg_type_peer_one,
-    msg_type_proc,
+    msg_type_proc_init,
     msg_type_publ,
     msg_type_subs,
     msg_type_avail,
@@ -72,7 +72,7 @@ int msg_invalid_buffer(struct ep_buffer *in);
  * request types
  */
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h);
-void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count);
+void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int nodeid);
 void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);

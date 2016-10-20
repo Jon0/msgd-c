@@ -30,6 +30,7 @@ struct ep_tree {
 
 void ep_tree_alloc(struct ep_tree *t, size_t elem, size_t maxnodes);
 int ep_tree_link(struct ep_tree *t, int parent, int index);
+int ep_tree_new_root(struct ep_tree *t);
 void *ep_tree_find(struct ep_tree *t, int id);
 int ep_tree_insert(struct ep_tree *t, int id);
 

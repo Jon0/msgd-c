@@ -62,14 +62,21 @@ void msg_server_printsub(struct msg_server *s) {
 
 
 int msg_node_of_host(struct msg_server *s, int epid) {
-    printf("TODO: node_of_host\n");
-    return 0;
+    int *nodelist = ep_multimap_get(&s->host_to_tree, epid, 0);
+    if (nodelist) {
+        return nodelist[0];
+    }
+    else {
+        return 0;
+    }
 }
 
 
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid) {
-    printf("connect epid %d => %d\n", epid, nodeid);
-    ep_multimap_insert(&s->host_to_tree, epid, 1);
+    printf("connect epid %d => node %d\n", epid, nodeid);
+    int index = ep_multimap_insert(&s->host_to_tree, epid, 1);
+    int *nodelist = ep_multimap_get(&s->host_to_tree, epid, index);
+    nodelist[0] = nodeid;
 }
 
 
@@ -181,10 +188,8 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_peer_init:
-        printf("recv host\n");
         newid = serv->host_count++;
-        msg_host_recv(m->body, &serv->hosts[newid], 0);
-        printf("return all hosts\n");
+        msg_host_merge(m->body, 0, serv->hosts, &serv->host_count);
         msg_send_peers(out, serv->hosts, serv->host_count);
         break;
     case msg_type_peer_update:
@@ -193,8 +198,9 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     case msg_type_peer_one:
     case msg_type_peer_all:
         msg_merge_peers(m->body, serv->hosts, &serv->host_count, 32);
+        printf("host count is now %d\n", serv->host_count);
         break;
-    case msg_type_proc:
+    case msg_type_proc_init:
         newid = msg_tree_add_proc(self_tree, m->body, m->head.size);
         msg_server_add_client(serv, srcid, newid);
         msg_tree_send(self_tree, out);

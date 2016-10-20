@@ -28,9 +28,9 @@ void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
 }
 
 
-void msg_req_addproc(struct ep_buffer *b, const char *msg, size_t count) {
+void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
-    head.id = msg_type_proc;
+    head.id = msg_type_proc_init;
     head.size = count;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, msg, count);
@@ -126,9 +126,10 @@ size_t msg_host_merge(struct ep_buffer *in, size_t offset, struct msg_host *h, s
     struct msg_host *out = msg_host_match(h, *host_count, hostname);
     if (!out) {
         printf("creating new entry\n");
-        out = &h[*host_count++];
+        out = &h[(*host_count)++];
         strcpy(out->addr, addr);
         strcpy(out->hostname, hostname);
+        printf("host count is now %d\n", *host_count);
     }
     size_t treesize = ep_tree_read(&out->shared_tree, in, offset + 32 + 256);
     return 32 + 256 + treesize;

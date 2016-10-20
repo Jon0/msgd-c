@@ -33,23 +33,14 @@ struct msg_node *msg_tree_add_node(struct ep_tree *t, struct msg_node *p) {
 }
 
 
-void msg_tree_set_name(struct ep_tree *t, const char *hostname) {
-
-    // create a root node containing a name
-    // no longer used
-    ep_tree_link(t, -1, 0);
-    struct msg_node *n = ep_tree_find(t, 0);
-    strcpy(n->name, hostname);
-    printf("[%s] init\n", n->name);
-}
-
-
 int msg_tree_add_proc(struct ep_tree *t, struct ep_buffer *procname, size_t count) {
-    int newid = ep_tree_insert(t, 0);
+    int newid = ep_tree_new_root(t);
     struct msg_node *node = ep_tree_find(t, newid);
-    memset(node->name, 0, 256);
-    ep_buffer_peek(procname, node->name, 0, count);
-    printf("adding %s\n", node->name);
+    if (node) {
+        memset(node->name, 0, 256);
+        ep_buffer_peek(procname, node->name, 0, count);
+        printf("adding %s\n", node->name);
+    }
     return newid;
 }
 

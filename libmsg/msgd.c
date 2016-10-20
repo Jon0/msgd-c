@@ -57,13 +57,13 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
 }
 
 
-void msg_create_node(struct msg_client_state *cs, const char *name, int mode) {
+void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
 
         // send connect request
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
-        msg_req_addproc(&ch->write_buf, name, strlen(name));
+        msg_req_proc_init(&ch->write_buf, name, strlen(name));
         printf("sent msg length: %d\n", ch->write_buf.size);
         ep_channel_flush(ch);
         printf("wait for reply\n");
@@ -85,7 +85,7 @@ void msg_free_proc(struct msg_client_state *cs) {
 int msg_publish(struct msg_client_state *cs, const char *name, int nodeid) {
     if (cs->connected) {
 
-        // send connect request
+        // send publish request
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_req_publish(&ch->write_buf, name, strlen(name), nodeid);
