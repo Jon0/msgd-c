@@ -8,6 +8,7 @@ project("${PROJECT_NAME}")
 
 # lib names
 set(MSG_LIBRARY_NAME "msg")
+set(SYS_LIBRARY_NAME "sys")
 set(UTIL_LIBRARY_NAME "util")
 
 
@@ -21,6 +22,7 @@ include_directories("${PROJECT_SOURCE_DIR}/")
 
 # build core libraries
 add_subdirectory(libutil)
+add_subdirectory(libsys)
 add_subdirectory(libmsg)
 
 #build executable

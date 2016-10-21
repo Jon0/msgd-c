@@ -138,19 +138,6 @@ void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
 }
 
 
-void ep_tree_send(struct ep_tree *t, struct ep_sink *s) {
-    // write count first
-    ep_write_blk(s, (char *) &t->count, sizeof(size_t));
-
-    // write each link
-    printf("sending %u nodes\n", t->count);
-    for (int i = 0; i < t->count; ++i) {
-        ep_write_blk(s, (char *) &t->links[i], sizeof(struct ep_link));
-        ep_write_blk(s, &t->elems[i * t->elem_size], t->elem_size);
-    }
-}
-
-
 size_t ep_tree_serial_bytes(struct ep_tree *t) {
     return sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * t->count;
 }

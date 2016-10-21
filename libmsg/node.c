@@ -48,8 +48,10 @@ int msg_tree_add_proc(struct ep_tree *t, struct ep_buffer *procname, size_t coun
 int msg_tree_subnode(struct ep_tree *t, struct ep_buffer *nodename, size_t count, int id) {
     int newid = ep_tree_insert(t, id);
     struct msg_node *node = ep_tree_find(t, newid);
-    memset(node->name, 0, 256);
-    ep_buffer_peek(nodename, node->name, 0, count);
-    printf("adding %s\n", node->name);
+    if (node) {
+        memset(node->name, 0, 256);
+        ep_buffer_peek(nodename, node->name, 0, count);
+        printf("adding %s\n", node->name);
+    }
     return newid;
 }

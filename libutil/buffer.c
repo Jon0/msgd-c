@@ -16,6 +16,7 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
     b->avail = count;
     b->begin = 0;
     b->size = 0;
+    b->esize = 1;
 }
 
 
@@ -24,6 +25,7 @@ void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count) {
     b->avail = count;
     b->begin = 0;
     b->size = count;
+    b->esize = 1;
 }
 
 

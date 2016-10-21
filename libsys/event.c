@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #include "poll.h"
-#include "queue.h"
+#include "event.h"
 
 
 void ep_event_queue_init(struct ep_event_queue *q, struct ep_table *t, size_t max_queue) {
@@ -92,15 +92,12 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a) {
 
 void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_channel *c) {
     char buf [1024];
-    struct ep_sink s;
-    s.q = q;
-    s.srcid = ev->epid;
     int r = read(c->fd, buf, 1024);
     if (r > 0) {
         struct ep_subarray *sa = ep_multimap_get_key(&q->table->chanout, ev->epid);
         for (int i = sa->begin; i < sa->end; ++i) {
-            s.epid = (int) q->table->chanout.values[sizeof(int) * i];
-            ep_write_blk(&s, buf, r);
+            int dest = (int) q->table->chanout.values[sizeof(int) * i];
+            ep_queue_write(q, ev->epid, dest, buf, r);
         }
     }
 }
@@ -137,29 +134,15 @@ void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int src
 }
 
 
-size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start) {
-    struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
-    if (e) {
-        size_t wr = ep_entry_write_buf(e, b, start);
-        ep_queue_notify(s->q, e, s->srcid);
-        return wr;
-    }
-    else {
-        printf("%d not found\n", s->epid);
-    }
-    return 0;
-}
-
-
-size_t ep_write_blk(struct ep_sink *s, char *b, size_t count) {
-    struct ep_table_entry *e = ep_map_get(&s->q->table->entries, s->epid);
+size_t ep_queue_write(struct ep_event_queue *eq, int src, int dest, char *b, size_t count) {
+    struct ep_table_entry *e = ep_map_get(&eq->table->entries, dest);
     if (e) {
         size_t wr = ep_entry_write_blk(e, b, count);
-        ep_queue_notify(s->q, e, s->srcid);
+        ep_queue_notify(eq, e, src);
         return wr;
     }
     else {
-        printf("%d not found\n", s->epid);
+        printf("%d not found\n", dest);
     }
     return 0;
 }

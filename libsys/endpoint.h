@@ -5,22 +5,23 @@
 #include <pthread.h>
 #include <netinet/in.h>
 
-#include "buffer.h"
-#include "hashmap.h"
+#include <libutil/buffer.h>
+#include <libutil/hashmap.h>
 
-#define EP_OUT_MAX 32
 
 struct ep_table;
 
 
 /*
- * writable endpoint
- * no longer used, use buffer instead
+ * either a buffer or file descriptor
+ * serialising types need to be functions
  */
-struct ep_sink {
-    struct ep_event_queue *q;
-    int epid;
-    int srcid;
+struct ep_stream {
+    int mode;
+    union {
+        int fd;
+        struct ep_buffer buf;
+    } data;
 };
 
 

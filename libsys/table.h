@@ -1,8 +1,9 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <libutil/hashmap.h>
+
 #include "endpoint.h"
-#include "hashmap.h"
 
 
 enum ep_type {

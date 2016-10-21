@@ -6,21 +6,30 @@
 #define EP_BUFFER_DEFAULT_SIZE 4096
 
 
+/*
+ * a continuous sequence of elements
+ * forming either an array or queue
+ * implemented using a ring buffer
+ */
 struct ep_buffer {
     char *ptr;
     size_t avail;
     size_t begin;
     size_t size;
+    size_t esize;
 };
 
 
+typedef size_t (*ep_buffer_read_t)(struct ep_buffer *, size_t, void *);
+typedef size_t (*ep_buffer_write_t)(struct ep_buffer *, void *);
+
+
 /*
- * many streams may refer to a single buffer
+ * many blocks may refer to a single buffer
  */
-struct ep_stream {
+struct ep_block {
     struct ep_buffer *buf;
     size_t begin;
-    size_t size;
 };
 
 

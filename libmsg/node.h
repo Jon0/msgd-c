@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #include <libutil/buffer.h>
-#include <libutil/queue.h>
 #include <libutil/tree.h>
+#include <libsys/event.h>
 
 
 enum msg_node_type {
@@ -13,6 +13,16 @@ enum msg_node_type {
     msg_node_directory,
     msg_node_socket,
     msg_node_file
+};
+
+
+/*
+ * attributes per node
+ * client requires independent or broadcast sockets
+ */
+struct msg_node_attr {
+    int32_t connection_limit;
+    int32_t server_mode;
 };
 
 

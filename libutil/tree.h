@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "buffer.h"
-#include "queue.h"
 
 
 struct ep_link {
@@ -45,7 +44,6 @@ void ep_tree_remove(struct ep_tree *t, int id);
  */
 int ep_tree_read(struct ep_tree *t, struct ep_buffer *b, size_t offset);
 void ep_tree_write(struct ep_tree *t, struct ep_buffer *b);
-void ep_tree_send(struct ep_tree *t, struct ep_sink *s);
 size_t ep_tree_serial_bytes(struct ep_tree *t);
 
 void ep_tree_print(struct ep_tree *t);

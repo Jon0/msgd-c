@@ -3,7 +3,8 @@
 
 #include <poll.h>
 
-#include "buffer.h"
+#include <libutil/buffer.h>
+
 #include "endpoint.h"
 #include "thread.h"
 

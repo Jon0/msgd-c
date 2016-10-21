@@ -1,5 +1,9 @@
 
-# main library files
+# set rt link
+set(SYS_RT_LIBS "rt")
+
+
+# util library files
 file(GLOB SRC_FILES
 	"*.c"
 )
@@ -11,7 +15,7 @@ file(GLOB INCLUDE_FILES
 
 
 add_library(
-	${MSG_LIBRARY_NAME}
+	${SYS_LIBRARY_NAME}
 	SHARED
 	${SRC_FILES}
 	${INCLUDE_FILES}
@@ -19,7 +23,8 @@ add_library(
 
 
 target_link_libraries(
-	${MSG_LIBRARY_NAME}
-	${UTIL_LIBRARY_NAME}
 	${SYS_LIBRARY_NAME}
+	${CMAKE_THREAD_LIBS_INIT}
+	${CMAKE_DL_LIBS}
+    ${SYS_RT_LIBS}
 )

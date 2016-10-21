@@ -74,14 +74,6 @@ int ep_queue_accept(struct ep_table *t, struct ep_acceptor *a);
 void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_channel *c);
 void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_handler *h);
 void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int srcid);
-
-
-/*
- * writes buffer contents to handlers or channels
- * blocking until write completes
- */
-size_t ep_write_buf(struct ep_sink *s, struct ep_buffer *b, size_t start);
-size_t ep_write_blk(struct ep_sink *s, char *b, size_t count);
-
+size_t ep_queue_write(struct ep_event_queue *eq, int src, int dest, char *b, size_t count);
 
 #endif

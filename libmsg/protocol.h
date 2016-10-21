@@ -2,7 +2,7 @@
 #define PROTOCOL_H
 
 #include <libutil/buffer.h>
-#include <libutil/queue.h>
+#include <libsys/event.h>
 
 #include "node.h"
 

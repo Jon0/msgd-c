@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "buffer.h"
+#include <libutil/buffer.h>
 
 
 enum ep_host_flags {

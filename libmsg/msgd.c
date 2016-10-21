@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libutil/socket.h>
 #include <libutil/tree.h>
+#include <libsys/socket.h>
 
 #include "msgd.h"
 #include "protocol.h"

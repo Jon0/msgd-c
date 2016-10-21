@@ -2,8 +2,8 @@
 #define MSGD_H
 
 #include <libutil/buffer.h>
-#include <libutil/endpoint.h>
-#include <libutil/thread.h>
+#include <libsys/endpoint.h>
+#include <libsys/thread.h>
 
 #include "set.h"
 
