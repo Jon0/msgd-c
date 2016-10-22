@@ -20,7 +20,11 @@ struct msg_client_state {
     int                server_id;   // used to write messages to server
     int                hdlid;
     int                connected;
+    int                pcount;    // number of used internal ids
     char               proc_name [256];
+
+    // internal node id -> handler id
+    struct ep_multimap node_to_hdl;
 };
 
 
@@ -39,7 +43,7 @@ void msg_free_proc(struct msg_client_state *cs);
  * create a node to send updates
  * return the table element to write updates to
  */
-int msg_publish(struct msg_client_state *cs, const char *name, int nodeid);
+int msg_publish(struct msg_client_state *cs, const char *name, int mode);
 void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid);
 
 
@@ -50,15 +54,18 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns);
 void msg_published(struct msg_client_state *cs, struct msg_node_set *ns);
 void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns);
 
+
+/*
+ * write data to node
+ * hdlid is for nodes with distinct output paths
+ */
+void msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count);
+
+
 /*
  * poll new events from subscribed nodes
  */
 void msg_poll(struct msg_client_state *cs);
-
-/*
- * create new events
- */
-void msg_push(struct msg_client_state *cs);
 
 
 #endif

@@ -64,7 +64,7 @@ struct msg_delta_header {
  * include in client requests,
  * allowing a delta update to be sent
  */
-int msg_tree_hash(struct ep_tree *t);
+int32_t msg_tree_hash(struct ep_tree *t);
 void msg_tree_init(struct ep_tree *t);
 void msg_tree_elems(struct ep_tree *t);
 

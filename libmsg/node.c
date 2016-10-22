@@ -6,7 +6,7 @@
 
 
 
-int msg_tree_hash(struct ep_tree *t) {
+int32_t msg_tree_hash(struct ep_tree *t) {
     return t->count;
 }
 

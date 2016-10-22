@@ -37,6 +37,7 @@ int msg_wait(struct msg_client_state *cs, int type) {
 int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     ep_table_init(&cs->tb, 256);
     ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
+    ep_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
     struct ep_channel ch;
     ep_connect_remote(&ch.addr, addr, port);
@@ -82,18 +83,23 @@ void msg_free_proc(struct msg_client_state *cs) {
 }
 
 
-int msg_publish(struct msg_client_state *cs, const char *name, int nodeid) {
+int msg_publish(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
 
         // send publish request
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
+        int nodeid = cs->pcount++;
         msg_req_publish(&ch->write_buf, name, strlen(name), nodeid);
         printf("sent msg length: %d\n", ch->write_buf.size);
         ep_channel_flush(ch);
         printf("wait for reply\n");
-        // TODO create handler to send updates back to server
-        return -1;
+
+        // create handler to send updates back to server
+        if (nodeid) {
+
+        }
+        return nodeid;
     }
     else {
         printf("no connection\n");
@@ -144,5 +150,9 @@ void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns) {
 }
 
 
+void msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count) {
+
+}
+
+
 void msg_poll(struct msg_client_state *cs) {}
-void msg_push(struct msg_client_state *cs) {}

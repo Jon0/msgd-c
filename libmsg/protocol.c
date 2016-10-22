@@ -19,12 +19,20 @@ int msg_invalid_buffer(struct ep_buffer *in) {
 }
 
 
+void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) {
+    struct msg_header head;
+    head.id = id;
+    head.size = length;
+    ep_buffer_insert(b, (char *) &head, sizeof(head));
+}
+
+
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
     head.id = msg_type_peer_init;
     head.size = 32 + 256 + ep_tree_serial_bytes(&h->shared_tree);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
-    msg_host_send(h, b);
+    msg_write_host(h, b);
 }
 
 
@@ -78,7 +86,7 @@ void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count
     ep_buffer_insert(buf, (char *) &host_count, sizeof(size_t));
     for (int i = 0; i < host_count; ++i) {
         printf("send host %d\n", i);
-        msg_host_send(&h[i], buf);
+        msg_write_host(&h[i], buf);
     }
 
     if (msg_invalid_buffer(buf)) {
@@ -99,7 +107,7 @@ void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_cou
 }
 
 
-void msg_host_send(struct msg_host *in, struct ep_buffer *out) {
+void msg_write_host(struct msg_host *in, struct ep_buffer *out) {
     ep_buffer_insert(out, in->addr, 32);
     ep_buffer_insert(out, in->hostname, 256);
     msg_tree_send(&in->shared_tree, out);
