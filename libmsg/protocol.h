@@ -29,7 +29,7 @@ enum msg_type_id {
     msg_type_availp,
     msg_type_avails,
     msg_type_poll,
-    msg_type_push
+    msg_type_data
 };
 
 
@@ -85,6 +85,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
  * send and recieve objects
  */
 void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count);
+size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count);
 void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit);
 void msg_write_host(struct msg_host *in, struct ep_buffer *out);
 size_t msg_host_recv(struct ep_buffer *in, struct msg_host *out, size_t offset);

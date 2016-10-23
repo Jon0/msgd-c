@@ -108,5 +108,6 @@ struct ep_subarray *ep_multimap_get_index(struct ep_multimap *m, int index);
  */
 int ep_multimap_insert(struct ep_multimap *m, int key, size_t count);
 void *ep_multimap_get(struct ep_multimap *m, int key, int index);
+void *ep_multimap_get_value(struct ep_multimap *m, int index);
 
 #endif

@@ -59,7 +59,7 @@ void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns);
  * write data to node
  * hdlid is for nodes with distinct output paths
  */
-void msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count);
+size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count);
 
 
 /*

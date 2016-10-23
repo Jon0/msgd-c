@@ -9,10 +9,11 @@ void read_command(struct msg_client_state *ns) {
     struct msg_node_set nds;
     char inbuf [256];
     int nodebuf;
+    size_t len;
 
     // read input
     // either connect or create a nodes
-    printf("enter cmd (reg, pub or sub)\n");
+    printf("enter cmd (reg, pub, sub or write)\n");
     msg_read_string(inbuf, sizeof(inbuf));
     if (strcmp(inbuf, "reg") == 0) {
         printf("enter process name\n");
@@ -35,6 +36,15 @@ void read_command(struct msg_client_state *ns) {
         nodebuf = msg_read_int();
         printf("subscribing %d\n", nodebuf);
         msg_subscribe(ns, nodebuf, 42);
+    }
+    else if (strcmp(inbuf, "write") == 0) {
+        printf("enter node id\n");
+        nodebuf = msg_read_int();
+        printf("enter message\n");
+        msg_read_string(inbuf, sizeof(inbuf));
+        len = strlen(inbuf);
+        printf("writing %d (%d bytes)\n", nodebuf, len);
+        msg_write(ns, nodebuf, -1, inbuf, len);
     }
     else {
         printf("cannot match %s\n", inbuf);

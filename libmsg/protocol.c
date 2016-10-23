@@ -95,6 +95,17 @@ void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count
 }
 
 
+size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count) {
+    struct msg_header head;
+    head.id = msg_type_data;
+    head.size = sizeof(node) + sizeof(hdl) + count;
+    ep_buffer_insert(buf, (char *) &head, sizeof(head));
+    ep_buffer_insert(buf, (char *) &node, sizeof(node));
+    ep_buffer_insert(buf, (char *) &hdl, sizeof(hdl));
+    ep_buffer_insert(buf, in, count);
+}
+
+
 void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit) {
     size_t recv_hosts;
     ep_buffer_peek(buf, (char *) &recv_hosts, 0, sizeof(recv_hosts));

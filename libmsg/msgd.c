@@ -150,8 +150,18 @@ void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns) {
 }
 
 
-void msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count) {
-
+size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count) {
+    if (cs->connected) {
+        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
+        struct ep_channel *ch = &e->data.ch;
+        msg_send_block(&ch->write_buf, nodeid, hdlid, buf, count);
+        printf("write length: %d\n", ch->write_buf.size);
+        ep_channel_flush(ch);
+    }
+    else {
+        printf("no connection\n");
+    }
+    return count;
 }
 
 

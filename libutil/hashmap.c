@@ -190,3 +190,13 @@ void *ep_multimap_get(struct ep_multimap *m, int key, int index) {
 
     return &m->values[(arr->begin + index) * m->elem_size];
 }
+
+
+void *ep_multimap_get_value(struct ep_multimap *m, int index) {
+    if (index < m->value_count) {
+        return &m->values[index * m->elem_size];
+    }
+    else {
+        return NULL;
+    }
+}

@@ -108,6 +108,19 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 }
 
 
+void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf) {
+    int subints [2];
+    ep_buffer_peek(buf, (char *) &subints, 0, sizeof(subints));
+
+    // pass to all subscribed processes
+    // and all peers with at least one subscriber
+    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, subints[0]);
+    for (int i = sa->begin; i < sa->end; ++i) {
+        struct msg_subscriber *sub = ep_multimap_get_value(&serv->node_to_sub, i);
+    }
+}
+
+
 void msg_server_init(struct msg_server *s, const char *sockpath) {
 
     // alloc structures
@@ -216,6 +229,9 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
         msg_tree_send(self_tree, out);
     case msg_type_avail:
         msg_tree_send(self_tree, out);
+        break;
+    case msg_type_data:
+        msg_server_read_data(serv, m->body);
         break;
     }
     printf("message applied\n");
