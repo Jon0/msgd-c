@@ -109,15 +109,29 @@ void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subi
 
 
 void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf) {
-    int subints [2];
-    ep_buffer_peek(buf, (char *) &subints, 0, sizeof(subints));
+    struct msg_node_update ud;
+    ep_buffer_peek(buf, (char *) &ud, 0, sizeof(int) * 2);
+
+    //
+    ud.len = 0;
 
     // pass to all subscribed processes
     // and all peers with at least one subscriber
-    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, subints[0]);
+    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, ud.nodeid);
     for (int i = sa->begin; i < sa->end; ++i) {
         struct msg_subscriber *sub = ep_multimap_get_value(&serv->node_to_sub, i);
+        msg_server_reply_data(serv, sub->epid, &ud);
+
     }
+}
+
+
+void msg_server_reply_data(struct msg_server *serv, int epid, struct msg_node_update *u) {
+    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, epid);
+    struct ep_channel *ch = &e->data.ch;
+    msg_send_block(&ch->write_buf, u->nodeid, u->hdlid, u->buf, u->len);
+    printf("write length: %d\n", ch->write_buf.size);
+    ep_channel_flush(ch);
 }
 
 

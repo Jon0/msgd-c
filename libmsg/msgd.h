@@ -8,6 +8,15 @@
 #include "set.h"
 
 
+struct msg_client_update {
+    int type;
+    union {
+        int tree;
+        struct msg_node_update n;
+    } data;
+};
+
+
 /*
  * state held by client processes
  * include queue of requests awaiting a response
@@ -26,6 +35,8 @@ struct msg_client_state {
     // internal node id -> handler id
     struct ep_multimap node_to_hdl;
 };
+
+
 
 
 int msg_wait(struct msg_client_state *cs, int type);
@@ -64,8 +75,9 @@ size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, 
 
 /*
  * poll new events from subscribed nodes
+ * and updates to node structures
  */
-void msg_poll(struct msg_client_state *cs);
+void msg_poll(struct msg_client_state *cs, struct msg_client_update *up);
 
 
 #endif

@@ -25,6 +25,8 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
         printf("\ncurrent tree state:\n");
         ep_tree_print(&cs->tree);
         msg_tree_elems(&cs->tree);
+
+        // TODO queue events to be polled
     }
 }
 
@@ -165,4 +167,6 @@ size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, 
 }
 
 
-void msg_poll(struct msg_client_state *cs) {}
+void msg_poll(struct msg_client_state *cs, struct msg_client_update *up) {
+
+}

@@ -27,6 +27,19 @@ struct msg_node_attr {
 
 
 /*
+ * message from remote node
+ * nodeid -1, for replies
+ * hdlid -1, for broadcast
+ */
+struct msg_node_update {
+    int nodeid;
+    int hdlid;
+    char *buf;
+    size_t len;
+};
+
+
+/*
  * processes and published nodes
  */
 struct msg_node {
