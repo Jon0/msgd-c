@@ -30,6 +30,14 @@ struct msg_channel {
 
 
 /*
+ * modifications applied to server state
+ */
+struct msg_server_delta {
+    int type;
+};
+
+
+/*
  * complete server state
  * includes map from host input ids to tree node ids
  * nodes should be removed when connection is ended
@@ -56,7 +64,7 @@ struct msg_server {
 };
 
 
-struct ep_tree *msg_server_self(struct msg_server *s);
+struct msg_host *msg_server_self(struct msg_server *s);
 int msg_server_init_host(struct msg_server *s);
 int msg_server_add_host(struct msg_server *s, const char *addr, const char *name);
 void msg_server_printsub(struct msg_server *s);
@@ -64,7 +72,7 @@ int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
 void msg_server_init_channel(struct msg_server *s, int epid);
-void msg_server_subscribe(struct msg_server *s, int sendnode, int epid, int subid);
+void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf);
 void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf);
 void msg_server_reply_data(struct msg_server *serv, int epid, struct msg_node_update *u);
 
@@ -80,7 +88,6 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-int msg_server_poll_message(struct ep_buffer *in, struct msg_message *out);
 void msg_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
 void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);

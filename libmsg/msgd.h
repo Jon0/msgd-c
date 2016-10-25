@@ -5,9 +5,13 @@
 #include <libsys/endpoint.h>
 #include <libsys/thread.h>
 
+#include "protocol.h"
 #include "set.h"
 
 
+/*
+ * updates when polling
+ */
 struct msg_client_update {
     int type;
     union {
@@ -24,22 +28,23 @@ struct msg_client_update {
 struct msg_client_state {
     struct ep_table       tb;
     struct ep_thread_pool pool;
-    struct ep_tree        tree;
-    int                tree_update; // is tree awaiting an update
     int                server_id;   // used to write messages to server
     int                hdlid;
     int                connected;
     int                pcount;    // number of used internal ids
     char               proc_name [256];
+    struct ep_buffer *evqueue;
 
     // internal node id -> handler id
     struct ep_multimap node_to_hdl;
+
+    struct msg_host *hosts;
+    size_t host_count;
 };
 
 
-
-
-int msg_wait(struct msg_client_state *cs, int type);
+struct msg_host *msg_client_host(struct msg_client_state *cs);
+int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message *msg);
 int msg_connect(struct msg_client_state *cs, const char *addr, short port);
 
 

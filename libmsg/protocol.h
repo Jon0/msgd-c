@@ -58,8 +58,22 @@ struct msg_host {
     int active_id;
     char addr [32];
     char hostname [256];
+
+    // tree containing struct msg_node
     struct ep_tree shared_tree;
 };
+
+
+/*
+ * data sent in a subscribe action
+ */
+struct msg_subscribe {
+    int nodeid;
+    int subid;
+};
+
+
+int msg_host_init(struct msg_host *h, const char *addr, const char *name);
 
 
 /*
@@ -67,6 +81,11 @@ struct msg_host {
  */
 int msg_invalid_buffer(struct ep_buffer *in);
 
+
+/*
+ * take next message header from incoming buffer
+ */
+int msg_poll_message(struct ep_buffer *in, struct msg_message *out);
 
 
 void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length);
@@ -84,6 +103,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
 /*
  * send and recieve objects
  */
+void msg_send_self(struct ep_buffer *buf, struct msg_host *h);
 void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count);
 size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count);
 void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit);
@@ -91,12 +111,6 @@ void msg_write_host(struct msg_host *in, struct ep_buffer *out);
 size_t msg_host_recv(struct ep_buffer *in, struct msg_host *out, size_t offset);
 size_t msg_host_merge(struct ep_buffer *in, size_t offset, struct msg_host *h, size_t *host_count);
 struct msg_host *msg_host_match(struct msg_host *h, size_t host_count, const char *hostname);
-
-
-/*
- * send tree with header
- */
-void msg_tree_send(struct ep_tree *tree, struct ep_buffer *out);
 
 
 #endif

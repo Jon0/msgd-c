@@ -4,6 +4,14 @@
 #include "protocol.h"
 
 
+int msg_host_init(struct msg_host *h, const char *addr, const char *name) {
+    h->active_id = 0;
+    strcpy(h->addr, addr);
+    strcpy(h->hostname, name);
+    return 0;
+}
+
+
 int msg_invalid_buffer(struct ep_buffer *in) {
     struct msg_message msg;
     size_t hs = sizeof(struct msg_header);
@@ -16,6 +24,24 @@ int msg_invalid_buffer(struct ep_buffer *in) {
         }
     }
     return -1;
+}
+
+
+int msg_poll_message(struct ep_buffer *in, struct msg_message *out) {
+
+    // recieving requests to the local server
+    size_t hs = sizeof(struct msg_header);
+    size_t read_header;
+    size_t read_body;
+    if (in->size >= hs) {
+        read_header = ep_buffer_peek(in, (char *) &out->head, 0, hs);
+        if (read_header == hs && in->size >= hs + out->head.size) {
+            ep_buffer_release(in, hs);
+            out->body = in;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
@@ -65,17 +91,39 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int node
 
 void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
     struct msg_header head;
+    struct msg_subscribe subs;
     head.id = msg_type_subs;
-    head.size = sizeof(int) * 2;
-    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
-    ep_buffer_insert(b, (char *) &nodeid, sizeof(int));
-    ep_buffer_insert(b, (char *) &subid, sizeof(int));
+    head.size = sizeof(subs);
+    subs.nodeid = nodeid;
+    subs.subid = subid;
+    ep_buffer_insert(b, (char *) &head, sizeof(head));
+    ep_buffer_insert(b, (char *) &subs, sizeof(subs));
+}
+
+
+void msg_send_self(struct ep_buffer *buf, struct msg_host *h) {
+    struct msg_header head;
+    size_t host_count = 1;
+
+    printf("send self\n");
+    head.id = msg_type_peer_one;
+    head.size = sizeof(size_t);
+    head.size += 32 + 256 + ep_tree_serial_bytes(&h->shared_tree);
+    printf("send %d bytes (%x)\n", head.size, buf);
+    ep_buffer_insert(buf, (char *) &head, sizeof(struct msg_header));
+    ep_buffer_insert(buf, (char *) &host_count, sizeof(size_t));
+    msg_write_host(h, buf);
+
+    if (msg_invalid_buffer(buf)) {
+        printf("error sending buffer (%d should be %d)\n", buf->size, head.size);
+    }
 }
 
 
 void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count) {
-    printf("send %d hosts\n", host_count);
     struct msg_header head;
+
+    printf("send %d hosts\n", host_count);
     head.id = msg_type_peer_all;
     head.size = sizeof(size_t);
     for (int i = 0; i < host_count; ++i) {
@@ -121,7 +169,7 @@ void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_cou
 void msg_write_host(struct msg_host *in, struct ep_buffer *out) {
     ep_buffer_insert(out, in->addr, 32);
     ep_buffer_insert(out, in->hostname, 256);
-    msg_tree_send(&in->shared_tree, out);
+    ep_tree_write(&in->shared_tree, out);
 }
 
 
@@ -162,9 +210,4 @@ struct msg_host *msg_host_match(struct msg_host *h, size_t host_count, const cha
         }
     }
     return NULL;
-}
-
-
-void msg_tree_send(struct ep_tree *tree, struct ep_buffer *out) {
-    ep_tree_write(tree, out);
 }
