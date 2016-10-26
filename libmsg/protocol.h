@@ -64,6 +64,13 @@ struct msg_host {
 };
 
 
+struct msg_host_list {
+    struct msg_host *ptr;
+    size_t host_count;
+    size_t host_max;
+};
+
+
 /*
  * data sent in a subscribe action
  */
@@ -74,6 +81,17 @@ struct msg_subscribe {
 
 
 int msg_host_init(struct msg_host *h, const char *addr, const char *name);
+size_t msg_host_read(struct msg_host *out, struct ep_buffer *in, size_t offset);
+void msg_host_write(struct msg_host *in, struct ep_buffer *out);
+void msg_send_self(struct msg_host *h, struct ep_buffer *buf);
+
+void msg_host_list_debug(struct msg_host_list *h);
+int msg_host_list_init(struct msg_host_list *h, size_t max);
+int msg_host_list_add(struct msg_host_list *h, const char *addr, const char *name);
+void msg_merge_peers(struct msg_host_list *h, struct ep_buffer *buf, size_t offset);
+size_t msg_host_list_merge(struct msg_host_list *h, struct ep_buffer *in, size_t offset);
+struct msg_host *msg_host_match(struct msg_host_list *h, const char *hostname);
+void msg_host_list_write(struct msg_host_list *h, struct ep_buffer *buf);
 
 
 /*
@@ -88,12 +106,10 @@ int msg_invalid_buffer(struct ep_buffer *in);
 int msg_poll_message(struct ep_buffer *in, struct msg_message *out);
 
 
-void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length);
-
-
 /*
  * request types
  */
+void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length);
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h);
 void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t);
@@ -103,14 +119,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
 /*
  * send and recieve objects
  */
-void msg_send_self(struct ep_buffer *buf, struct msg_host *h);
-void msg_send_peers(struct ep_buffer *buf, struct msg_host *h, size_t host_count);
 size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count);
-void msg_merge_peers(struct ep_buffer *buf, struct msg_host *h, size_t *host_count, size_t host_limit);
-void msg_write_host(struct msg_host *in, struct ep_buffer *out);
-size_t msg_host_recv(struct ep_buffer *in, struct msg_host *out, size_t offset);
-size_t msg_host_merge(struct ep_buffer *in, size_t offset, struct msg_host *h, size_t *host_count);
-struct msg_host *msg_host_match(struct msg_host *h, size_t host_count, const char *hostname);
 
 
 #endif

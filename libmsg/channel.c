@@ -12,23 +12,7 @@ int msg_channel_id(void *p) {
 
 
 struct msg_host *msg_server_self(struct msg_server *s) {
-    return &s->hosts[0];
-}
-
-
-int msg_server_init_host(struct msg_server *s) {
-    struct ep_host host;
-    ep_host_init_self(&host);
-
-
-    // find own address and hostname
-    size_t host_max = 32;
-    s->hosts = malloc(sizeof(struct msg_host) * host_max);
-    s->host_count = 1;
-    msg_host_init(&s->hosts[0], host.addr, host.hostname);
-    for (int i = 0; i < host_max; ++i) {
-        msg_tree_init(&s->hosts[i].shared_tree);
-    }
+    return &s->hosts.ptr[0];
 }
 
 
@@ -140,7 +124,12 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
     ep_table_init(&s->tb, 256);
-    msg_server_init_host(s);
+
+    // find own address and hostname
+    struct ep_host host;
+    ep_host_init_self(&host);
+    msg_host_list_init(&s->hosts, 32);
+    msg_host_list_add(&s->hosts, host.addr, host.hostname);
 
     // start threads
     ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
@@ -169,7 +158,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     msg_server_init_channel(serv, remote);
 
     // request table of known addresses
-    msg_req_peer_init(&ch.write_buf, &serv->hosts[0]);
+    msg_req_peer_init(&ch.write_buf, &serv->hosts.ptr[0]);
     ep_channel_flush(&ch);
     return remote;
 }
@@ -194,33 +183,31 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_peer_init:
-        newid = serv->host_count++;
-        msg_host_merge(m->body, 0, serv->hosts, &serv->host_count);
-        msg_send_peers(out, serv->hosts, serv->host_count);
+        msg_host_list_merge(&serv->hosts, m->body, 0);
+        msg_host_list_write(&serv->hosts, out);
         break;
     case msg_type_peer_update:
         printf("TODO: peer update\n");
         break;
     case msg_type_peer_one:
     case msg_type_peer_all:
-        msg_merge_peers(m->body, serv->hosts, &serv->host_count, 32);
-        printf("host count is now %d\n", serv->host_count);
+        msg_merge_peers(&serv->hosts, m->body, 0);
         break;
     case msg_type_proc_init:
         newid = msg_tree_add_proc(&self->shared_tree, m->body, m->head.size);
         msg_server_add_client(serv, srcid, newid);
-        msg_send_self(out, self);
+        msg_send_self(self, out);
         break;
     case msg_type_publ:
         newid = msg_node_of_host(serv, srcid);
         msg_tree_subnode(&self->shared_tree, m->body, m->head.size, newid);
-        msg_send_self(out, self);
+        msg_send_self(self, out);
         break;
     case msg_type_subs:
         msg_server_subscribe(serv, srcid, m->body);
-        msg_send_self(out, self);
+        msg_send_self(self, out);
     case msg_type_avail:
-        msg_send_self(out, self);
+        msg_send_self(self, out);
         break;
     case msg_type_data:
         msg_server_read_data(serv, m->body);
@@ -237,7 +224,9 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
     struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
     if (e) {
         msg_server_reply(serv, src_epid, buf, &e->data.ch);
-        msg_server_print_debug(serv);
+        msg_host_list_debug(&serv->hosts);
+        printf("current config:\n");
+        msg_server_printsub(serv);
     }
     printf("remaining bytes: %d\n\n", buf->size);
 }
@@ -250,19 +239,6 @@ void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *i
         ep_buffer_release(msg.body, msg.head.size);
     }
     ep_channel_flush(out);
-}
-
-
-void msg_server_print_debug(struct msg_server *serv) {
-    printf("\n=== server state ===\n");
-    for (int i = 0; i < serv->host_count; ++i) {
-        struct msg_host *host = &serv->hosts[i];
-        printf("[%s] Host id %d: %s\n", host->addr, i, host->hostname);
-        ep_tree_print(&host->shared_tree);
-        msg_tree_elems(&host->shared_tree);
-    }
-    printf("current config:\n");
-    msg_server_printsub(serv);
 }
 
 

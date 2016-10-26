@@ -38,8 +38,7 @@ struct msg_client_state {
     // internal node id -> handler id
     struct ep_multimap node_to_hdl;
 
-    struct msg_host *hosts;
-    size_t host_count;
+    struct msg_host_list hosts;
 };
 
 

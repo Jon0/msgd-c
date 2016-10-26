@@ -59,13 +59,11 @@ struct msg_server {
     // nodeid -> struct msg_subscriber
     struct ep_multimap  node_to_sub;
 
-    struct msg_host *hosts;
-    size_t host_count;
+    struct msg_host_list hosts;
 };
 
 
 struct msg_host *msg_server_self(struct msg_server *s);
-int msg_server_init_host(struct msg_server *s);
 int msg_server_add_host(struct msg_server *s, const char *addr, const char *name);
 void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);

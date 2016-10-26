@@ -27,7 +27,7 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
 
 
 struct msg_host *msg_client_host(struct msg_client_state *cs) {
-    return &cs->hosts[0];
+    return &cs->hosts.ptr[0];
 }
 
 
@@ -69,13 +69,8 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->connected = 1;
 
     // init host memory
-    size_t host_max = 32;
-    cs->hosts = malloc(sizeof(struct msg_host) * host_max);
-    cs->host_count = 1;
-    msg_host_init(&cs->hosts[0], addr, "");
-    for (int i = 0; i < host_max; ++i) {
-        msg_tree_init(&cs->hosts[i].shared_tree);
-    }
+    msg_host_list_init(&cs->hosts, 32);
+    msg_host_list_add(&cs->hosts, addr, "");
     return 0;
 }
 
