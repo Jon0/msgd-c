@@ -100,8 +100,14 @@ size_t msg_host_list_merge(struct msg_host_list *h, struct ep_buffer *in, size_t
     struct msg_host *out = msg_host_match(h, hostname);
     if (!out) {
         printf("creating new entry\n");
-        msg_host_list_add(h, out->addr, out->hostname);
-        printf("host count is now %d\n", h->host_count);
+        int index = msg_host_list_add(h, addr, hostname);
+        if (index < 0) {
+            return 0;
+        }
+        else {
+            printf("host count is now %d\n", h->host_count);
+            out = &h->ptr[index];
+        }
     }
     size_t treesize = ep_tree_read(&out->shared_tree, in, offset + 32 + 256);
     return 32 + 256 + treesize;
