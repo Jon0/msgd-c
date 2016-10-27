@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "buffer.h"
+#include "serial.h"
 
 
 struct ep_link {
@@ -16,8 +17,10 @@ struct ep_link {
 
 /*
  * elements and links are both packed continuously
+ * TODO include functions to serialise elements
  */
 struct ep_tree {
+    struct ep_serialisable serial;
     struct ep_link *links;
     char           *elems;
     size_t elem_size;

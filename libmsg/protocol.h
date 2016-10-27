@@ -16,6 +16,7 @@ typedef int32_t msg_int_t;
  * types of messages
  */
 enum msg_type_id {
+    msg_type_error,
     msg_type_server,
     msg_type_client,
     msg_type_peer_init,
