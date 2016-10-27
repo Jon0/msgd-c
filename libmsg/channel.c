@@ -225,7 +225,7 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
     if (e) {
         msg_server_reply(serv, src_epid, buf, &e->data.ch);
         msg_host_list_debug(&serv->hosts);
-        printf("current config:\n");
+        printf("server config:\n");
         msg_server_printsub(serv);
     }
     printf("remaining bytes: %d\n\n", buf->size);

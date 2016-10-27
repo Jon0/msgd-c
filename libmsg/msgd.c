@@ -19,9 +19,7 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
             msg_client_apply(cs, ev->src, &msg);
             ep_buffer_release(msg.body, msg.head.size);
         }
-        printf("\ncurrent tree state:\n");
-        ep_tree_print(&server->shared_tree);
-        msg_tree_elems(&server->shared_tree);
+        msg_host_list_debug(&cs->hosts);
     }
 }
 
@@ -41,10 +39,12 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
     switch (msg->head.id) {
     case msg_type_peer_one:
     case msg_type_peer_all:
-
+        msg_merge_peers(&cs->hosts, msg->body, 0);
+        break;
+    case msg_type_data:
+        printf("recv data\n");
         break;
     }
-    //while ((read_size = ep_tree_read(&server->shared_tree, msg->body, 0)) > 0) {}
 }
 
 
@@ -84,7 +84,6 @@ void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) 
         msg_req_proc_init(&ch->write_buf, name, strlen(name));
         printf("sent msg length: %d\n", ch->write_buf.size);
         ep_channel_flush(ch);
-        printf("wait for reply\n");
     }
     else {
         printf("no connection\n");
@@ -110,7 +109,6 @@ int msg_publish(struct msg_client_state *cs, const char *name, int mode) {
         msg_req_publish(&ch->write_buf, name, strlen(name), nodeid);
         printf("sent msg length: %d\n", ch->write_buf.size);
         ep_channel_flush(ch);
-        printf("wait for reply\n");
 
         // create handler to send updates back to server
         if (nodeid) {
@@ -134,7 +132,6 @@ void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid) {
         msg_req_subscribe(&ch->write_buf, nodeid, subid);
         printf("sent msg length: %d\n", ch->write_buf.size);
         ep_channel_flush(ch);
-        printf("wait for reply\n");
     }
     else {
         printf("no connection\n");
@@ -154,7 +151,6 @@ int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
     msg_req_avail(&ch->write_buf, &server->shared_tree);
     printf("sent msg length: %d\n", ch->write_buf.size);
     ep_channel_flush(ch);
-    printf("wait for reply\n");
     return 0;
 }
 
