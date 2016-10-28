@@ -19,8 +19,10 @@ void ep_map_alloc(struct ep_map *m, ep_id_t fn, size_t esize, size_t count) {
     m->idfn = fn;
     m->elem_size = esize;
     m->array_max = count;
-    size_t memsize = m->elem_size * m->array_max;
+
+    // allocate memory for 2 arrays
     size_t pairsize = sizeof(struct ep_keypair) * m->array_max;
+    size_t memsize = m->elem_size * m->array_max;
     char *mem = malloc(memsize + pairsize);
     m->pair = (struct ep_keypair *) mem;
     m->array = &mem[pairsize];
@@ -154,12 +156,18 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
     }
 
     // move elements to make space
-    size_t newsize = count * m->elem_size;
+    size_t newsize = m->elem_size * count;
+    size_t endindex = m->elem_size * arr->end;
     size_t movesize = m->elem_size * (m->value_count - arr->end);
-    memmove(&m->values[arr->end + newsize], &m->values[arr->end], movesize);
+    memmove(&m->values[endindex + newsize], &m->values[endindex], movesize);
+
+
+    int newstart = arr->end;
+    arr->end += count;
+    m->value_count += count;
+
 
     // increment all other subarrays
-
     for (int i = 0; i < m->keys.elem_count; ++i) {
         struct ep_subarray *isa = ep_multimap_get_index(m, i);
         if (isa->begin >= arr->end) {
@@ -167,11 +175,6 @@ int ep_multimap_insert(struct ep_multimap *m, int key, size_t count) {
             isa->end += count;
         }
     }
-
-
-    int newstart = arr->end;
-    arr->end += count;
-    m->value_count += count;
     return newstart - arr->begin;
 }
 

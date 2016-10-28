@@ -95,11 +95,12 @@ void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf) {
     // and all peers with at least one subscriber
     struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, ud.nodeid);
     if (sa) {
-        printf("recv data (node %d, handle %d, range %d to %d)", ud.nodeid, ud.hdlid, sa->begin, sa->end);
+        printf("recv data (node %d, handle %d, range %d to %d)\n", ud.nodeid, ud.hdlid, sa->begin, sa->end);
         for (int i = sa->begin; i < sa->end; ++i) {
             struct msg_subscriber *sub = ep_multimap_get_value(&serv->node_to_sub, i);
-            msg_server_reply_data(serv, sub->epid, &ud);
-
+            if (sub) {
+                msg_server_reply_data(serv, sub->epid, &ud);
+            }
         }
     }
     else {
