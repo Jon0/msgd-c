@@ -84,27 +84,30 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf)
 }
 
 
-void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf) {
-    struct msg_node_update ud;
-    ep_buffer_peek(buf, (char *) &ud, 0, sizeof(int) * 2);
+void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf, size_t count) {
+    struct msg_node_update update;
+    char msgbuf [256];
+    ep_buffer_peek(buf, (char *) &update, 0, sizeof(int) * 2);
 
     //
-    ud.len = 0;
+    update.len = count - sizeof(update);
+    update.buf = msgbuf;
+    ep_buffer_peek(buf, msgbuf, sizeof(update), update.len);
 
     // pass to all subscribed processes
     // and all peers with at least one subscriber
-    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, ud.nodeid);
+    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, update.nodeid);
     if (sa) {
-        printf("recv data (node %d, handle %d, range %d to %d)\n", ud.nodeid, ud.hdlid, sa->begin, sa->end);
+        printf("recv data (node %d, handle %d, range %d to %d)\n", update.nodeid, update.hdlid, sa->begin, sa->end);
         for (int i = sa->begin; i < sa->end; ++i) {
             struct msg_subscriber *sub = ep_multimap_get_value(&serv->node_to_sub, i);
             if (sub) {
-                msg_server_reply_data(serv, sub->epid, &ud);
+                msg_server_reply_data(serv, sub->epid, &update);
             }
         }
     }
     else {
-        printf("node %d doesnt exist\n", ud.nodeid);
+        printf("node %d doesnt exist\n", update.nodeid);
     }
 }
 
@@ -211,7 +214,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
         msg_send_self(self, out);
         break;
     case msg_type_data:
-        msg_server_read_data(serv, m->body);
+        msg_server_read_data(serv, m->body, m->head.size);
         break;
     }
     printf("message applied\n");
