@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
+# build modules
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build/")
 
 # project name
 set(PROJECT_NAME "msgd")

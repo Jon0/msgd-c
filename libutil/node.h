@@ -3,9 +3,8 @@
 
 #include <stdint.h>
 
-#include <libutil/buffer.h>
-#include <libutil/tree.h>
-#include <libsys/event.h>
+#include "buffer.h"
+#include "tree.h"
 
 
 enum msg_node_type {

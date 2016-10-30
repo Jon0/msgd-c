@@ -2,9 +2,9 @@
 #define PROTOCOL_H
 
 #include <libutil/buffer.h>
+#include <libutil/node.h>
 #include <libsys/event.h>
 
-#include "node.h"
 
 /*
  * TODO send a fixed width type

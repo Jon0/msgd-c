@@ -5,8 +5,7 @@
 #include <stdint.h>
 
 #include <libutil/hashmap.h>
-
-#include "node.h"
+#include <libutil/node.h>
 
 
 /*

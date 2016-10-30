@@ -2,11 +2,11 @@
 #define CHANNEL_H
 
 #include <libutil/hashmap.h>
+#include <libutil/node.h>
 #include <libsys/network.h>
 #include <libsys/socket.h>
 #include <libsys/thread.h>
 
-#include "node.h"
 #include "protocol.h"
 
 
