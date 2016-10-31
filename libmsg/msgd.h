@@ -11,6 +11,9 @@
 
 /*
  * updates when polling
+ * recieve changes to the directory structures
+ * or notification a file has been modified
+ * socket events include the message body
  */
 struct msg_client_update {
     int type;

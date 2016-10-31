@@ -12,10 +12,12 @@
 
 /*
  * a client which requires updates when events occur
+ * can be set to ignore some update types
  */
 struct msg_subscriber {
     int epid;
     int subid;
+    int event_mask;
 };
 
 
