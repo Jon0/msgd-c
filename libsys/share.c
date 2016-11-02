@@ -1,8 +1,20 @@
 #include <stdio.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include "share.h"
+
+
+void *ep_memfile(const char *filepath, size_t count) {
+    int fd = open(filepath, O_RDWR | O_CREAT);
+    void *ptr = mmap(NULL, count, MAP_SHARED, PROT_READ | PROT_WRITE, fd, 0);
+    return ptr;
+}
 
 
 void sharemem() {

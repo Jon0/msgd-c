@@ -10,10 +10,11 @@
 
 
 /*
- * updates when polling
+ * Updates recieved when polling
  * recieve changes to the directory structures
- * or notification a file has been modified
- * socket events include the message body
+ * or notification a file has been modified.
+ * socket events include the message body,
+ * file events include file delta
  */
 struct msg_client_update {
     int type;

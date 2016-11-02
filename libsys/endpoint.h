@@ -88,6 +88,15 @@ struct ep_channel {
 };
 
 
+/*
+ * memory shared between processes
+ */
+struct ep_memory {
+    int               fd;
+    void             *data;
+};
+
+
 void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d);
 
 size_t ep_channel_flush(struct ep_channel *c);
