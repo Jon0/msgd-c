@@ -5,6 +5,12 @@
 #include "table.h"
 
 
+int ep_watch_id(void *p) {
+    struct ep_table_watch *w = (struct ep_table_watch *) p;
+    return w->wd;
+}
+
+
 int ep_entry_id(void *p) {
     struct ep_table_entry *e = (struct ep_table_entry *) p;
     return e->epid;
@@ -12,11 +18,18 @@ int ep_entry_id(void *p) {
 
 
 void ep_table_init(struct ep_table *t, size_t max) {
+
+    // reserve id 0 for inotify events
     t->next_id = 1;
     t->epoll_fd = ep_poll_create();
+    t->inotify_fd = ep_notify_create();
+    ep_poll_enable(t->epoll_fd, 0, t->inotify_fd);
+
+    // allocate table memory
     size_t es = sizeof(struct ep_table_entry);
     printf("alloc table (%d bytes)\n", es * max);
     ep_map_alloc(&t->entries, ep_entry_id, es, max);
+    ep_map_alloc(&t->watched, ep_watch_id, sizeof(struct ep_table_watch), max);
     ep_multimap_init(&t->accepted, sizeof(int), max);
     ep_multimap_init(&t->chanout, sizeof(int), max);
 }
@@ -58,6 +71,19 @@ int ep_add_handler(struct ep_table *t, struct ep_handler *h) {
     e.data.hdl = *h;
     ep_map_insert(&t->entries, &e);
     return e.epid;
+}
+
+
+int ep_add_notify(struct ep_table *t, struct ep_notify *n) {
+    struct ep_table_entry e;
+    struct ep_table_watch w;
+    e.epid = t->next_id++;
+    e.type = ep_type_notify;
+    e.data.nf = *n;
+    w.wd = n->wd;
+    w.epid = e.epid;
+    ep_map_insert(&t->entries, &e);
+    ep_map_insert(&t->watched, &w);
 }
 
 
@@ -122,6 +148,17 @@ int ep_table_addr(struct ep_table *t, int epid, struct ep_address *out) {
         printf("%d not found\n", epid);
     }
     return 0;
+}
+
+
+int ep_table_notify_read(struct ep_table *t) {
+    struct ep_table_watch *w = ep_map_get(&t->watched, ep_notify_read(t->inotify_fd));
+    if (w) {
+        return w->epid;
+    }
+    else {
+        return 0;
+    }
 }
 
 

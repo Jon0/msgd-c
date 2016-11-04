@@ -1,7 +1,24 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/inotify.h>
 
 #include "endpoint.h"
+
+
+int ep_notify_create() {
+    return inotify_init1(IN_NONBLOCK);
+}
+
+
+int ep_notify_read(int infd) {
+    struct inotify_event event;
+    size_t len = read(infd, (char *) &event, sizeof(event));
+    if (len == -1) {
+        perror("read");
+        return 0;
+    }
+    return event.wd;
+}
 
 
 void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d) {
@@ -10,6 +27,11 @@ void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d
     h->callback = c;
     h->min_input = 0;
     h->data = d;
+}
+
+
+void ep_notify_init(struct ep_notify *n, int infd, const char *path) {
+    inotify_add_watch(n->wd, path, IN_OPEN | IN_CLOSE);
 }
 
 

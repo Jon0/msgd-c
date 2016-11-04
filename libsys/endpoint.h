@@ -97,7 +97,20 @@ struct ep_memory {
 };
 
 
+/*
+ * monitor changes to an existing file system
+ */
+struct ep_notify {
+    int wd;
+    ep_callback_t callback;
+};
+
+int ep_notify_create();
+int ep_notify_read(int infd);
+
 void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d);
+void ep_notify_init(struct ep_notify *n, int infd, const char *path);
+
 
 size_t ep_channel_flush(struct ep_channel *c);
 
