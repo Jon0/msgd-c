@@ -132,7 +132,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     // find own address and hostname
     struct ep_host host;
     ep_host_init_self(&host);
-    msg_host_list_init(&s->hosts, 32);
+    msg_host_list_init(&s->hosts, 32, 1);
     msg_host_list_add(&s->hosts, host.addr, host.hostname);
 
     // start threads
@@ -186,6 +186,9 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     // apply actions based on message type
     printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
+    case msg_type_share:
+        printf("TODO: share\n");
+        break;
     case msg_type_peer_init:
         msg_host_list_merge(&serv->hosts, m->body, 0);
         msg_host_list_write(&serv->hosts, out);
@@ -266,4 +269,9 @@ void msg_server_handler(int ex, struct ep_event_view *ev) {
         struct msg_server *serv = (struct msg_server *) ev->self->data;
         msg_server_recv(serv, ev->src, &ev->self->buf);
     }
+}
+
+
+void msg_server_notify(int ex, struct ep_event_view *ev) {
+    printf("server notify\n");
 }

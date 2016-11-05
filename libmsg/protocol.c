@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libsys/share.h>
+
 #include "protocol.h"
 
 
@@ -57,9 +59,14 @@ void msg_host_list_debug(struct msg_host_list *h) {
     }
 }
 
-int msg_host_list_init(struct msg_host_list *h, size_t max) {
+int msg_host_list_init(struct msg_host_list *h, size_t max, int file) {
     h->host_max = max;
-    h->ptr = malloc(sizeof(struct msg_host) * max);
+    if (file) {
+        h->ptr = ep_memfile("tree", sizeof(struct msg_host) * max);
+    }
+    else {
+        h->ptr = malloc(sizeof(struct msg_host) * max);
+    }
     h->host_count = 0;
     for (int i = 0; i < max; ++i) {
         msg_tree_init(&h->ptr[i].shared_tree);

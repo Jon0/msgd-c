@@ -69,7 +69,7 @@ int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
     cs->connected = 1;
 
     // init host memory
-    msg_host_list_init(&cs->hosts, 32);
+    msg_host_list_init(&cs->hosts, 32, 0);
     return 0;
 }
 

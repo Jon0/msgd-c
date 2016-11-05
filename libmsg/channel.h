@@ -98,6 +98,7 @@ void msg_server_print_debug(struct msg_server *serv);
  */
 void msg_server_accept(struct ep_table *t, int epid, void *serv);
 void msg_server_handler(int ex, struct ep_event_view *ev);
+void msg_server_notify(int ex, struct ep_event_view *ev);
 
 
 #endif
