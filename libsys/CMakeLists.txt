@@ -4,7 +4,8 @@ set(SYS_RT_LIBS "rt")
 
 find_package(Fuse REQUIRED)
 
-set(CMAKE_C_FLAGS "-D_FILE_OFFSET_BITS=64")
+set(CMAKE_C_FLAGS "-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26")
+
 
 # util library files
 file(GLOB SRC_FILES

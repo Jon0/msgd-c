@@ -9,20 +9,17 @@ int ep_poll_create() {
 }
 
 
-int ep_poll_wait(int epfd, int *src, size_t count) {
-    struct epoll_event event [32];
-    if (count > 32) {
-        count = 32;
-    }
-    int p = epoll_wait(epfd, event, count, -1);
+int ep_poll_wait(int epfd, void *obj, ep_poll_callback_t cb) {
+    struct epoll_event event [8];
+    int p = epoll_wait(epfd, event, 8, -1);
     if (p == -1) {
         perror("epoll_wait");
+        return -1;
     }
     else {
         for (int i = 0; i < p; ++i) {
-            src[i] = event[i].data.u32;
+            cb(obj, event[i].data.u32);
         }
-        return p;
     }
     return 0;
 }

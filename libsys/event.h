@@ -53,7 +53,7 @@ void ep_queue_push(struct ep_event_queue *q, struct ep_event *e);
  * enter main loop
  */
 void ep_queue_from_table(struct ep_event_queue *q);
-void ep_queue_table_event(struct ep_event_queue *q, int epid);
+int ep_queue_table_event(void *ptr, int epid);
 
 
 /*

@@ -41,17 +41,18 @@ void ep_queue_push(struct ep_event_queue *q, struct ep_event *e) {
 
 
 void ep_queue_from_table(struct ep_event_queue *q) {
-    int src [32];
     while (1) {
-        int r = ep_poll_wait(q->table->epoll_fd, src, 32);
-        for (int i = 0; i < r; ++i) {
-            ep_queue_table_event(q, src[i]);
+        int r = ep_poll_wait(q->table->epoll_fd, q, ep_queue_table_event);
+        if (r < 0) {
+            printf("poll error\n");
+            return;
         }
     }
 }
 
 
-void ep_queue_table_event(struct ep_event_queue *q, int epid) {
+int ep_queue_table_event(void *ptr, int epid) {
+    struct ep_event_queue *q = (struct ep_event_queue *) ptr;
     struct ep_event ev;
     if (epid) {
         ev.epid = epid;
@@ -62,6 +63,7 @@ void ep_queue_table_event(struct ep_event_queue *q, int epid) {
         ev.srcid = 0;
     }
     ep_queue_push(q, &ev);
+    return 0;
 }
 
 
