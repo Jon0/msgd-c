@@ -7,6 +7,14 @@
 #include "tree.h"
 
 
+/*
+ * replace host
+ */
+struct ep_location {
+    int name;
+};
+
+
 enum msg_node_type {
     msg_node_client,
     msg_node_directory,
@@ -43,6 +51,7 @@ struct msg_node_update {
  */
 struct msg_node {
     int64_t   mode;
+    int64_t   flags;
     char      name [256];
 };
 
