@@ -46,6 +46,12 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 }
 
 
+void msg_server_add_share(struct msg_server *serv) {
+    struct ep_notify n;
+    int i = ep_add_notify(&serv->tb, &n);
+}
+
+
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid) {
     printf("connect epid %d => node %d\n", epid, nodeid);
     int index = ep_multimap_insert(&s->host_to_tree, epid, 1);
@@ -187,7 +193,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_share:
-        printf("TODO: share\n");
+        msg_server_add_share(serv);
         break;
     case msg_type_peer_init:
         msg_host_list_merge(&serv->hosts, m->body, 0);
