@@ -46,8 +46,11 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 }
 
 
-void msg_server_add_share(struct msg_server *serv) {
+void msg_server_add_share(struct msg_server *serv, struct ep_buffer *buf) {
     struct ep_notify n;
+    char path [256];
+    ep_buffer_peek(buf, path, 0, buf->size);
+    printf("share %s\n", path);
     int i = ep_add_notify(&serv->tb, &n);
 }
 
@@ -193,7 +196,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
     switch (m->head.id) {
     case msg_type_share:
-        msg_server_add_share(serv);
+        msg_server_add_share(serv, m->body);
         break;
     case msg_type_peer_init:
         msg_host_list_merge(&serv->hosts, m->body, 0);
