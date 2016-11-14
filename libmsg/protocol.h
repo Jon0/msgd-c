@@ -113,11 +113,13 @@ int msg_poll_message(struct ep_buffer *in, struct msg_message *out);
  * request types
  */
 void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length);
+void msg_req_share(struct ep_buffer *b, const char *path);
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h);
 void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count);
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t);
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int nodeid);
 void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid);
+
 
 /*
  * send and recieve objects

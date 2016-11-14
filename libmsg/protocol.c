@@ -194,6 +194,15 @@ void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) 
 }
 
 
+void msg_req_share(struct ep_buffer *b, const char *path) {
+    struct msg_header head;
+    head.id = msg_type_share;
+    head.size = strlen(path);
+    ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
+    ep_buffer_insert(b, path, head.size);
+}
+
+
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
     head.id = msg_type_peer_init;
