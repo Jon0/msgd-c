@@ -30,6 +30,7 @@ add_subdirectory(libmsg)
 #build executable
 add_subdirectory(modules)
 add_subdirectory(msgd)
+add_subdirectory(msgcmd)
 
 #build tests
 add_subdirectory(tests)
