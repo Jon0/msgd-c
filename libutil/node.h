@@ -15,6 +15,9 @@ struct ep_location {
 };
 
 
+/*
+ * nodes are either directories or openable files and sockets
+ */
 enum msg_node_type {
     msg_node_client,
     msg_node_directory,
