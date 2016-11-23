@@ -16,13 +16,25 @@ struct ep_location {
 
 
 /*
+ * per node file system functions
+ */
+enum ep_node_operation {
+    ep_op_open,
+    ep_op_close,
+    ep_op_read,
+    ep_op_write,
+};
+
+
+/*
  * nodes are either directories or openable files and sockets
  */
 enum msg_node_type {
     msg_node_client,
     msg_node_directory,
     msg_node_socket,
-    msg_node_file
+    msg_node_file,
+    msg_node_function,
 };
 
 
