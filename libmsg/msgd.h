@@ -48,7 +48,7 @@ struct msg_client_state {
 
 struct msg_host *msg_client_host(struct msg_client_state *cs);
 int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message *msg);
-int msg_connect(struct msg_client_state *cs, const char *addr, short port);
+int msg_connect(struct msg_client_state *cs, struct ep_address *addr);
 
 
 /*

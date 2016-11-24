@@ -48,13 +48,13 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 }
 
 
-int msg_connect(struct msg_client_state *cs, const char *addr, short port) {
+int msg_connect(struct msg_client_state *cs, struct ep_address *addr) {
     ep_table_init(&cs->tb, 256);
     ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
     ep_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
     struct ep_channel ch;
-    ep_connect_remote(&ch.addr, addr, port);
+    ch.addr = *addr;
     int err = ep_init_channel(&ch);
     if (err == -1) {
         cs->connected = 0;

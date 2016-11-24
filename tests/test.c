@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libsys/socket.h>
 #include <libmsg/cmdline.h>
 #include <libmsg/msgd.h>
 
@@ -68,7 +69,9 @@ int main(int argc, char *argv[]) {
     }
 
     // try connecting
-    err = msg_connect(&nstate, argv[1], 2204);
+    struct ep_address addr;
+    ep_connect_remote(&addr, argv[1], 2204);
+    err = msg_connect(&nstate, &addr);
     if (err < 0) {
         printf("cannot connect %s\n", argv[1]);
         return -1;

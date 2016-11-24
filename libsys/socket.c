@@ -15,7 +15,7 @@ void ep_unlink(const char *address) {
 }
 
 
-void ep_listen_local(struct ep_address *a, const char *address) {
+void ep_local(struct ep_address *a, const char *address) {
 
     // intialise address struct with address name
     struct sockaddr_un *saun = (struct sockaddr_un *) &a->data;

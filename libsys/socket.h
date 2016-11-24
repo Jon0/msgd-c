@@ -18,7 +18,7 @@ void ep_unlink(const char *address);
 /*
  * set endpoint to listen for local connections
  */
-void ep_listen_local(struct ep_address *a, const char *address);
+void ep_local(struct ep_address *a, const char *address);
 void ep_listen_remote(struct ep_address *a, short portnum);
 void ep_connect_remote(struct ep_address *a, const char *ip, short portnum);
 

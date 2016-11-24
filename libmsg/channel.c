@@ -147,7 +147,14 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     // start threads
     ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
 
-    // create an acceptor
+    // create a local acceptor
+    struct ep_acceptor local_acc;
+    ep_unlink("msgd-ipc");
+    ep_local(&local_acc.addr, "msgd-ipc");
+    ep_init_acceptor(&local_acc, msg_server_accept, s);
+    ep_add_acceptor(&s->tb, &local_acc);
+
+    // create a remote acceptor
     struct ep_acceptor acc;
     ep_listen_remote(&acc.addr, 2204);
     ep_init_acceptor(&acc, msg_server_accept, s);
