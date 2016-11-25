@@ -6,6 +6,15 @@
 #include <libutil/buffer.h>
 
 
+/*
+ * replace host
+ */
+struct ep_location {
+    int name;
+};
+
+
+
 enum ep_host_flags {
     ep_host_ipv4 = 0x1,
     ep_host_ipv6 = 0x2

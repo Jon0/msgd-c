@@ -8,11 +8,10 @@
 
 
 /*
- * replace host
+ * functions on nodes
  */
-struct ep_location {
-    int name;
-};
+typedef size_t (*ep_node_read_t)(void *, char *, size_t);
+typedef size_t (*ep_node_write_t)(void *, const char *, size_t);
 
 
 /*
@@ -29,11 +28,12 @@ enum ep_node_operation {
 /*
  * nodes are either directories or openable files and sockets
  */
-enum msg_node_type {
-    msg_node_client,
-    msg_node_directory,
-    msg_node_socket,
-    msg_node_file,
+enum ep_node_type {
+    ep_node_client,
+    ep_node_directory,
+    ep_node_socket,
+    ep_node_file,
+    ep_node_link,
     msg_node_function,
 };
 
@@ -65,28 +65,10 @@ struct msg_node_update {
  * processes and published nodes
  */
 struct msg_node {
+    enum ep_node_type type;
     int64_t   mode;
     int64_t   flags;
     char      name [256];
-};
-
-
-/*
- * names a specific recieving process
- */
-struct node_dest {
-    char proc_name [256];
-    void (*update)();
-};
-
-
-/*
- * writable outputs
- * allows wildcard hostname::procname::*
- */
-struct node_routes {
-    int64_t fd;
-    char route_name [256];
 };
 
 
