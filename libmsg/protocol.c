@@ -35,7 +35,7 @@ void msg_send_self(struct msg_host *h, struct ep_buffer *buf) {
     size_t host_count = 1;
 
     printf("send self\n");
-    head.id = msg_type_peer_one;
+    head.type = msg_type_peer_one;
     head.size = sizeof(size_t);
     head.size += 32 + 256 + ep_tree_serial_bytes(&h->shared_tree);
     printf("send %d bytes (%x)\n", head.size, buf);
@@ -135,7 +135,7 @@ void msg_host_list_write(struct msg_host_list *h, struct ep_buffer *buf) {
     struct msg_header head;
 
     printf("send %d hosts\n", h->host_count);
-    head.id = msg_type_peer_all;
+    head.type = msg_type_peer_all;
     head.size = sizeof(size_t);
     for (int i = 0; i < h->host_count; ++i) {
         head.size += 32 + 256 + ep_tree_serial_bytes(&h->ptr[i].shared_tree);
@@ -188,7 +188,7 @@ int msg_poll_message(struct ep_buffer *in, struct msg_message *out) {
 
 void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) {
     struct msg_header head;
-    head.id = id;
+    head.type = id;
     head.size = length;
     ep_buffer_insert(b, (char *) &head, sizeof(head));
 }
@@ -196,7 +196,7 @@ void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) 
 
 void msg_req_share(struct ep_buffer *b, const char *path) {
     struct msg_header head;
-    head.id = msg_type_share;
+    head.type = msg_type_share;
     head.size = strlen(path);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, path, head.size);
@@ -205,7 +205,7 @@ void msg_req_share(struct ep_buffer *b, const char *path) {
 
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
-    head.id = msg_type_peer_init;
+    head.type = msg_type_peer_init;
     head.size = 32 + 256 + ep_tree_serial_bytes(&h->shared_tree);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     msg_host_write(h, b);
@@ -214,7 +214,7 @@ void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
 
 void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
-    head.id = msg_type_proc_init;
+    head.type = msg_type_proc_init;
     head.size = count;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, msg, count);
@@ -223,7 +223,7 @@ void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
 
 void msg_req_avail(struct ep_buffer *b, struct ep_tree *t) {
     struct msg_header head;
-    head.id = msg_type_avail;
+    head.type = msg_type_avail;
     head.state = msg_tree_hash(t);
     head.size = 0;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
@@ -232,7 +232,7 @@ void msg_req_avail(struct ep_buffer *b, struct ep_tree *t) {
 
 void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int nodeid) {
     struct msg_header head;
-    head.id = msg_type_publ;
+    head.type = msg_type_publ;
     head.size = len;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, name, len);
@@ -242,7 +242,7 @@ void msg_req_publish(struct ep_buffer *b, const char *name, size_t len, int node
 void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
     struct msg_header head;
     struct msg_subscribe subs;
-    head.id = msg_type_subs;
+    head.type = msg_type_subs;
     head.size = sizeof(subs);
     subs.nodeid = nodeid;
     subs.subid = subid;
@@ -253,7 +253,7 @@ void msg_req_subscribe(struct ep_buffer *b, int nodeid, int subid) {
 
 size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count) {
     struct msg_header head;
-    head.id = msg_type_data;
+    head.type = msg_type_data;
     head.size = sizeof(node) + sizeof(hdl) + count;
     ep_buffer_insert(buf, (char *) &head, sizeof(head));
     ep_buffer_insert(buf, (char *) &node, sizeof(node));

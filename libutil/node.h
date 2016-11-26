@@ -8,24 +8,6 @@
 
 
 /*
- * functions on nodes
- */
-typedef size_t (*ep_node_read_t)(void *, char *, size_t);
-typedef size_t (*ep_node_write_t)(void *, const char *, size_t);
-
-
-/*
- * per node file system functions
- */
-enum ep_node_operation {
-    ep_op_open,
-    ep_op_close,
-    ep_op_read,
-    ep_op_write,
-};
-
-
-/*
  * nodes are either directories or openable files and sockets
  */
 enum ep_node_type {

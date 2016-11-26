@@ -22,6 +22,7 @@ struct msg_subscriber {
 
 
 /*
+ * either local-filesystems, local-processes or remote connections
  * TODO replace ep_table with specific functions
  */
 struct msg_channel {
@@ -62,6 +63,10 @@ struct msg_server {
     struct ep_multimap  node_to_sub;
 
     struct msg_host_list hosts;
+
+    // local shared objects
+    // share_id -> struct ep_share
+    struct ep_map shares;
 };
 
 

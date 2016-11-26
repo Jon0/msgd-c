@@ -35,8 +35,8 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 
 
     // TODO queue events to be polled
-    printf("recv type %d (%d bytes)\n", msg->head.id, msg->head.size);
-    switch (msg->head.id) {
+    printf("recv type %d (%d bytes)\n", msg->head.type, msg->head.size);
+    switch (msg->head.type) {
     case msg_type_peer_one:
     case msg_type_peer_all:
         msg_merge_peers(&cs->hosts, msg->body, 0);

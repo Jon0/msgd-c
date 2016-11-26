@@ -199,9 +199,17 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     struct msg_host *self = msg_server_self(serv);
     int newid;
 
+    if (m->head.share_id < 0) {
+
+    }
+    else {
+
+    }
+
+
     // apply actions based on message type
-    printf("recv type %d (%d bytes)\n", m->head.id, m->head.size);
-    switch (m->head.id) {
+    printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
+    switch (m->head.type) {
     case msg_type_share:
         msg_server_add_share(serv, m->body);
         break;
