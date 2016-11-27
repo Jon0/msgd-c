@@ -3,18 +3,35 @@
 
 #include <stdlib.h>
 
+#include <libutil/hashmap.h>
+
+
+/*
+ * only processes have epid
+ */
+struct msg_share_id {
+    int id;
+    int type;
+    int epid;
+    int index;
+};
+
 
 struct msg_share_proc {
-
+    int epid;
 };
 
 
 struct msg_share_file {
-
+    char *path;
 };
 
 
+/*
+ * map id to resources
+ */
 struct msg_share_set {
+    struct ep_map          id_map;
     struct msg_share_proc *procs;
     struct msg_share_file *files;
     size_t proc_shares;
