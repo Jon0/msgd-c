@@ -8,6 +8,7 @@
 #include <libsys/thread.h>
 
 #include "protocol.h"
+#include "share.h"
 
 
 /*
@@ -65,8 +66,7 @@ struct msg_server {
     struct msg_host_list hosts;
 
     // local shared objects
-    // share_id -> struct ep_share
-    struct ep_map shares;
+    struct msg_share_set shares;
 };
 
 
