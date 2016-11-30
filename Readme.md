@@ -1,1 +1,3 @@
 # msgd-c
+
+requires fuse

@@ -131,8 +131,6 @@ void msg_server_reply_data(struct msg_server *serv, int epid, struct msg_node_up
 
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
-
-    // alloc structures
     ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
@@ -143,6 +141,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_host_init_self(&host);
     msg_host_list_init(&s->hosts, 32, 1);
     msg_host_list_add(&s->hosts, host.addr, host.hostname);
+    msg_share_set_init(&s->shares);
 
     // start threads
     ep_thread_pool_create(&s->pool, &s->tb, 4, 0);

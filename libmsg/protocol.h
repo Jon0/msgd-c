@@ -56,6 +56,7 @@ struct msg_message {
 
 /*
  * per remote host information
+*  TODO: remove tree, and use share list instead
  */
 struct msg_host {
     int active_id;
