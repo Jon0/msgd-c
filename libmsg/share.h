@@ -22,6 +22,9 @@ struct msg_share_proc {
 };
 
 
+/*
+ * requires listening for inotify events and incoming requests
+ */
 struct msg_share_file {
     char *path;
 };
@@ -36,6 +39,7 @@ struct msg_share_set {
     struct msg_share_file *files;
     size_t proc_shares;
     size_t file_shares;
+    size_t next_id;
 };
 
 
@@ -43,5 +47,10 @@ int msg_share_set_init(struct msg_share_set *set);
 int msg_share_proc(struct msg_share_set *set);
 int msg_share_file(struct msg_share_set *set);
 
+
+/*
+ * handle one of the fuse filesystem requests
+ */
+int msg_handle_request(struct msg_share_set *set, int share_id);
 
 #endif

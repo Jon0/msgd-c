@@ -52,6 +52,7 @@ void msg_server_add_share(struct msg_server *serv, struct ep_buffer *buf) {
     ep_buffer_peek(buf, path, 0, buf->size);
     printf("share %s\n", path);
     int i = ep_add_notify(&serv->tb, &n);
+    msg_share_file(&serv->shares);
 }
 
 

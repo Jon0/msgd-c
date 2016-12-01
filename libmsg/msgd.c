@@ -98,6 +98,20 @@ void msg_free_proc(struct msg_client_state *cs) {
 }
 
 
+int msg_create_share(struct msg_client_state *cs, const char *path) {
+    if (cs->connected) {
+        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
+        struct ep_channel *ch = &e->data.ch;
+        msg_req_share(&ch->write_buf, path);
+        printf("sent msg length: %d\n", ch->write_buf.size);
+        ep_channel_flush(ch);
+    }
+    else {
+        printf("no connection\n");
+    }
+}
+
+
 int msg_publish(struct msg_client_state *cs, const char *name, int mode) {
     if (cs->connected) {
 

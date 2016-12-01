@@ -11,7 +11,9 @@
 
 
 void *ep_memfile(const char *filepath, size_t count) {
-    int fd = open(filepath, O_RDWR | O_CREAT);
+
+    // TODO: return fd to close
+    int fd = memfd_create(filepath, 0);
     if (fd < 0) {
         perror("open");
         return NULL;

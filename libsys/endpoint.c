@@ -44,7 +44,7 @@ size_t ep_channel_flush(struct ep_channel *c) {
 void ep_address_print(struct ep_address *a) {
     struct sockaddr_in *s = (struct sockaddr_in *) &a->data;
     char *addr = (char *) &s->sin_addr;
-    printf("%d.%d.%d.%d\n", addr[0], addr[1], addr[2], addr[3]);
+    printf("%u.%u.%u.%u\n", addr[0], addr[1], addr[2], addr[3]);
 }
 
 

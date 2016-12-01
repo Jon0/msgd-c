@@ -58,6 +58,13 @@ int msg_connect(struct msg_client_state *cs, struct ep_address *addr);
 void msg_register_proc(struct msg_client_state *cs, const char *name, int mode);
 void msg_free_proc(struct msg_client_state *cs);
 
+
+/*
+ * request to server process
+ */
+int msg_create_share(struct msg_client_state *cs, const char *path);
+
+
 /*
  * create a node to send updates
  * return the table element to write updates to
