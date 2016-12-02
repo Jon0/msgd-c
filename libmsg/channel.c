@@ -17,8 +17,8 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 
 
 void msg_server_printsub(struct msg_server *s) {
-    printf("%d sub keys\n", s->node_to_sub.keys.elem_count);
-    printf("%d sub values\n", s->node_to_sub.value_count);
+    printf("%lu sub keys\n", s->node_to_sub.keys.elem_count);
+    printf("%lu sub values\n", s->node_to_sub.value_count);
 
     // find all the keys
     for (int i = 0; i < s->node_to_sub.keys.elem_count; ++i) {
@@ -94,43 +94,6 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf)
 }
 
 
-void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf, size_t count) {
-    struct msg_node_update update;
-    char msgbuf [256];
-    ep_buffer_peek(buf, (char *) &update, 0, sizeof(int) * 2);
-
-    //
-    update.len = count - sizeof(update);
-    update.buf = msgbuf;
-    ep_buffer_peek(buf, msgbuf, sizeof(update), update.len);
-
-    // pass to all subscribed processes
-    // and all peers with at least one subscriber
-    struct ep_subarray *sa = ep_multimap_get_key(&serv->node_to_sub, update.nodeid);
-    if (sa) {
-        printf("recv data (node %d, handle %d, range %d to %d)\n", update.nodeid, update.hdlid, sa->begin, sa->end);
-        for (int i = sa->begin; i < sa->end; ++i) {
-            struct msg_subscriber *sub = ep_multimap_get_value(&serv->node_to_sub, i);
-            if (sub) {
-                msg_server_reply_data(serv, sub->epid, &update);
-            }
-        }
-    }
-    else {
-        printf("node %d doesnt exist\n", update.nodeid);
-    }
-}
-
-
-void msg_server_reply_data(struct msg_server *serv, int epid, struct msg_node_update *u) {
-    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, epid);
-    struct ep_channel *ch = &e->data.ch;
-    msg_send_block(&ch->write_buf, u->nodeid, u->hdlid, u->buf, u->len);
-    printf("[%d] write %d bytes\n", epid, ch->write_buf.size);
-    ep_channel_flush(ch);
-}
-
-
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
     ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
@@ -197,7 +160,6 @@ void msg_server_run(struct msg_server *serv) {
 
 void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
     struct msg_host *self = msg_server_self(serv);
-    int newid;
 
     if (m->head.share_id < 0) {
 
@@ -210,12 +172,9 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     // apply actions based on message type
     printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
     switch (m->head.type) {
-    case msg_type_share:
-        msg_server_add_share(serv, m->body);
-        break;
     case msg_type_peer_init:
         msg_host_list_merge(&serv->hosts, m->body, 0);
-        msg_host_list_write(&serv->hosts, out);
+        msg_send_host_list(&serv->hosts, out);
         break;
     case msg_type_peer_update:
         printf("TODO: peer update\n");
@@ -224,24 +183,10 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     case msg_type_peer_all:
         msg_merge_peers(&serv->hosts, m->body, 0);
         break;
-    case msg_type_proc_init:
-        newid = msg_tree_add_proc(&self->shared_tree, m->body, m->head.size);
-        msg_server_add_client(serv, srcid, newid);
-        msg_send_self(self, out);
-        break;
-    case msg_type_publ:
-        newid = msg_node_of_host(serv, srcid);
-        msg_tree_subnode(&self->shared_tree, m->body, m->head.size, newid);
-        msg_send_self(self, out);
-        break;
-    case msg_type_subs:
-        msg_server_subscribe(serv, srcid, m->body);
-        msg_send_self(self, out);
-    case msg_type_avail:
-        msg_send_self(self, out);
-        break;
-    case msg_type_data:
-        msg_server_read_data(serv, m->body, m->head.size);
+    case msg_type_share_proc:
+    case msg_type_share_file:
+        msg_server_add_share(serv, m->body);
+        msg_send_host(self, out);
         break;
     }
     printf("message applied\n");
@@ -250,7 +195,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
 
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
     printf("recv from: %d\n", src_epid);
-    printf("initial bytes: %d\n", buf->size);
+    printf("initial bytes: %lu\n", buf->size);
 
     struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
     if (e) {
@@ -259,7 +204,7 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
         printf("server config:\n");
         msg_server_printsub(serv);
     }
-    printf("remaining bytes: %d\n\n", buf->size);
+    printf("remaining bytes: %lu\n\n", buf->size);
 }
 
 

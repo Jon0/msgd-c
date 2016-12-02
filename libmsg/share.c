@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "share.h"
 
 
@@ -7,25 +9,55 @@ int msg_share_id(void *p) {
 }
 
 
-int msg_share_set_init(struct msg_share_set *set) {
+void ep_share_set_init(struct msg_share_set *set) {
+
+}
+
+
+void ep_share_set_print(struct msg_share_set *set) {
+
+}
+
+
+size_t ep_share_set_size(struct msg_share_set *set) {
+    return 0;
+}
+
+
+size_t ep_share_set_read(struct msg_share_set *set, struct ep_buffer *buf, size_t offset) {
+    return 0;
+}
+
+
+size_t ep_share_set_write(struct msg_share_set *set, struct ep_buffer *buf) {
+    return 0;
+}
+
+
+void msg_share_debug(struct msg_share_server *set) {
+    printf("%u procs, %u files\n", set->proc_shares, set->file_shares);
+}
+
+
+int msg_share_set_init(struct msg_share_server *set) {
     ep_map_alloc(&set->id_map, msg_share_id, sizeof(struct msg_share_id), 32);
     set->procs = malloc(sizeof(struct msg_share_proc) * 32);
     set->files = malloc(sizeof(struct msg_share_file) * 32);
 }
 
 
-int msg_share_proc(struct msg_share_set *set) {
+int msg_share_proc(struct msg_share_server *set) {
     int new_id = set->next_id++;
     return new_id;
 }
 
 
-int msg_share_file(struct msg_share_set *set) {
+int msg_share_file(struct msg_share_server *set) {
     int new_id = set->next_id++;
     return new_id;
 }
 
 
-int msg_handle_request(struct msg_share_set *set, int share_id) {
+int msg_handle_request(struct msg_share_server *set, int share_id) {
     return 0;
 }

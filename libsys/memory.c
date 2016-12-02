@@ -1,13 +1,12 @@
 #include <stdio.h>
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/mman.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "share.h"
+#include "memory.h"
 
 
 void *ep_memfile(const char *filepath, size_t count) {

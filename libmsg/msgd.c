@@ -14,7 +14,7 @@ void msg_client_recv(int ex, struct ep_event_view *ev) {
     struct msg_host *server = msg_client_host(cs);
     struct msg_message msg;
     if (e) {
-        printf("recv msg length: %d\n", recv_buf->size);
+        printf("recv msg length: %lu\n", recv_buf->size);
         while(msg_poll_message(recv_buf, &msg)) {
             msg_client_apply(cs, ev->src, &msg);
             ep_buffer_release(msg.body, msg.head.size);
@@ -81,7 +81,7 @@ void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) 
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_req_proc_init(&ch->write_buf, name, strlen(name));
-        printf("sent msg length: %d\n", ch->write_buf.size);
+        printf("sent msg length: %lu\n", ch->write_buf.size);
         ep_channel_flush(ch);
     }
     else {
@@ -103,77 +103,12 @@ int msg_create_share(struct msg_client_state *cs, const char *path) {
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_req_share(&ch->write_buf, path);
-        printf("sent msg length: %d\n", ch->write_buf.size);
+        printf("sent msg length: %lu\n", ch->write_buf.size);
         ep_channel_flush(ch);
     }
     else {
         printf("no connection\n");
     }
-}
-
-
-int msg_publish(struct msg_client_state *cs, const char *name, int mode) {
-    if (cs->connected) {
-
-        // send publish request
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
-        struct ep_channel *ch = &e->data.ch;
-        int nodeid = cs->pcount++;
-        msg_req_publish(&ch->write_buf, name, strlen(name), nodeid);
-        printf("sent msg length: %d\n", ch->write_buf.size);
-        ep_channel_flush(ch);
-
-        // create handler to send updates back to server
-        if (nodeid) {
-
-        }
-        return nodeid;
-    }
-    else {
-        printf("no connection\n");
-        return -1;
-    }
-}
-
-
-void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid) {
-    if (cs->connected) {
-
-        // send subscribe request
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
-        struct ep_channel *ch = &e->data.ch;
-        msg_req_subscribe(&ch->write_buf, nodeid, subid);
-        printf("sent msg length: %d\n", ch->write_buf.size);
-        ep_channel_flush(ch);
-    }
-    else {
-        printf("no connection\n");
-    }
-}
-
-
-int msg_available(struct msg_client_state *cs, struct msg_node_set *ns) {
-    if (!cs->connected) {
-        printf("no connection\n");
-        return 0;
-    }
-
-    struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
-    struct ep_channel *ch = &e->data.ch;
-    struct msg_host *server = msg_client_host(cs);
-    msg_req_avail(&ch->write_buf, &server->shared_tree);
-    printf("sent msg length: %d\n", ch->write_buf.size);
-    ep_channel_flush(ch);
-    return 0;
-}
-
-
-void msg_published(struct msg_client_state *cs, struct msg_node_set *ns) {
-
-}
-
-void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns) {
-
 }
 
 
@@ -182,7 +117,7 @@ size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, 
         struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_send_block(&ch->write_buf, nodeid, hdlid, buf, count);
-        printf("write length: %d\n", ch->write_buf.size);
+        printf("write length: %lu\n", ch->write_buf.size);
         ep_channel_flush(ch);
     }
     else {

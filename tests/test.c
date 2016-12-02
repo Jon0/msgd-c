@@ -7,14 +7,13 @@
 
 
 void read_command(struct msg_client_state *ns) {
-    struct msg_node_set nds;
     char inbuf [256];
     int nodebuf;
     size_t len;
 
     // read input
     // either connect or create a nodes
-    printf("enter cmd (reg, pub, sub or write)\n");
+    printf("enter cmd (reg, share or write)\n");
     msg_read_string(inbuf, sizeof(inbuf));
     if (strcmp(inbuf, "reg") == 0) {
         printf("enter process name\n");
@@ -25,18 +24,11 @@ void read_command(struct msg_client_state *ns) {
         // get available nodes
         // block until result is recieved
         printf("requesting available\n");
-        msg_available(ns, &nds);
     }
-    else if (strcmp(inbuf, "pub") == 0) {
-        printf("enter node name\n");
+    else if (strcmp(inbuf, "share") == 0) {
+        printf("enter share name\n");
         msg_read_string(inbuf, sizeof(inbuf));
-        msg_publish(ns, inbuf, 0);
-    }
-    else if (strcmp(inbuf, "sub") == 0) {
-        printf("enter node id\n");
-        nodebuf = msg_read_int();
-        printf("subscribing %d\n", nodebuf);
-        msg_subscribe(ns, nodebuf, 42);
+        msg_create_share(ns, inbuf);
     }
     else if (strcmp(inbuf, "write") == 0) {
         printf("enter node id\n");
@@ -44,7 +36,7 @@ void read_command(struct msg_client_state *ns) {
         printf("enter message\n");
         msg_read_string(inbuf, sizeof(inbuf));
         len = strlen(inbuf);
-        printf("writing %d (%d bytes)\n", nodebuf, len);
+        printf("writing %d (%lu bytes)\n", nodebuf, len);
         msg_write(ns, nodebuf, -1, inbuf, len);
     }
     else {

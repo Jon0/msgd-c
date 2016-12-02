@@ -2,7 +2,6 @@
 #define CHANNEL_H
 
 #include <libutil/hashmap.h>
-#include <libutil/node.h>
 #include <libsys/network.h>
 #include <libsys/socket.h>
 #include <libsys/thread.h>
@@ -66,7 +65,7 @@ struct msg_server {
     struct msg_host_list hosts;
 
     // local shared objects
-    struct msg_share_set shares;
+    struct msg_share_server shares;
 };
 
 
@@ -79,8 +78,6 @@ void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
 void msg_server_init_channel(struct msg_server *s, int epid);
 void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf);
-void msg_server_read_data(struct msg_server *serv, struct ep_buffer *buf, size_t count);
-void msg_server_reply_data(struct msg_server *serv, int epid, struct msg_node_update *u);
 
 
 /*

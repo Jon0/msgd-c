@@ -3,7 +3,24 @@
 
 #include <stdlib.h>
 
+#include <libutil/buffer.h>
 #include <libutil/hashmap.h>
+
+
+/*
+ * shares as seen by other hosts
+ * does not distinguish types
+ */
+struct msg_share_set {
+    size_t share_count;
+};
+
+
+void ep_share_set_print(struct msg_share_set *set);
+void ep_share_set_init(struct msg_share_set *set);
+size_t ep_share_set_size(struct msg_share_set *set);
+size_t ep_share_set_read(struct msg_share_set *set, struct ep_buffer *buf, size_t offset);
+size_t ep_share_set_write(struct msg_share_set *set, struct ep_buffer *buf);
 
 
 /*
@@ -32,8 +49,9 @@ struct msg_share_file {
 
 /*
  * map id to resources
+ * for server side
  */
-struct msg_share_set {
+struct msg_share_server {
     struct ep_map          id_map;
     struct msg_share_proc *procs;
     struct msg_share_file *files;
@@ -43,14 +61,19 @@ struct msg_share_set {
 };
 
 
-int msg_share_set_init(struct msg_share_set *set);
-int msg_share_proc(struct msg_share_set *set);
-int msg_share_file(struct msg_share_set *set);
+void msg_share_debug(struct msg_share_server *set);
+int msg_share_set_init(struct msg_share_server *set);
+int msg_share_proc(struct msg_share_server *set);
+int msg_share_file(struct msg_share_server *set);
 
 
 /*
  * handle one of the fuse filesystem requests
  */
-int msg_handle_request(struct msg_share_set *set, int share_id);
+int msg_share_lsdir(struct msg_share_server *set, int share_id);
+
+
+
+
 
 #endif

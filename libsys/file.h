@@ -1,7 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <libutil/node.h>
 #include <libutil/tree.h>
 
 

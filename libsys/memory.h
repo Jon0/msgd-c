@@ -1,6 +1,7 @@
-#ifndef LIBSYS_SHARE_H
-#define LIBSYS_SHARE_H
+#ifndef LIBSYS_MEMORY_H
+#define LIBSYS_MEMORY_H
 
+#include <unistd.h>
 #include <sys/syscall.h>
 
 

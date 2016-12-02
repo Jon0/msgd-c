@@ -6,22 +6,18 @@
 #include <libsys/thread.h>
 
 #include "protocol.h"
-#include "set.h"
 
 
 /*
- * Updates recieved when polling
+ * Updates passed to processes when polling
  * recieve changes to the directory structures
  * or notification a file has been modified.
  * socket events include the message body,
  * file events include file delta
  */
 struct msg_client_update {
+    int handler_id;
     int type;
-    union {
-        int tree;
-        struct msg_node_update n;
-    } data;
 };
 
 
@@ -63,22 +59,6 @@ void msg_free_proc(struct msg_client_state *cs);
  * request to server process
  */
 int msg_create_share(struct msg_client_state *cs, const char *path);
-
-
-/*
- * create a node to send updates
- * return the table element to write updates to
- */
-int msg_publish(struct msg_client_state *cs, const char *name, int mode);
-void msg_subscribe(struct msg_client_state *cs, int nodeid, int subid);
-
-
-/*
- * take a copy of the servers nodes
- */
-int msg_available(struct msg_client_state *cs, struct msg_node_set *ns);
-void msg_published(struct msg_client_state *cs, struct msg_node_set *ns);
-void msg_subscribed(struct msg_client_state *cs, struct msg_node_set *ns);
 
 
 /*
