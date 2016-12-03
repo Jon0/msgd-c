@@ -6,11 +6,13 @@
 
 /*
  * functions on nodes
+ * will cover most of the fuse functions
  */
 typedef size_t (*ep_node_open_t)(void *);
 typedef size_t (*ep_node_close_t)(void *);
 typedef size_t (*ep_node_read_t)(void *, char *, size_t);
 typedef size_t (*ep_node_write_t)(void *, const char *, size_t);
+typedef size_t (*ep_node_list_t)(void *, const char *);
 
 
 /*

@@ -36,6 +36,7 @@ struct msg_share_id {
 
 struct msg_share_proc {
     int epid;
+    char *procname;
 };
 
 
@@ -44,6 +45,15 @@ struct msg_share_proc {
  */
 struct msg_share_file {
     char *path;
+};
+
+
+/*
+ * net shares are usually owned by another machine
+ */
+struct msg_share_net {
+    int epid;
+    int address;
 };
 
 

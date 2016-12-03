@@ -35,7 +35,7 @@ size_t ep_share_set_write(struct msg_share_set *set, struct ep_buffer *buf) {
 
 
 void msg_share_debug(struct msg_share_server *set) {
-    printf("%u procs, %u files\n", set->proc_shares, set->file_shares);
+    printf("%lu procs, %lu files\n", set->proc_shares, set->file_shares);
 }
 
 
