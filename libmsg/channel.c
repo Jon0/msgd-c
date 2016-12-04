@@ -208,6 +208,17 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
 }
 
 
+void msg_server_recv_remote(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
+    // recv from remote hosts
+    msg_server_recv_share(serv, src_epid, buf);
+}
+
+
+void msg_server_recv_share(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
+     // TODO shares
+}
+
+
 void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out) {
     struct msg_message msg;
     while(msg_poll_message(in, &msg)) {
