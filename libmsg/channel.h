@@ -91,10 +91,11 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-void msg_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
+void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
-void msg_server_recv_remote(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
-void msg_server_recv_share(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
 void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);
 void msg_server_print_debug(struct msg_server *serv);
 

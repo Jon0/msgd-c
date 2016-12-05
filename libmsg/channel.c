@@ -193,6 +193,31 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
 }
 
 
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    // recv from local processes
+
+    if (m->head.share_id < 0) {
+        // requests for shared memory, or registering new processes and files
+    }
+    else {
+        // request to existing shares
+        msg_server_apply_share(serv, srcid, m, out);
+    }
+}
+
+
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    // recv from remote hosts
+    msg_server_apply_share(serv, srcid, m, out);
+}
+
+
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+     // TODO shares
+}
+
+
+
 void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
     printf("recv from: %d\n", src_epid);
     printf("initial bytes: %lu\n", buf->size);
@@ -205,17 +230,6 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
         msg_server_printsub(serv);
     }
     printf("remaining bytes: %lu\n\n", buf->size);
-}
-
-
-void msg_server_recv_remote(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
-    // recv from remote hosts
-    msg_server_recv_share(serv, src_epid, buf);
-}
-
-
-void msg_server_recv_share(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
-     // TODO shares
 }
 
 
