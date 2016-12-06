@@ -48,6 +48,7 @@ void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) 
 void msg_req_share(struct ep_buffer *b, const char *path) {
     struct msg_header head;
     head.type = msg_type_share_file;
+    head.share_id = -1;
     head.size = strlen(path);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, path, head.size);
@@ -57,6 +58,7 @@ void msg_req_share(struct ep_buffer *b, const char *path) {
 void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
     struct msg_header head;
     head.type = msg_type_peer_init;
+    head.share_id = -1;
     head.size = 32 + 256 + ep_share_set_size(&h->shares);
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     msg_host_write(h, b);
@@ -66,18 +68,20 @@ void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
 void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
     head.type = msg_type_share_proc;
+    head.share_id = -1;
     head.size = count;
     ep_buffer_insert(b, (char *) &head, sizeof(struct msg_header));
     ep_buffer_insert(b, msg, count);
 }
 
 
-size_t msg_send_block(struct ep_buffer *buf, int node, int hdl, char *in, size_t count) {
+size_t msg_send_block(struct ep_buffer *buf, int share_id, int hdl, char *in, size_t count) {
     struct msg_header head;
     head.type = msg_type_data;
-    head.size = sizeof(node) + sizeof(hdl) + count;
+    head.share_id = share_id;
+    head.size = sizeof(share_id) + sizeof(hdl) + count;
     ep_buffer_insert(buf, (char *) &head, sizeof(head));
-    ep_buffer_insert(buf, (char *) &node, sizeof(node));
+    ep_buffer_insert(buf, (char *) &share_id, sizeof(share_id));
     ep_buffer_insert(buf, (char *) &hdl, sizeof(hdl));
     ep_buffer_insert(buf, in, count);
 }

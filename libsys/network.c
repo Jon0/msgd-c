@@ -31,13 +31,3 @@ void ep_host_init_self(struct ep_host *h) {
     // get the string name of host
     gethostname(h->hostname, sizeof(h->hostname));
 }
-
-
-int ep_read_host(struct ep_host *h, struct ep_buffer *b, size_t offset) {
-
-}
-
-
-int ep_write_host(struct ep_host *h, struct ep_buffer *b) {
-
-}

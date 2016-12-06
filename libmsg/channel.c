@@ -167,52 +167,57 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
     else {
 
     }
-
-
-    // apply actions based on message type
-    printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
-    switch (m->head.type) {
-    case msg_type_peer_init:
-        msg_host_list_merge(&serv->hosts, m->body, 0);
-        msg_send_host_list(&serv->hosts, out);
-        break;
-    case msg_type_peer_update:
-        printf("TODO: peer update\n");
-        break;
-    case msg_type_peer_one:
-    case msg_type_peer_all:
-        msg_merge_peers(&serv->hosts, m->body, 0);
-        break;
-    case msg_type_share_proc:
-    case msg_type_share_file:
-        msg_server_add_share(serv, m->body);
-        msg_send_host(self, out);
-        break;
-    }
-    printf("message applied\n");
 }
 
 
 void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    struct msg_host *self = msg_server_self(serv);
+
     // recv from local processes
 
     if (m->head.share_id < 0) {
         // requests for shared memory, or registering new processes and files
+        printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
+        switch (m->head.type) {
+        case msg_type_peer_init:
+            msg_host_list_merge(&serv->hosts, m->body, 0);
+            msg_send_host_list(&serv->hosts, out);
+            break;
+        case msg_type_peer_update:
+            printf("TODO: peer update\n");
+            break;
+        case msg_type_peer_one:
+        case msg_type_peer_all:
+            msg_merge_peers(&serv->hosts, m->body, 0);
+            break;
+        case msg_type_share_proc:
+        case msg_type_share_file:
+            msg_server_add_share(serv, m->body);
+            msg_send_host(self, out);
+            break;
+        }
     }
     else {
-        // request to existing shares
+        // request gets passed to existing shares
         msg_server_apply_share(serv, srcid, m, out);
     }
 }
 
 
 void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
-    // recv from remote hosts
-    msg_server_apply_share(serv, srcid, m, out);
+    if (m->head.share_id < 0) {
+
+    }
+    else {
+        // request gets passed to existing shares
+        msg_server_apply_share(serv, srcid, m, out);
+    }
+
 }
 
 
 void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+    printf("recv update for share %d\n", m->head.share_id);
      // TODO shares
 }
 
