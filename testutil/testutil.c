@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <libutil/hashmap.h>
+#include <libutil/map.h>
 #include <libutil/tree.h>
 
 

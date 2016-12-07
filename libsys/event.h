@@ -28,7 +28,6 @@ struct ep_event_queue {
     size_t begin;
     size_t size;
     size_t avail;
-    size_t active;
     int next_id;
 };
 

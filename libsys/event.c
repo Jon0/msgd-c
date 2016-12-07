@@ -68,7 +68,7 @@ int ep_queue_table_event(void *ptr, int epid) {
 
 
 void ep_queue_update(struct ep_event_queue *q, struct ep_event *ev) {
-    struct ep_table_entry *e = ep_map_get(&q->table->entries, ev->epid);
+    struct ep_table_entry *e = msgu_map_get(&q->table->entries, &ev->epid);
     if (e) {
         switch(e->type) {
         case ep_type_acceptor:
@@ -107,7 +107,7 @@ void ep_queue_read_ch(struct ep_event_queue *q, struct ep_event *ev, struct ep_c
     char buf [1024];
     int r = read(c->fd, buf, 1024);
     if (r > 0) {
-        struct ep_subarray *sa = ep_multimap_get_key(&q->table->chanout, ev->epid);
+        struct msgu_subarray *sa = msgu_multimap_get_key(&q->table->chanout, ev->epid);
         for (int i = sa->begin; i < sa->end; ++i) {
             int dest = (int) q->table->chanout.values[sizeof(int) * i];
             ep_queue_write(q, ev->epid, dest, buf, r);

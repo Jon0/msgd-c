@@ -28,8 +28,10 @@ typedef size_t (*ep_buffer_write_t)(struct ep_buffer *, void *);
  * many blocks may refer to a single buffer
  */
 struct ep_block {
-    struct ep_buffer *buf;
-    size_t begin;
+    char *first;
+    char *second;
+    size_t first_count;
+    size_t second_count;
 };
 
 

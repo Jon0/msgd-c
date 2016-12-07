@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 
 #include <libutil/buffer.h>
-#include <libutil/hashmap.h>
+#include <libutil/map.h>
 
 
 struct ep_table;

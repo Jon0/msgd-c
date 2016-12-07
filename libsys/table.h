@@ -1,7 +1,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <libutil/hashmap.h>
+#include <libutil/map.h>
 
 #include "endpoint.h"
 
@@ -23,14 +23,12 @@ union ep_item {
 
 
 struct ep_table_entry {
-    int           epid;
     enum ep_type  type;
     union ep_item data;
 };
 
 
 struct ep_table_watch {
-    int wd;
     int epid;
 };
 
@@ -46,16 +44,16 @@ struct ep_table {
     int                inotify_fd;
 
     // int -> struct ep_table_entry
-    struct ep_map      entries;
+    struct msgu_map      entries;
 
     // inotify watch descriptor -> struct ep_table_watch
-    struct ep_map      watched;
+    struct msgu_map      watched;
 
     // int -> int[]
-    struct ep_multimap accepted;
+    struct msgu_multimap accepted;
 
     // int -> int[]
-    struct ep_multimap chanout;
+    struct msgu_multimap chanout;
 };
 
 

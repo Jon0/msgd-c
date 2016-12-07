@@ -1,7 +1,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include <libutil/hashmap.h>
+#include <libutil/map.h>
 #include <libsys/network.h>
 #include <libsys/socket.h>
 #include <libsys/thread.h>

@@ -5,18 +5,6 @@
 #include "table.h"
 
 
-int ep_watch_id(void *p) {
-    struct ep_table_watch *w = (struct ep_table_watch *) p;
-    return w->wd;
-}
-
-
-int ep_entry_id(void *p) {
-    struct ep_table_entry *e = (struct ep_table_entry *) p;
-    return e->epid;
-}
-
-
 void ep_table_init(struct ep_table *t, size_t max) {
 
     // reserve id 0 for inotify events
@@ -26,10 +14,12 @@ void ep_table_init(struct ep_table *t, size_t max) {
     ep_poll_enable(t->epoll_fd, 0, t->inotify_fd);
 
     // allocate table memory
-    size_t es = sizeof(struct ep_table_entry);
+    size_t es = ;
     printf("alloc table (%d bytes)\n", es * max);
-    ep_map_alloc(&t->entries, ep_entry_id, es, max);
-    ep_map_alloc(&t->watched, ep_watch_id, sizeof(struct ep_table_watch), max);
+    ep_map_init(&t->entries, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct ep_table_entry));
+    ep_map_init(&t->watched, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct ep_table_watch));
+    ep_map_alloc(&t->entries, max);
+    ep_map_alloc(&t->watched, max);
     ep_multimap_init(&t->accepted, sizeof(int), max);
     ep_multimap_init(&t->chanout, sizeof(int), max);
 }
