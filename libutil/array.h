@@ -8,20 +8,16 @@
 typedef int32_t array_id_t;
 
 
-/*
- * binary tree for storing chunks
- */
-struct ep_array_store {
-    void *left;
-    void *right;
-    size_t used;
-    size_t avail;
-
+struct msgu_array {
+    char *data;
+    size_t esize;
+    size_t count;
 };
 
 
-int array_alloc(struct ep_array_store *s, size_t count);
-int array_free(struct ep_array_store *s);
+void msgu_array_init(struct msgu_array *a, size_t elem_size);
+void msgu_array_alloc(struct msgu_array *a, size_t count);
+void msgu_array_free(struct msgu_array *a);
 
 
 #endif
