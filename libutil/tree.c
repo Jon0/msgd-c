@@ -108,13 +108,12 @@ int ep_tree_read(struct ep_tree *t, struct ep_buffer *b, size_t offset) {
     size_t r = ep_buffer_peek(b, (char *) &new_size, offset, sizeof(size_t));
     size_t total_size = sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * new_size;
     if (r != sizeof(size_t) || b->size < (offset + total_size)) {
-        printf("incomplete read, from %d / %d bytes\n", total_size, b->size);
+        printf("incomplete read, from %lu / %lu bytes\n", total_size, b->size);
         return -1;
     }
 
     // read each link
     t->count = new_size;
-    printf("reading %u nodes, from %d / %d bytes\n", t->count, total_size, b->size);
     offset += sizeof(size_t);
     for (int i = 0; i < t->count; ++i) {
         ep_buffer_peek(b, (char *) &t->links[i], offset, sizeof(struct ep_link));
@@ -144,7 +143,7 @@ size_t ep_tree_serial_bytes(struct ep_tree *t) {
 
 
 void ep_tree_print(struct ep_tree *t) {
-    printf("%d nodes\n", t->count);
+    printf("%lu nodes\n", t->count);
     if (t->count > 0) {
         ep_tree_print_rec(t->links, 0);
     }

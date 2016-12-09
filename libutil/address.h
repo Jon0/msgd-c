@@ -8,7 +8,7 @@
 /*
  * replace host
  */
-struct ep_location {
+struct msgu_address {
     int name;
 };
 
