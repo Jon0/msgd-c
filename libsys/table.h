@@ -6,6 +6,24 @@
 #include "endpoint.h"
 
 
+
+
+/*
+ * move into os specific library
+ */
+struct msgsys_callback_table {
+    size_t event_id_size;
+};
+
+
+/*
+ * lookup callback function using os event type
+ */
+void msgu_handle_event(const struct msgsys_callback_table *table, void *os_event_id);
+
+
+
+
 enum ep_type {
     ep_type_acceptor,
     ep_type_channel,

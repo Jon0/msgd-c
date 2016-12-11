@@ -7,6 +7,25 @@
 #include "object.h"
 
 
+
+/*
+ * events from ipc and other hosts, including disconnect events
+ */
+struct msgu_open_socket {
+    struct msgu_address local;
+    struct msgu_address remote;
+};
+
+
+/*
+ * events from files
+ */
+struct msgu_open_file {
+    // TODO a path type
+    const char *path;
+};
+
+
 struct msgu_timer_event {
 
 };
@@ -22,12 +41,13 @@ struct msgu_disconnect_event {
 };
 
 
-/*
- * events from ipc and other hosts, including disconnect events
- */
-struct msgu_socket_event {
-    struct msgu_address local;
-    struct msgu_address remote;
+
+struct msgu_recv_event {
+    struct msgu_fd      fd;
+};
+
+
+struct msgu_write_event {
     struct msgu_fd      fd;
 };
 
@@ -40,25 +60,26 @@ struct msgu_file_event {
 };
 
 
-typedef int (*msgu_timer_event_callback)(struct msgu_timer_event *, void *);
-
-
 /*
- * pass event type, which may be a disconnect
+ * events sent to remotes of changes
  */
-typedef int (*msgu_connect_event_callback)(struct msgu_connect_event *, struct msgu_address *remote, void *);
+struct msgu_broadcast_event {
 
-
-
-struct msgu_callback_table {
-    size_t event_id_size;
 };
 
 
+
 /*
- * lookup callback function using os event type
+ * list each specific event handler
  */
-void msgu_handle_event(const struct msgu_callback_table *table, void *os_event_id);
+int msgu_local_connect(struct msgu_connect_event *);
+
+
+
+/*
+ * returns how much of the buffer was read
+ */
+size_t msgu_recv_event_callback(struct msgu_recv_event *, struct msgu_buffer *b, void *);
 
 
 #endif
