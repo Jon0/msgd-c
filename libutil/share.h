@@ -28,10 +28,15 @@ struct ep_operations {
 
 /*
  * objects shared on a host
+ * shares can be block devices, sockets or filesystems
+ * shares can contain attribute metadata
+ * to indicate uptime, availability
  */
 struct ep_share {
     int name;
     int type;
+    int label;
+    int attributes;
     void *data;
     struct ep_operations ops;
 };
