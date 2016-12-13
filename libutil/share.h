@@ -35,7 +35,7 @@ struct ep_operations {
  * shares can contain attribute metadata
  * to indicate uptime, availability
  */
-struct ep_share_meta {
+struct msgu_share_meta {
     int name;
     int type;
     int label;
@@ -73,7 +73,7 @@ struct msg_share_id {
 
 
 struct msg_share_proc {
-    struct ep_share_meta meta;
+    struct msgu_share_meta meta;
     int epid;
     char *procname;
 };
@@ -83,7 +83,7 @@ struct msg_share_proc {
  * requires listening for inotify events and incoming requests
  */
 struct msg_share_file {
-    struct ep_share_meta meta;
+    struct msgu_share_meta meta;
     char *path;
 };
 
@@ -92,7 +92,7 @@ struct msg_share_file {
  * net shares are usually owned by another machine
  */
 struct msg_share_net {
-    struct ep_share_meta meta;
+    struct msgu_share_meta meta;
     int epid;
     int address;
 };

@@ -2,6 +2,15 @@
 #define LIBUTIL_UPDATE_H
 
 /*
+ * add / remove hosts
+ */
+struct msgu_host_update {
+
+};
+
+
+
+/*
  *
  */
 struct msgu_local_update {
