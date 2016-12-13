@@ -61,15 +61,6 @@ struct msgu_file_event {
 
 
 /*
- * events sent to remotes of changes
- */
-struct msgu_broadcast_event {
-
-};
-
-
-
-/*
  * list each specific event handler
  */
 int msgu_local_connect(struct msgu_connect_event *);

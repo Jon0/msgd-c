@@ -1,8 +1,8 @@
-#ifndef LIBMSG_HOST_H
-#define LIBMSG_HOST_H
+#ifndef LIBUTIL_HOST_H
+#define LIBUTIL_HOST_H
 
-#include <libutil/buffer.h>
-
+#include "buffer.h"
+#include "map.h"
 #include "share.h"
 
 
