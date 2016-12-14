@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "share.h"
 
 
@@ -22,12 +24,12 @@ size_t ep_share_set_size(struct msg_share_set *set) {
 }
 
 
-size_t ep_share_set_read(struct msg_share_set *set, struct ep_buffer *buf, size_t offset) {
+size_t ep_share_set_read(struct msg_share_set *set, struct msgu_buffer *buf, size_t offset) {
     return 0;
 }
 
 
-size_t ep_share_set_write(struct msg_share_set *set, struct ep_buffer *buf) {
+size_t ep_share_set_write(struct msg_share_set *set, struct msgu_buffer *buf) {
     return 0;
 }
 
@@ -38,7 +40,8 @@ void msg_share_debug(struct msg_share_server *set) {
 
 
 int msg_share_set_init(struct msg_share_server *set) {
-    ep_map_alloc(&set->id_map, msg_share_id, sizeof(struct msg_share_id), 32);
+    msgu_map_init(&set->id_map, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_share_id));
+    msgu_map_alloc(&set->id_map, 32);
     set->procs = malloc(sizeof(struct msg_share_proc) * 32);
     set->files = malloc(sizeof(struct msg_share_file) * 32);
 }

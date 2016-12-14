@@ -18,5 +18,6 @@ add_executable(
 target_link_libraries(
 	${TEST_NAME}
 	${UTIL_LIBRARY_NAME}
+	${SYS_LIBRARY_NAME}
 	${MSG_LIBRARY_NAME}
 )

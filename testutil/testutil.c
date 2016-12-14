@@ -4,32 +4,29 @@
 #include <libutil/tree.h>
 
 
-int test_key(void *p) {
-    int *i = (int *) p;
-    return *i;
-}
-
-
 void map_test() {
-    struct ep_map map;
-    ep_map_alloc(&map, test_key, sizeof(int), 32);
+    struct msgu_map map;
+    msgu_map_init(&map, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(int));
+    msgu_map_alloc(&map, 32);
 
     // should return NULL
-    void *x = ep_map_get(&map, 123);
+    int key = 123;
+    int value = 35;
+    void *x = msgu_map_get(&map, &key);
     printf("map get %x\n", x);
 
-    int key = 123;
-    ep_map_insert(&map, &key);
-    x = ep_map_get(&map, key);
+
+    msgu_map_insert(&map, &key, &value);
+    x = msgu_map_get(&map, &key);
     printf("map get %x\n", x);
 
     // should return null again
-    ep_map_erase(&map, key);
-    x = ep_map_get(&map, key);
+    msgu_map_erase(&map, &key);
+    x = msgu_map_get(&map, &key);
     printf("map get %x\n", x);
 
     // cannot remove twice
-    int err = ep_map_erase(&map, key);
+    int err = msgu_map_erase(&map, &key);
     printf("map erase %d\n", err);
 }
 
@@ -53,7 +50,7 @@ void tree_test() {
     ep_tree_print(&tree);
 
 
-    struct ep_buffer buf;
+    struct msgu_buffer buf;
     ep_buffer_init(&buf, malloc(1024), 1024);
 
     printf("write\n\n");

@@ -28,15 +28,15 @@ struct msg_host_list {
 
 
 int msg_host_init(struct msg_host *h, const char *addr, const char *name);
-size_t msg_host_read(struct msg_host *out, struct ep_buffer *in, size_t offset);
-void msg_host_write(struct msg_host *in, struct ep_buffer *out);
+size_t msg_host_read(struct msg_host *out, struct msgu_buffer *in, size_t offset);
+void msg_host_write(struct msg_host *in, struct msgu_buffer *out);
 
 
 void msg_host_list_debug(struct msg_host_list *h);
 int msg_host_list_init(struct msg_host_list *h, size_t max, int file);
 int msg_host_list_add(struct msg_host_list *h, const char *addr, const char *name);
-void msg_merge_peers(struct msg_host_list *h, struct ep_buffer *buf, size_t offset);
-size_t msg_host_list_merge(struct msg_host_list *h, struct ep_buffer *in, size_t offset);
+void msg_merge_peers(struct msg_host_list *h, struct msgu_buffer *buf, size_t offset);
+size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_buffer *in, size_t offset);
 struct msg_host *msg_host_match(struct msg_host_list *h, const char *hostname);
 
 

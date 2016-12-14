@@ -4,7 +4,7 @@
 #include "protocol.h"
 
 
-int msg_invalid_buffer(struct ep_buffer *in) {
+int msg_invalid_buffer(struct msgu_buffer *in) {
     struct msg_message msg;
     size_t hs = sizeof(struct msg_header);
     size_t read_header;
@@ -19,7 +19,7 @@ int msg_invalid_buffer(struct ep_buffer *in) {
 }
 
 
-int msg_poll_message(struct ep_buffer *in, struct msg_message *out) {
+int msg_poll_message(struct msgu_buffer *in, struct msg_message *out) {
 
     // recieving requests to the local server
     size_t hs = sizeof(struct msg_header);
@@ -37,7 +37,7 @@ int msg_poll_message(struct ep_buffer *in, struct msg_message *out) {
 }
 
 
-void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) {
+void msg_write_header(struct msgu_buffer *b, enum msg_type_id id, int32_t length) {
     struct msg_header head;
     head.type = id;
     head.size = length;
@@ -45,7 +45,7 @@ void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length) 
 }
 
 
-void msg_req_share(struct ep_buffer *b, const char *path) {
+void msg_req_share(struct msgu_buffer *b, const char *path) {
     struct msg_header head;
     head.type = msg_type_share_file;
     head.share_id = -1;
@@ -55,7 +55,7 @@ void msg_req_share(struct ep_buffer *b, const char *path) {
 }
 
 
-void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
+void msg_req_peer_init(struct msgu_buffer *b, struct msg_host *h) {
     struct msg_header head;
     head.type = msg_type_peer_init;
     head.share_id = -1;
@@ -65,7 +65,7 @@ void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h) {
 }
 
 
-void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
+void msg_req_proc_init(struct msgu_buffer *b, const char *msg, size_t count) {
     struct msg_header head;
     head.type = msg_type_share_proc;
     head.share_id = -1;
@@ -75,7 +75,7 @@ void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count) {
 }
 
 
-size_t msg_send_block(struct ep_buffer *buf, int share_id, int hdl, char *in, size_t count) {
+size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, size_t count) {
     struct msg_header head;
     head.type = msg_type_data;
     head.share_id = share_id;
@@ -87,7 +87,7 @@ size_t msg_send_block(struct ep_buffer *buf, int share_id, int hdl, char *in, si
 }
 
 
-void msg_send_host(struct msg_host *h, struct ep_buffer *buf) {
+void msg_send_host(struct msg_host *h, struct msgu_buffer *buf) {
     struct msg_header head;
     size_t host_count = 1;
 
@@ -106,7 +106,7 @@ void msg_send_host(struct msg_host *h, struct ep_buffer *buf) {
 }
 
 
-void msg_send_host_list(struct msg_host_list *h, struct ep_buffer *buf) {
+void msg_send_host_list(struct msg_host_list *h, struct msgu_buffer *buf) {
     struct msg_header head;
 
     printf("send %lu hosts\n", h->host_count);

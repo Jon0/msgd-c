@@ -2,9 +2,8 @@
 #define PROTOCOL_H
 
 #include <libutil/buffer.h>
+#include <libutil/host.h>
 #include <libsys/event.h>
-
-#include "host.h"
 
 
 /*
@@ -51,7 +50,7 @@ struct msg_header {
  */
 struct msg_message {
     struct msg_header head;
-    struct ep_buffer *body;
+    struct msgu_buffer *body;
 };
 
 /*
@@ -66,30 +65,30 @@ struct msg_subscribe {
 /*
  * verify a buffer contains a valid message
  */
-int msg_invalid_buffer(struct ep_buffer *in);
+int msg_invalid_buffer(struct msgu_buffer *in);
 
 
 /*
  * take next message header from incoming buffer
  */
-int msg_poll_message(struct ep_buffer *in, struct msg_message *out);
+int msg_poll_message(struct msgu_buffer *in, struct msg_message *out);
 
 
 /*
  * request types
  */
-void msg_write_header(struct ep_buffer *b, enum msg_type_id id, int32_t length);
-void msg_req_share(struct ep_buffer *b, const char *path);
-void msg_req_peer_init(struct ep_buffer *b, struct msg_host *h);
-void msg_req_proc_init(struct ep_buffer *b, const char *msg, size_t count);
+void msg_write_header(struct msgu_buffer *b, enum msg_type_id id, int32_t length);
+void msg_req_share(struct msgu_buffer *b, const char *path);
+void msg_req_peer_init(struct msgu_buffer *b, struct msg_host *h);
+void msg_req_proc_init(struct msgu_buffer *b, const char *msg, size_t count);
 
 
 /*
  * send and recieve objects
  */
-size_t msg_send_block(struct ep_buffer *buf, int share_id, int hdl, char *in, size_t count);
-void msg_send_host(struct msg_host *h, struct ep_buffer *buf);
-void msg_send_host_list(struct msg_host_list *h, struct ep_buffer *buf);
+size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, size_t count);
+void msg_send_host(struct msg_host *h, struct msgu_buffer *buf);
+void msg_send_host_list(struct msg_host_list *h, struct msgu_buffer *buf);
 
 
 #endif

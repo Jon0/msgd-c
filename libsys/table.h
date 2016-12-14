@@ -6,12 +6,10 @@
 #include "endpoint.h"
 
 
-
-
 /*
  * move into os specific library
  */
-struct msgsys_callback_table {
+struct msgs_callback_table {
     size_t event_id_size;
 };
 
@@ -19,9 +17,7 @@ struct msgsys_callback_table {
 /*
  * lookup callback function using os event type
  */
-void msgu_handle_event(const struct msgsys_callback_table *table, void *os_event_id);
-
-
+void msgu_handle_event(const struct msgs_callback_table *table, void *os_event_id);
 
 
 enum ep_type {
@@ -126,7 +122,7 @@ int ep_table_notify_read(struct ep_table *t);
  * read directly
  */
 size_t ep_table_read(struct ep_table *t, int epid, char *buf, size_t count);
-size_t ep_table_read_buf(struct ep_table *t, int epid, struct ep_buffer *b);
+size_t ep_table_read_buf(struct ep_table *t, int epid, struct msgu_buffer *b);
 
 
 /*
@@ -139,13 +135,13 @@ void ep_channel_fwd(struct ep_table *t, int epid, struct ep_channel *c);
 /*
  * buffer to write new data to
  */
-struct ep_buffer *ep_entry_get_buffer(struct ep_table_entry *e);
+struct msgu_buffer *ep_entry_get_buffer(struct ep_table_entry *e);
 
 
 /*
  * write data to endpoints
  */
-size_t ep_entry_write_buf(struct ep_table_entry *e, struct ep_buffer *b, size_t start);
+size_t ep_entry_write_buf(struct ep_table_entry *e, struct msgu_buffer *b, size_t start);
 size_t ep_entry_write_blk(struct ep_table_entry *e, char *b, size_t count);
 
 

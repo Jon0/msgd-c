@@ -36,7 +36,7 @@ struct msg_client_state {
     struct ep_buffer *evqueue;
 
     // internal node id -> handler id
-    struct ep_multimap node_to_hdl;
+    struct msgu_multimap node_to_hdl;
 
     struct msg_host_list hosts;
 };

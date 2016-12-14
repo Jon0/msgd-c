@@ -14,7 +14,7 @@ int msg_host_init(struct msg_host *h, const char *addr, const char *name) {
 }
 
 
-size_t msg_host_read(struct msg_host *out, struct ep_buffer *in, size_t offset) {
+size_t msg_host_read(struct msg_host *out, struct msgu_buffer *in, size_t offset) {
     // one of these may segfault if buffer is too short
     ep_buffer_peek(in, out->addr, offset + 0, 32);
     ep_buffer_peek(in, out->hostname, offset + 32, 256);
@@ -23,7 +23,7 @@ size_t msg_host_read(struct msg_host *out, struct ep_buffer *in, size_t offset) 
 }
 
 
-void msg_host_write(struct msg_host *in, struct ep_buffer *out) {
+void msg_host_write(struct msg_host *in, struct msgu_buffer *out) {
     ep_buffer_insert(out, in->addr, 32);
     ep_buffer_insert(out, in->hostname, 256);
     ep_share_set_write(&in->shares, out);
@@ -43,7 +43,7 @@ void msg_host_list_debug(struct msg_host_list *h) {
 int msg_host_list_init(struct msg_host_list *h, size_t max, int file) {
     h->host_max = max;
     if (file) {
-        h->ptr = ep_memfile("hostlist", sizeof(struct msg_host) * max);
+        h->ptr = msgs_memfile("hostlist", sizeof(struct msg_host) * max);
     }
     else {
         h->ptr = malloc(sizeof(struct msg_host) * max);
@@ -65,7 +65,7 @@ int msg_host_list_add(struct msg_host_list *h, const char *addr, const char *nam
 }
 
 
-void msg_merge_peers(struct msg_host_list *h, struct ep_buffer *buf, size_t offset) {
+void msg_merge_peers(struct msg_host_list *h, struct msgu_buffer *buf, size_t offset) {
     size_t recv_hosts;
     ep_buffer_peek(buf, (char *) &recv_hosts, offset, sizeof(recv_hosts));
     offset += sizeof(recv_hosts);
@@ -77,7 +77,7 @@ void msg_merge_peers(struct msg_host_list *h, struct ep_buffer *buf, size_t offs
 }
 
 
-size_t msg_host_list_merge(struct msg_host_list *h, struct ep_buffer *in, size_t offset) {
+size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_buffer *in, size_t offset) {
     char addr [32];
     char hostname [256];
     ep_buffer_peek(in, addr, offset + 0, 32);

@@ -6,12 +6,12 @@
 #include "buffer.h"
 
 
-void ep_buffer_init_default(struct ep_buffer *b) {
+void ep_buffer_init_default(struct msgu_buffer *b) {
     ep_buffer_init(b, malloc(EP_BUFFER_DEFAULT_SIZE), EP_BUFFER_DEFAULT_SIZE);
 }
 
 
-void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
+void ep_buffer_init(struct msgu_buffer *b, void *mem, size_t count) {
     b->ptr = mem;
     b->avail = count;
     b->begin = 0;
@@ -20,7 +20,7 @@ void ep_buffer_init(struct ep_buffer *b, void *mem, size_t count) {
 }
 
 
-void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count) {
+void ep_buffer_wrap(struct msgu_buffer *b, char *buf, size_t count) {
     b->ptr = buf;
     b->avail = count;
     b->begin = 0;
@@ -29,7 +29,7 @@ void ep_buffer_wrap(struct ep_buffer *b, char *buf, size_t count) {
 }
 
 
-void ep_buffer_resize(struct ep_buffer *b, size_t newsize) {
+void ep_buffer_resize(struct msgu_buffer *b, size_t newsize) {
     char *newmem = malloc(newsize);
     if (newsize < b->size) {
         b->size = ep_buffer_peek(b, newmem, 0, newsize);
@@ -43,7 +43,7 @@ void ep_buffer_resize(struct ep_buffer *b, size_t newsize) {
 }
 
 
-void ep_buffer_free(struct ep_buffer *b) {
+void ep_buffer_free(struct msgu_buffer *b) {
     b->avail = 0;
     b->begin = 0;
     b->size = 0;
@@ -51,7 +51,7 @@ void ep_buffer_free(struct ep_buffer *b) {
 }
 
 
-void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
+void ep_buffer_endmem(struct msgu_buffer *b, char **end, size_t *space) {
     size_t end_index = b->begin + b->size;
     if (end_index < b->avail) {
         *end = &b->ptr[end_index];
@@ -64,19 +64,19 @@ void ep_buffer_endmem(struct ep_buffer *b, char **end, size_t *space) {
 }
 
 
-void ep_buffer_clear(struct ep_buffer *b) {
+void ep_buffer_clear(struct msgu_buffer *b) {
     b->begin = 0;
     b->size = 0;
 }
 
 
-size_t ep_buffer_copy(struct ep_buffer *outbuf, struct ep_buffer *inbuf, size_t start) {
+size_t ep_buffer_copy(struct msgu_buffer *outbuf, struct msgu_buffer *inbuf, size_t start) {
     printf("TODO: copy\n");
     return 0;
 }
 
 
-size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
+size_t ep_buffer_insert(struct msgu_buffer *b, const char *inbuf, size_t count) {
     size_t end = b->begin + b->size;
 
     // check if insert will exceed capacity
@@ -104,7 +104,7 @@ size_t ep_buffer_insert(struct ep_buffer *b, const char *inbuf, size_t count) {
 }
 
 
-size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t offset, size_t count) {
+size_t ep_buffer_peek(struct msgu_buffer *b, char *outbuf, size_t offset, size_t count) {
     size_t begin = b->begin + offset;
     size_t end = b->begin + b->size;
     size_t total = offset + count;
@@ -135,14 +135,14 @@ size_t ep_buffer_peek(struct ep_buffer *b, char *outbuf, size_t offset, size_t c
 }
 
 
-size_t ep_buffer_erase(struct ep_buffer *b, char *outbuf, size_t count) {
+size_t ep_buffer_erase(struct msgu_buffer *b, char *outbuf, size_t count) {
     size_t s = ep_buffer_peek(b, outbuf, 0, count);
     ep_buffer_release(b, s);
     return s;
 }
 
 
-ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
+ssize_t ep_buffer_take(struct msgu_buffer *b, int fd) {
     char *back;
     size_t space = 0;
     ep_buffer_endmem(b, &back, &space);
@@ -159,7 +159,7 @@ ssize_t ep_buffer_take(struct ep_buffer *b, int fd) {
 }
 
 
-size_t ep_buffer_take_src(struct ep_buffer *b, int fd, size_t count) {
+size_t ep_buffer_take_src(struct msgu_buffer *b, int fd, size_t count) {
     char *back;
     size_t space = 0;
     ep_buffer_endmem(b, &back, &space);
@@ -180,7 +180,7 @@ size_t ep_buffer_take_src(struct ep_buffer *b, int fd, size_t count) {
 }
 
 
-ssize_t ep_buffer_write(struct ep_buffer *b, int fd, size_t begin) {
+ssize_t ep_buffer_write(struct msgu_buffer *b, int fd, size_t begin) {
 
     // write as much as possible from begin
     size_t end = b->begin + b->size;
@@ -198,7 +198,7 @@ ssize_t ep_buffer_write(struct ep_buffer *b, int fd, size_t begin) {
 }
 
 
-size_t ep_buffer_write_inc(struct ep_buffer *b, int fd, size_t *begin) {
+size_t ep_buffer_write_inc(struct msgu_buffer *b, int fd, size_t *begin) {
     ssize_t w = ep_buffer_write(b, fd, *begin);
     if (w > 0) {
         *begin = (*begin + w) % b->avail;
@@ -209,7 +209,7 @@ size_t ep_buffer_write_inc(struct ep_buffer *b, int fd, size_t *begin) {
 }
 
 
-void ep_buffer_release(struct ep_buffer *b, size_t count) {
+void ep_buffer_release(struct msgu_buffer *b, size_t count) {
     if (count < b->size) {
         b->begin = (b->begin + count) % b->avail;
         b->size -= count;

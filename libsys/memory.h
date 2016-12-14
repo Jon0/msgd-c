@@ -10,7 +10,7 @@ static inline int memfd_create(const char *name, unsigned int flags) {
 }
 
 
-void *ep_memfile(const char *filepath, size_t count);
+void *msgs_memfile(const char *filepath, size_t count);
 
 
 #endif

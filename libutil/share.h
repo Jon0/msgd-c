@@ -57,8 +57,8 @@ struct msg_share_set {
 void ep_share_set_print(struct msg_share_set *set);
 void ep_share_set_init(struct msg_share_set *set);
 size_t ep_share_set_size(struct msg_share_set *set);
-size_t ep_share_set_read(struct msg_share_set *set, struct ep_buffer *buf, size_t offset);
-size_t ep_share_set_write(struct msg_share_set *set, struct ep_buffer *buf);
+size_t ep_share_set_read(struct msg_share_set *set, struct msgu_buffer *buf, size_t offset);
+size_t ep_share_set_write(struct msg_share_set *set, struct msgu_buffer *buf);
 
 
 /*

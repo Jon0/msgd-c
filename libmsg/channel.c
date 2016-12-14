@@ -22,8 +22,8 @@ void msg_server_printsub(struct msg_server *s) {
 
     // find all the keys
     for (int i = 0; i < s->node_to_sub.keys.elem_count; ++i) {
-        struct ep_subarray *sa = ep_multimap_get_index(&s->node_to_sub, i);
-        printf("key %d (%d to %d)\n", sa->key, sa->begin, sa->end);
+        struct msgu_subarray *sa = msgu_multimap_get_index(&s->node_to_sub, i);
+        printf("key %d (%d to %d)\n", i, sa->begin, sa->end);
 
         // print values
         for (int i = sa->begin; i < sa->end; ++i) {
@@ -36,7 +36,7 @@ void msg_server_printsub(struct msg_server *s) {
 
 
 int msg_node_of_host(struct msg_server *s, int epid) {
-    int *nodelist = ep_multimap_get(&s->host_to_tree, epid, 0);
+    int *nodelist = msgu_multimap_get(&s->host_to_tree, epid, 0);
     if (nodelist) {
         return nodelist[0];
     }
@@ -46,7 +46,7 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 }
 
 
-void msg_server_add_share(struct msg_server *serv, struct ep_buffer *buf) {
+void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf) {
     struct ep_notify n;
     char path [256];
     ep_buffer_peek(buf, path, 0, buf->size);
@@ -58,8 +58,8 @@ void msg_server_add_share(struct msg_server *serv, struct ep_buffer *buf) {
 
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid) {
     printf("connect epid %d => node %d\n", epid, nodeid);
-    int index = ep_multimap_insert(&s->host_to_tree, epid, 1);
-    int *nodelist = ep_multimap_get(&s->host_to_tree, epid, index);
+    int index = msgu_multimap_insert(&s->host_to_tree, epid, 1);
+    int *nodelist = msgu_multimap_get(&s->host_to_tree, epid, index);
     nodelist[0] = nodeid;
 }
 
@@ -74,16 +74,16 @@ void msg_server_init_channel(struct msg_server *s, int epid) {
     ch.epid = epid;
     ch.type = 0;
     ch.subs = 0;
-    ep_map_insert(&s->socket_type, &ch);
+    msgu_map_insert(&s->socket_type, &epid, &ch);
 }
 
 
-void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf) {
+void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *buf) {
     struct msg_subscribe subs;
     ep_buffer_peek(buf, (char *) &subs, 0, sizeof(subs));
     printf("subscribe updates on node id %d to epid %d\n", subs.nodeid, epid);
-    int index = ep_multimap_insert(&s->node_to_sub, subs.nodeid, 1);
-    struct msg_subscriber *sub = ep_multimap_get(&s->node_to_sub, subs.nodeid, index);
+    int index = msgu_multimap_insert(&s->node_to_sub, subs.nodeid, 1);
+    struct msg_subscriber *sub = msgu_multimap_get(&s->node_to_sub, subs.nodeid, index);
     if (sub) {
         sub->epid = epid;
         sub->subid = subs.subid;
@@ -95,9 +95,10 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf)
 
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
-    ep_map_alloc(&s->socket_type, msg_channel_id, sizeof(struct msg_channel), 1024);
-    ep_multimap_init(&s->host_to_tree, sizeof(int), 1024);
-    ep_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
+    msgu_map_init(&s->socket_type, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_channel));
+    msgu_map_alloc(&s->socket_type, 1024);
+    msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
+    msgu_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
     ep_table_init(&s->tb, 256);
 
     // find own address and hostname
@@ -158,7 +159,7 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
     struct msg_host *self = msg_server_self(serv);
 
     if (m->head.share_id < 0) {
@@ -170,7 +171,7 @@ void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m,
 }
 
 
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
     struct msg_host *self = msg_server_self(serv);
 
     // recv from local processes
@@ -204,7 +205,7 @@ void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_messa
 }
 
 
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
     if (m->head.share_id < 0) {
 
     }
@@ -216,18 +217,18 @@ void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_mess
 }
 
 
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out) {
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
     printf("recv update for share %d\n", m->head.share_id);
      // TODO shares
 }
 
 
 
-void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf) {
+void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *buf) {
     printf("recv from: %d\n", src_epid);
     printf("initial bytes: %lu\n", buf->size);
 
-    struct ep_table_entry *e = ep_map_get(&serv->tb.entries, src_epid);
+    struct ep_table_entry *e = msgu_map_get(&serv->tb.entries, &src_epid);
     if (e) {
         msg_server_reply(serv, src_epid, buf, &e->data.ch);
         msg_host_list_debug(&serv->hosts);
@@ -238,7 +239,7 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *bu
 }
 
 
-void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out) {
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct ep_channel *out) {
     struct msg_message msg;
     while(msg_poll_message(in, &msg)) {
         msg_server_apply(serv, src_epid, &msg, &out->write_buf);
@@ -253,8 +254,8 @@ void msg_server_accept(struct ep_table *t, int epid, void *serv) {
     ep_table_print_id(t, epid);
     struct ep_handler hdl;
     ep_handler_init(&hdl, 4096, msg_server_handler, serv);
-    int index = ep_multimap_insert(&t->chanout, epid, 1);
-    int *out = ep_multimap_get(&t->chanout, epid, index);
+    int index = msgu_multimap_insert(&t->chanout, epid, 1);
+    int *out = msgu_multimap_get(&t->chanout, epid, index);
     *out = ep_add_handler(t, &hdl);
     msg_server_init_channel(serv, epid);
 }

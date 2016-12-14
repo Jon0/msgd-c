@@ -135,9 +135,9 @@ void ep_queue_read_hdl(struct ep_event_queue *q, struct ep_event *ev, struct ep_
 }
 
 
-void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int srcid) {
+void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int epid, int srcid) {
     struct ep_event ev;
-    ev.epid = e->epid;
+    ev.epid = epid;
     ev.srcid = srcid;
     switch(e->type) {
     case ep_type_handler:
@@ -148,10 +148,10 @@ void ep_queue_notify(struct ep_event_queue *q, struct ep_table_entry *e, int src
 
 
 size_t ep_queue_write(struct ep_event_queue *eq, int src, int dest, char *b, size_t count) {
-    struct ep_table_entry *e = ep_map_get(&eq->table->entries, dest);
+    struct ep_table_entry *e = msgu_map_get(&eq->table->entries, &dest);
     if (e) {
         size_t wr = ep_entry_write_blk(e, b, count);
-        ep_queue_notify(eq, e, src);
+        ep_queue_notify(eq, e, dest, src);
         return wr;
     }
     else {

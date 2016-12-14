@@ -20,7 +20,7 @@ struct ep_stream {
     int mode;
     union {
         int fd;
-        struct ep_buffer buf;
+        struct msgu_buffer buf;
     } data;
 };
 
@@ -53,7 +53,7 @@ typedef void (*ep_accept_t)(struct ep_table *t, int epid, void *in);
  * memory allocated per active input?
  */
 struct ep_handler {
-    struct ep_buffer    buf;
+    struct msgu_buffer  buf;
     pthread_mutex_t     mutex;
     ep_callback_t       callback;
     size_t              min_input;
@@ -82,9 +82,9 @@ struct ep_acceptor {
  * moves input from file descriptors into handlers
  */
 struct ep_channel {
-    struct ep_buffer  write_buf;
-    struct ep_address addr;
-    int               fd;
+    struct msgu_buffer write_buf;
+    struct ep_address  addr;
+    int                fd;
 };
 
 

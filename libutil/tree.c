@@ -103,7 +103,7 @@ void ep_tree_remove(struct ep_tree *t, int id) {
 }
 
 
-int ep_tree_read(struct ep_tree *t, struct ep_buffer *b, size_t offset) {
+int ep_tree_read(struct ep_tree *t, struct msgu_buffer *b, size_t offset) {
     size_t new_size;
     size_t r = ep_buffer_peek(b, (char *) &new_size, offset, sizeof(size_t));
     size_t total_size = sizeof(size_t) + (sizeof(struct ep_link) + t->elem_size) * new_size;
@@ -125,7 +125,7 @@ int ep_tree_read(struct ep_tree *t, struct ep_buffer *b, size_t offset) {
 }
 
 
-void ep_tree_write(struct ep_tree *t, struct ep_buffer *b) {
+void ep_tree_write(struct ep_tree *t, struct msgu_buffer *b) {
     // write count first
     ep_buffer_insert(b, (char *) &t->count, sizeof(size_t));
 

@@ -9,7 +9,7 @@
 #include "memory.h"
 
 
-void *ep_memfile(const char *filepath, size_t count) {
+void *msgs_memfile(const char *filepath, size_t count) {
 
     // TODO: return fd to close
     int fd = memfd_create(filepath, 0);

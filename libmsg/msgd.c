@@ -9,8 +9,8 @@
 
 void msg_client_recv(int ex, struct ep_event_view *ev) {
     struct msg_client_state *cs = (struct msg_client_state *) ev->self->data;
-    struct ep_buffer *recv_buf = &ev->self->buf;
-    struct ep_table_entry *e = ep_map_get(&cs->tb.entries, ev->src);
+    struct msgu_buffer *recv_buf = &ev->self->buf;
+    struct ep_table_entry *e = msgu_map_get(&cs->tb.entries, &ev->src);
     struct msg_host *server = msg_client_host(cs);
     struct msg_message msg;
     if (e) {
@@ -51,7 +51,7 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 int msg_connect(struct msg_client_state *cs, struct ep_address *addr) {
     ep_table_init(&cs->tb, 256);
     ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
-    ep_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
+    msgu_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
     struct ep_channel ch;
     ch.addr = *addr;
@@ -78,7 +78,7 @@ void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) 
     if (cs->connected) {
 
         // send connect request
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
+        struct ep_table_entry *e = msgu_map_get(&cs->tb.entries, &cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_req_proc_init(&ch->write_buf, name, strlen(name));
         printf("sent msg length: %lu\n", ch->write_buf.size);
@@ -100,7 +100,7 @@ void msg_free_proc(struct msg_client_state *cs) {
 
 int msg_create_share(struct msg_client_state *cs, const char *path) {
     if (cs->connected) {
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
+        struct ep_table_entry *e = msgu_map_get(&cs->tb.entries, &cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_req_share(&ch->write_buf, path);
         printf("sent msg length: %lu\n", ch->write_buf.size);
@@ -114,7 +114,7 @@ int msg_create_share(struct msg_client_state *cs, const char *path) {
 
 size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count) {
     if (cs->connected) {
-        struct ep_table_entry *e = ep_map_get(&cs->tb.entries, cs->server_id);
+        struct ep_table_entry *e = msgu_map_get(&cs->tb.entries, &cs->server_id);
         struct ep_channel *ch = &e->data.ch;
         msg_send_block(&ch->write_buf, nodeid, hdlid, buf, count);
         printf("write length: %lu\n", ch->write_buf.size);

@@ -2,12 +2,12 @@
 #define CHANNEL_H
 
 #include <libutil/map.h>
+#include <libutil/share.h>
 #include <libsys/network.h>
 #include <libsys/socket.h>
 #include <libsys/thread.h>
 
 #include "protocol.h"
-#include "share.h"
 
 
 /*
@@ -53,14 +53,14 @@ struct msg_server {
 
     // type of socket
     // epid -> struct msg_channel
-    struct ep_map socket_type;
+    struct msgu_map socket_type;
 
     // the nodes owned by each socket connection
     // int -> int[]
-    struct ep_multimap  host_to_tree;
+    struct msgu_multimap  host_to_tree;
 
     // nodeid -> struct msg_subscriber
-    struct ep_multimap  node_to_sub;
+    struct msgu_multimap  node_to_sub;
 
     struct msg_host_list hosts;
 
@@ -73,11 +73,11 @@ struct msg_host *msg_server_self(struct msg_server *s);
 int msg_server_add_host(struct msg_server *s, const char *addr, const char *name);
 void msg_server_printsub(struct msg_server *s);
 int msg_node_of_host(struct msg_server *s, int epid);
-void msg_server_add_share(struct msg_server *serv, struct ep_buffer *buf);
+void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
 void msg_server_init_channel(struct msg_server *s, int epid);
-void msg_server_subscribe(struct msg_server *s, int epid, struct ep_buffer *buf);
+void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *buf);
 
 
 /*
@@ -91,12 +91,12 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct ep_buffer *out);
-void msg_server_recv(struct msg_server *serv, int src_epid, struct ep_buffer *buf);
-void msg_server_reply(struct msg_server *serv, int src_epid, struct ep_buffer *in, struct ep_channel *out);
+void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *buf);
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct ep_channel *out);
 void msg_server_print_debug(struct msg_server *serv);
 
 /*
