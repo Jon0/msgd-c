@@ -10,9 +10,19 @@ struct msgu_host_update {
 
 
 /*
- * updates state of local shares
+ * updates state of a local share
  */
 struct msgu_share_update {
+    int share_id;
+    int operation;
+    int data;
+};
+
+
+/*
+ * adds or removes local shares
+ */
+struct msgu_share_list_update {
 
 };
 
