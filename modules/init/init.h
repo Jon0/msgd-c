@@ -1,7 +1,7 @@
 #ifndef INIT_H
 #define INIT_H
 
-#include <libmsg/channel.h>
+#include <libmsg/server.h>
 
 
 struct msg_mod_state {

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <libmsg/channel.h>
+#include <libmsg/server.h>
 
 
 int main(int argc, const char *argv[]) {

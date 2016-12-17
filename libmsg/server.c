@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "channel.h"
 #include "protocol.h"
+#include "server.h"
 
 
 int msg_channel_id(void *p) {
