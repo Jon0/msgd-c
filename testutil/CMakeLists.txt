@@ -1,21 +1,21 @@
 
 # executable names
-set(TESTU_NAME "testutil")
+set(TESTUTIL_NAME "test-util")
 
 
 # client files
-file(GLOB TESTU_FILES
+file(GLOB TESTUTIL_FILES
 	"testutil.c"
 )
 
 
 add_executable(
-	${TESTU_NAME}
-	${TESTU_FILES}
+	${TESTUTIL_NAME}
+	${TESTUTIL_FILES}
 )
 
 
 target_link_libraries(
-	${TESTU_NAME}
+	${TESTUTIL_NAME}
 	${UTIL_LIBRARY_NAME}
 )

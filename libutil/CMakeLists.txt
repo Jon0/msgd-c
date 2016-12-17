@@ -1,11 +1,11 @@
 
 # util library files
-file(GLOB SRC_FILES
+file(GLOB UTIL_SRC_FILES
 	"*.c"
 )
 
 
-file(GLOB INCLUDE_FILES
+file(GLOB UTIL_INCLUDE_FILES
 	"*.h"
 )
 
@@ -13,8 +13,8 @@ file(GLOB INCLUDE_FILES
 add_library(
 	${UTIL_LIBRARY_NAME}
 	SHARED
-	${SRC_FILES}
-	${INCLUDE_FILES}
+	${UTIL_SRC_FILES}
+	${UTIL_INCLUDE_FILES}
 )
 
 

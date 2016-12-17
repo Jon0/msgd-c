@@ -33,7 +33,8 @@ void msg_host_write(struct msg_host *in, struct msgu_buffer *out);
 
 
 void msg_host_list_debug(struct msg_host_list *h);
-int msg_host_list_init(struct msg_host_list *h, size_t max, int file);
+int msg_host_list_init(struct msg_host_list *h);
+int msg_host_list_alloc(struct msg_host_list *h, size_t max);
 int msg_host_list_add(struct msg_host_list *h, const char *addr, const char *name);
 void msg_merge_peers(struct msg_host_list *h, struct msgu_buffer *buf, size_t offset);
 size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_buffer *in, size_t offset);

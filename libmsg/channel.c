@@ -104,7 +104,8 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     // find own address and hostname
     struct ep_host host;
     ep_host_init_self(&host);
-    msg_host_list_init(&s->hosts, 32, 1);
+    msg_host_list_init(&s->hosts);
+    msg_host_list_alloc(&s->hosts, 32);
     msg_host_list_add(&s->hosts, host.addr, host.hostname);
     msg_share_set_init(&s->shares);
 

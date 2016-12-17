@@ -2,7 +2,11 @@
 # set rt link
 set(SYS_RT_LIBS "rt")
 
+
+# dependencies
+find_package(Threads REQUIRED)
 find_package(Fuse REQUIRED)
+
 
 set(CMAKE_C_FLAGS "-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26")
 

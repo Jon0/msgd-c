@@ -69,7 +69,8 @@ int msg_connect(struct msg_client_state *cs, struct ep_address *addr) {
     cs->connected = 1;
 
     // init host memory
-    msg_host_list_init(&cs->hosts, 32, 0);
+    msg_host_list_init(&cs->hosts);
+    msg_host_list_alloc(&cs->hosts, 32);
     return 0;
 }
 

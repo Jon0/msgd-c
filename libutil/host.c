@@ -40,18 +40,19 @@ void msg_host_list_debug(struct msg_host_list *h) {
 }
 
 
-int msg_host_list_init(struct msg_host_list *h, size_t max, int file) {
-    h->host_max = max;
-    if (file) {
-        h->ptr = msgs_memfile("hostlist", sizeof(struct msg_host) * max);
-    }
-    else {
-        h->ptr = malloc(sizeof(struct msg_host) * max);
-    }
+int msg_host_list_init(struct msg_host_list *h) {
     h->host_count = 0;
+    h->host_max = 0;
+    h->ptr = NULL;
+}
+
+
+int msg_host_list_alloc(struct msg_host_list *h, size_t max) {
+    h->ptr = malloc(sizeof(struct msg_host) * max);
     for (int i = 0; i < max; ++i) {
         ep_share_set_init(&h->ptr[i].shares);
     }
+    h->host_max = max;
 }
 
 
