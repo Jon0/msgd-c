@@ -8,6 +8,8 @@
 #include "endpoint.h"
 #include "thread.h"
 
+typedef int msgs_socket_t;
+
 
 /*
  * cleanup old sockets
