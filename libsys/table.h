@@ -2,22 +2,12 @@
 #define TABLE_H
 
 #include <libutil/map.h>
+#include <libutil/event.h>
 
 #include "endpoint.h"
 
 
-/*
- * move into os specific library
- */
-struct msgs_callback_table {
-    size_t event_id_size;
-};
-
-
-/*
- * lookup callback function using os event type
- */
-void msgu_handle_event(const struct msgs_callback_table *table, void *os_event_id);
+typedef void (*msgs_table_event_t)(void *, struct msgu_any_event *);
 
 
 enum ep_type {
@@ -48,11 +38,12 @@ struct ep_table_watch {
 
 
 /*
- * Table of active connections,
+ * Table of active event listeners,
  * making use of kernel epoll functionality.
  * Includes basic routing of recieved data to handlers
  */
 struct ep_table {
+    msgs_table_event_t callback;
     int                next_id;
     int                epoll_fd;
     int                inotify_fd;
@@ -80,7 +71,7 @@ int ep_entry_id(void *p);
 /*
  * init the table
  */
-void ep_table_init(struct ep_table *t, size_t max);
+void ep_table_init(struct ep_table *t, size_t max, msgs_table_event_t cb);
 void ep_table_free(struct ep_table *t);
 
 

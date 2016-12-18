@@ -47,7 +47,7 @@ struct msgu_recv_event {
 };
 
 
-struct msgu_write_event {
+struct msgu_send_event {
     struct msgu_fd      fd;
 };
 
@@ -58,6 +58,23 @@ struct msgu_write_event {
 struct msgu_file_event {
 
 };
+
+
+/*
+ * any event type
+ */
+struct msgu_any_event {
+    int event_type;
+    union {
+        struct msgu_timer_event timer;
+        struct msgu_connect_event connect;
+        struct msgu_disconnect_event disconnect;
+        struct msgu_recv_event recv;
+        struct msgu_send_event send;
+        struct msgu_file_event file;
+    } data;
+};
+
 
 
 /*

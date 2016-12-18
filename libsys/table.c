@@ -5,12 +5,14 @@
 #include "table.h"
 
 
-void msgu_handle_event(const struct msgs_callback_table *table, void *os_event_id) {
-
+int msgs_table_recv_event(void *t, int id) {
+    struct ep_table *table = t;
+    return 0;
 }
 
 
-void ep_table_init(struct ep_table *t, size_t max) {
+void ep_table_init(struct ep_table *t, size_t max, msgs_table_event_t cb) {
+    t->callback = cb;
 
     // reserve id 0 for inotify events
     t->next_id = 1;
@@ -32,6 +34,18 @@ void ep_table_free(struct ep_table *t) {
     msgu_map_free(&t->entries);
     msgu_map_free(&t->watched);
 }
+
+
+void msgs_table_queue_events(struct ep_table *t) {
+    while (1) {
+        int r = ep_poll_wait(t->epoll_fd, t, msgs_table_recv_event);
+        if (r < 0) {
+            printf("poll error\n");
+            return;
+        }
+    }
+}
+
 
 
 int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a) {

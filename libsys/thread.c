@@ -4,51 +4,95 @@
 #include "thread.h"
 
 
-void *ep_pthread_epoll(void *p) {
-    struct ep_event_queue *q = (struct ep_event_queue *) p;
-    ep_queue_from_table(q);
-}
-
-
 void *ep_pthread_main(void *p) {
-    struct ep_event_queue *q = (struct ep_event_queue *) p;
+    struct ep_thread_pool *pool = p;
+    char *element = malloc(msgu_queue_element_size(&pool->queue.data));
     while (1) {
-
-        // wait for events from the queue
-        struct ep_event ev;
-        ep_queue_pop(q, &ev);
-        ep_queue_update(q, &ev);
+        ep_event_queue_pop(&pool->queue, element, 1);
+        pool->callback(element);
     }
+    free(element);
 }
 
 
-void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t threads, int flags) {
-    size_t total_threads;
-    size_t total_size;
+void msgs_mutex_init(msgs_mutex_t *mutex) {
+    pthread_mutex_init(mutex, NULL);
+}
 
-    // create and init queue
-    ep_event_queue_init(&p->queue, tb, 256);
-    if (flags) {
-        total_threads = threads + 1;
+
+int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg) {
+    // ensure only one thread enters the callback
+    if (pthread_mutex_trylock(mutex)) {
+        // lock failed
+        return -1;
     }
     else {
-        total_threads = threads;
+        callback(arg);
+        pthread_mutex_unlock(mutex);
+        return 0;
     }
-    total_size = sizeof(pthread_t) * total_threads;
-    p->threads = malloc(total_size);
-    memset(p->threads, 0, total_size);
-    p->size = total_threads;
+}
+
+
+int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg) {
+    pthread_mutex_lock(mutex);
+    callback(arg);
+    pthread_mutex_unlock(mutex);
+    return 0;
+}
+
+
+void ep_event_queue_init(struct ep_event_queue *q, size_t elem_size) {
+    msgu_queue_init(&q->data, elem_size);
+    pthread_mutex_init(&q->mutex, NULL);
+    pthread_cond_init(&q->empty, NULL);
+}
+
+
+void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue) {
+    msgu_queue_alloc(&q->data, max_queue);
+}
+
+
+
+size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count) {
+    pthread_mutex_lock(&q->mutex);
+    while (msgu_queue_size(&q->data) == 0) {
+        pthread_cond_wait(&q->empty, &q->mutex);
+    }
+    msgu_queue_pop(&q->data, e, count);
+    pthread_mutex_unlock(&q->mutex);
+}
+
+
+size_t ep_event_queue_push(struct ep_event_queue *q, void *e, size_t count) {
+    pthread_mutex_lock(&q->mutex);
+    msgu_queue_push(&q->data, e, count);
+    pthread_cond_broadcast(&q->empty);
+    pthread_mutex_unlock(&q->mutex);
+}
+
+
+void ep_thread_pool_init(struct ep_thread_pool *pool, size_t esize, msgs_thread_callback_t cb) {
+    pool->callback = cb;
+    pool->threads = NULL;
+    pool->thread_count = 0;
+
+    // create and init queue
+    ep_event_queue_init(&pool->queue, esize);
+    ep_event_queue_alloc(&pool->queue, 256);
+}
+
+
+void ep_thread_pool_start(struct ep_thread_pool *pool, size_t threads) {
+    size_t total_size = sizeof(pthread_t) * threads;
+    pool->threads = malloc(total_size);
+    memset(pool->threads, 0, total_size);
+    pool->thread_count = threads;
 
     // create the threads
     for (int i = 0; i < threads; ++i) {
-        int err = pthread_create(&p->threads[i], NULL, ep_pthread_main, &p->queue);
-        if (err) {
-            perror("pthread_create");
-        }
-    }
-
-    if (flags) {
-        int err = pthread_create(&p->threads[threads], NULL, ep_pthread_epoll, &p->queue);
+        int err = pthread_create(&pool->threads[i], NULL, ep_pthread_main, pool);
         if (err) {
             perror("pthread_create");
         }
@@ -56,11 +100,11 @@ void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t
 }
 
 
-void ep_thread_pool_join(struct ep_thread_pool *p) {
-    for (int i = 0; i < p->size; ++i) {
-        pthread_join(p->threads[i], NULL);
+void ep_thread_pool_join(struct ep_thread_pool *pool) {
+    for (int i = 0; i < pool->thread_count; ++i) {
+        pthread_join(pool->threads[i], NULL);
     }
-    p->size = 0;
-    free(p->threads);
+    pool->thread_count = 0;
+    free(pool->threads);
     printf("all threads joined\n");
 }

@@ -7,6 +7,11 @@
 #include "msgd.h"
 
 
+void msg_client_table(void *p, struct msgu_any_event *e) {
+
+}
+
+
 void msg_client_recv(int ex, struct ep_event_view *ev) {
     struct msg_client_state *cs = (struct msg_client_state *) ev->self->data;
     struct msgu_buffer *recv_buf = &ev->self->buf;
@@ -49,8 +54,7 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 
 
 int msg_connect(struct msg_client_state *cs, struct ep_address *addr) {
-    ep_table_init(&cs->tb, 256);
-    ep_thread_pool_create(&cs->pool, &cs->tb, 1, EP_EPOLL);
+    ep_table_init(&cs->tb, 256, msg_client_table);
     msgu_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
     struct ep_channel ch;
@@ -92,9 +96,6 @@ void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) 
 
 
 void msg_free_proc(struct msg_client_state *cs) {
-
-    // wait until threads complete
-    ep_thread_pool_join(&cs->pool);
     ep_table_free(&cs->tb);
 }
 

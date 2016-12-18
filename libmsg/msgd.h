@@ -3,6 +3,7 @@
 
 #include <libutil/buffer.h>
 #include <libsys/endpoint.h>
+#include <libsys/table.h>
 #include <libsys/thread.h>
 
 #include "protocol.h"
@@ -26,8 +27,7 @@ struct msg_client_update {
  * include queue of requests awaiting a response
  */
 struct msg_client_state {
-    struct ep_table       tb;
-    struct ep_thread_pool pool;
+    struct ep_table    tb;
     int                server_id;   // used to write messages to server
     int                hdlid;
     int                connected;

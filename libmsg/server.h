@@ -1,23 +1,19 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
+#include <libutil/channel.h>
 #include <libutil/map.h>
 #include <libutil/share.h>
 #include <libsys/network.h>
 #include <libsys/socket.h>
+#include <libsys/table.h>
 #include <libsys/thread.h>
 
 #include "protocol.h"
 
 
-/*
- * a client which requires updates when events occur
- * can be set to ignore some update types
- */
-struct msg_subscriber {
-    int epid;
-    int subid;
-    int event_mask;
+struct msg_server_event {
+
 };
 
 
@@ -25,18 +21,10 @@ struct msg_subscriber {
  * either local-filesystems, local-processes or remote connections
  * TODO replace ep_table with specific functions
  */
-struct msg_channel {
+struct msg_connection {
     int epid;
     int type;
     int subs;
-};
-
-
-/*
- * modifications applied to server state
- */
-struct msg_server_delta {
-    int type;
 };
 
 
@@ -66,6 +54,14 @@ struct msg_server {
 
     // local shared objects
     struct msg_share_server shares;
+};
+
+
+/*
+ * modifications applied to server state
+ */
+struct msg_server_delta {
+    int type;
 };
 
 

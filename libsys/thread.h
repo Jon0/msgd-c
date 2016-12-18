@@ -3,35 +3,78 @@
 
 #include <pthread.h>
 
-#include "event.h"
+#include <libutil/queue.h>
 
 
-enum ep_thread_pool_flag {
-    EP_EPOLL = 1
+typedef pthread_mutex_t msgs_mutex_t;
+typedef void (*msgs_mutex_callback_t)(void *);
+
+
+void msgs_mutex_init(msgs_mutex_t *mutex);
+int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg);
+int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg);
+
+
+/*
+ * threads handle the events
+ */
+struct ep_event_queue {
+    pthread_cond_t    empty;
+    msgs_mutex_t      mutex;
+    struct msgu_queue data;
 };
+
+
+void ep_event_queue_init(struct ep_event_queue *q, size_t elem_size);
+void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue);
+
+
+/*
+ * remove element from front of queue, copy to e
+ * blocks until an event is recieved
+ */
+size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count);
+
+
+/*
+ * add events to the back of the queue
+ */
+size_t ep_event_queue_push(struct ep_event_queue *q, void *e, size_t count);
+
+
+/*
+ * handles events with threads
+ */
+typedef void (*msgs_thread_callback_t)(void *);
 
 
 /*
  * collection of handler threads
  */
 struct ep_thread_pool {
-    struct ep_event_queue queue;
-    pthread_t *threads;
-    size_t size;
+    struct ep_event_queue  queue;
+    msgs_thread_callback_t callback;
+    pthread_t             *threads;
+    size_t                 thread_count;
 };
 
 
 /*
- * alloc memory for the pool
- * flags, 1 to create a thread to respond to epoll events
+ * configure thread pool
  */
-void ep_thread_pool_create(struct ep_thread_pool *p, struct ep_table *tb, size_t threads, int flags);
+void ep_thread_pool_init(struct ep_thread_pool *pool, size_t esize, msgs_thread_callback_t cb);
+
+
+/*
+ * alloc memory for the pool and start threads
+ */
+void ep_thread_pool_start(struct ep_thread_pool *pool, size_t threads);
 
 
 /*
  * wait for all source threads to complete
  */
-void ep_thread_pool_join(struct ep_thread_pool *p);
+void ep_thread_pool_join(struct ep_thread_pool *pool);
 
 
 #endif

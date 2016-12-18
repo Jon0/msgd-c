@@ -8,7 +8,18 @@
 #include "endpoint.h"
 #include "thread.h"
 
+
 typedef int msgs_socket_t;
+typedef int msgs_accept_t;
+
+
+msgs_accept_t msgs_open_ipc_acceptor(const char *address);
+void msgs_close_ipc_acceptor(msgs_accept_t s);
+
+
+msgs_socket_t msgs_open_ipc_socket(const char *address);
+void msgs_close_ipc_socket(msgs_socket_t s);
+
 
 
 /*

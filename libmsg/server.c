@@ -5,10 +5,16 @@
 #include "server.h"
 
 
-int msg_channel_id(void *p) {
-    struct msg_channel *c = (struct msg_channel *) p;
-    return c->epid;
+void msg_server_table(void *p, struct msgu_any_event *e) {
+
 }
+
+
+void msg_server_recv_event(void *e) {
+    struct msg_server_event *event = e;
+}
+
+
 
 
 struct msg_host *msg_server_self(struct msg_server *s) {
@@ -27,8 +33,8 @@ void msg_server_printsub(struct msg_server *s) {
 
         // print values
         for (int i = sa->begin; i < sa->end; ++i) {
-            size_t addr = sizeof(struct msg_subscriber) * i;
-            struct msg_subscriber *sub = (struct msg_subscriber *) &s->node_to_sub.values[addr];
+            size_t addr = sizeof(struct msgu_channel) * i;
+            struct msgu_channel *sub = (struct msgu_channel *) &s->node_to_sub.values[addr];
             printf("\tsub %d => %d\n", sub->subid, sub->epid);
         }
     }
@@ -70,7 +76,7 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 
 
 void msg_server_init_channel(struct msg_server *s, int epid) {
-    struct msg_channel ch;
+    struct msg_connection ch;
     ch.epid = epid;
     ch.type = 0;
     ch.subs = 0;
@@ -83,7 +89,7 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *bu
     ep_buffer_peek(buf, (char *) &subs, 0, sizeof(subs));
     printf("subscribe updates on node id %d to epid %d\n", subs.nodeid, epid);
     int index = msgu_multimap_insert(&s->node_to_sub, subs.nodeid, 1);
-    struct msg_subscriber *sub = msgu_multimap_get(&s->node_to_sub, subs.nodeid, index);
+    struct msgu_channel *sub = msgu_multimap_get(&s->node_to_sub, subs.nodeid, index);
     if (sub) {
         sub->epid = epid;
         sub->subid = subs.subid;
@@ -95,11 +101,11 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *bu
 
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
-    msgu_map_init(&s->socket_type, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_channel));
+    msgu_map_init(&s->socket_type, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->socket_type, 1024);
     msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
-    msgu_multimap_init(&s->node_to_sub, sizeof(struct msg_subscriber), 1024);
-    ep_table_init(&s->tb, 256);
+    msgu_multimap_init(&s->node_to_sub, sizeof(struct msgu_channel), 1024);
+    ep_table_init(&s->tb, 256, msg_server_table);
 
     // find own address and hostname
     struct ep_host host;
@@ -110,7 +116,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msg_share_set_init(&s->shares);
 
     // start threads
-    ep_thread_pool_create(&s->pool, &s->tb, 4, 0);
+    ep_thread_pool_init(&s->pool, 4, msg_server_recv_event);
 
     // create a local acceptor
     struct ep_acceptor local_acc;
@@ -149,10 +155,11 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
 }
 
 
-void msg_server_run(struct msg_server *serv) {
 
-    // main loop
-    ep_queue_from_table(&serv->pool.queue);
+
+void msg_server_run(struct msg_server *serv) {
+    ep_thread_pool_start(&serv->pool, 4);
+    msgs_table_queue_events(&serv->tb);
 
     // wait until threads complete
     ep_thread_pool_join(&serv->pool);

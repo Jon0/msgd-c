@@ -3,7 +3,6 @@
 
 #include <libutil/buffer.h>
 #include <libutil/host.h>
-#include <libsys/event.h>
 
 
 /*

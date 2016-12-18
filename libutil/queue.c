@@ -15,21 +15,33 @@ void msgu_queue_alloc(struct msgu_queue *q, size_t max) {
 }
 
 
-int msgu_queue_pop(struct msgu_queue *q, void *e, size_t count) {
-    if (count > q->size) {
-        return 0;
-    }
-    msgu_array_get_wrap(&q->arr, q->begin, e, count);
-    q->begin = (q->begin + count) % q->arr.allocated;
-    q->size -= count;
+size_t msgu_queue_size(struct msgu_queue *q) {
+    return q->arr.count;
 }
 
 
-int msgu_queue_push(struct msgu_queue *q, void *e, size_t count) {
+size_t msgu_queue_element_size(struct msgu_queue *q) {
+    return q->arr.esize;
+}
+
+
+size_t msgu_queue_pop(struct msgu_queue *q, void *e, size_t count) {
+    if (count > q->size) {
+        return 0;
+    }
+    size_t get_count = msgu_array_get_wrap(&q->arr, q->begin, e, count);
+    q->begin = (q->begin + get_count) % q->arr.allocated;
+    q->size -= get_count;
+    return get_count;
+}
+
+
+size_t msgu_queue_push(struct msgu_queue *q, void *e, size_t count) {
     if (count > q->size) {
         return 0;
     }
     size_t end = (q->begin + q->size) % q->arr.allocated;
-    msgu_array_set_wrap(&q->arr, end, e, count);
-    q->size += count;
+    size_t set_count = msgu_array_set_wrap(&q->arr, end, e, count);
+    q->size += set_count;
+    return set_count;
 }

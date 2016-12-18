@@ -10,8 +10,8 @@ int ep_poll_create() {
 
 
 int ep_poll_wait(int epfd, void *obj, ep_poll_callback_t cb) {
-    struct epoll_event event [8];
-    int p = epoll_wait(epfd, event, 8, -1);
+    struct epoll_event event [32];
+    int p = epoll_wait(epfd, event, 32, -1);
     if (p == -1) {
         perror("epoll_wait");
         return -1;

@@ -10,6 +10,27 @@
 #include "socket.h"
 
 
+msgs_accept_t msgs_open_ipc_acceptor(const char *address) {
+    return 0;
+}
+
+
+void msgs_close_ipc_acceptor(msgs_accept_t s) {
+
+}
+
+
+msgs_socket_t msgs_open_ipc_socket(const char *address) {
+    return 0;
+}
+
+
+void msgs_close_ipc_socket(msgs_socket_t s) {
+
+}
+
+
+
 void ep_unlink(const char *address) {
     unlink(address);
 }
