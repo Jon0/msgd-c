@@ -44,6 +44,7 @@ struct ep_table_watch {
  */
 struct ep_table {
     msgs_table_event_t callback;
+    void              *callback_arg;
     int                next_id;
     int                epoll_fd;
     int                inotify_fd;
@@ -71,8 +72,14 @@ int ep_entry_id(void *p);
 /*
  * init the table
  */
-void ep_table_init(struct ep_table *t, size_t max, msgs_table_event_t cb);
+void ep_table_init(struct ep_table *t, size_t max, void *arg, msgs_table_event_t cb);
 void ep_table_free(struct ep_table *t);
+
+
+/*
+ * loop waiting for events
+ */
+void msgs_table_queue_events(struct ep_table *t);
 
 
 /*

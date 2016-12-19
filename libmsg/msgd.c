@@ -8,7 +8,7 @@
 
 
 void msg_client_table(void *p, struct msgu_any_event *e) {
-
+    struct msg_client_state *cs = p;
 }
 
 
@@ -54,7 +54,7 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 
 
 int msg_connect(struct msg_client_state *cs, struct ep_address *addr) {
-    ep_table_init(&cs->tb, 256, msg_client_table);
+    ep_table_init(&cs->tb, 256, cs, msg_client_table);
     msgu_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
     struct ep_channel ch;

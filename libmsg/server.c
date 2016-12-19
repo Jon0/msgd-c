@@ -6,6 +6,7 @@
 
 
 void msg_server_table(void *p, struct msgu_any_event *e) {
+    // queue event for threads
 
 }
 
@@ -13,8 +14,6 @@ void msg_server_table(void *p, struct msgu_any_event *e) {
 void msg_server_recv_event(void *e) {
     struct msg_server_event *event = e;
 }
-
-
 
 
 struct msg_host *msg_server_self(struct msg_server *s) {
@@ -105,7 +104,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgu_map_alloc(&s->socket_type, 1024);
     msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     msgu_multimap_init(&s->node_to_sub, sizeof(struct msgu_channel), 1024);
-    ep_table_init(&s->tb, 256, msg_server_table);
+    ep_table_init(&s->tb, 256, s, msg_server_table);
 
     // find own address and hostname
     struct ep_host host;
@@ -116,7 +115,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msg_share_set_init(&s->shares);
 
     // start threads
-    ep_thread_pool_init(&s->pool, 4, msg_server_recv_event);
+    ep_thread_pool_init(&s->pool, sizeof(struct msg_server_event), msg_server_recv_event);
 
     // create a local acceptor
     struct ep_acceptor local_acc;

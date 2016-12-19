@@ -7,12 +7,16 @@
 
 int msgs_table_recv_event(void *t, int id) {
     struct ep_table *table = t;
+
+    // TODO lookup event type
+    table->callback(table->callback_arg, NULL);
     return 0;
 }
 
 
-void ep_table_init(struct ep_table *t, size_t max, msgs_table_event_t cb) {
+void ep_table_init(struct ep_table *t, size_t max, void *arg, msgs_table_event_t cb) {
     t->callback = cb;
+    t->callback_arg = arg;
 
     // reserve id 0 for inotify events
     t->next_id = 1;
@@ -45,7 +49,6 @@ void msgs_table_queue_events(struct ep_table *t) {
         }
     }
 }
-
 
 
 int ep_add_acceptor(struct ep_table *t, struct ep_acceptor *a) {
