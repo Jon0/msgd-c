@@ -6,6 +6,43 @@
 #include <libutil/queue.h>
 
 
+/*
+ * handles events with threads
+ */
+typedef void *(*msgs_thread_callback_t)(void *);
+
+
+/*
+ * collection of handler threads
+ */
+struct msgs_thread_pool {
+    msgs_thread_callback_t callback;
+    pthread_t             *threads;
+    size_t                 thread_count;
+};
+
+
+/*
+ * configure thread pool
+ */
+void msgs_thread_pool_init(struct msgs_thread_pool *pool, msgs_thread_callback_t cb);
+
+
+/*
+ * alloc memory for the pool and start threads
+ */
+void msgs_thread_pool_start(struct msgs_thread_pool *pool, size_t threads);
+
+
+/*
+ * wait for all source threads to complete
+ */
+void msgs_thread_pool_join(struct msgs_thread_pool *pool);
+
+
+/*
+ * mutex type
+ */
 typedef pthread_mutex_t msgs_mutex_t;
 typedef void (*msgs_mutex_callback_t)(void *);
 
@@ -20,7 +57,7 @@ int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *a
  */
 struct ep_event_queue {
     pthread_cond_t    empty;
-    msgs_mutex_t      mutex;
+    pthread_mutex_t   mutex;
     struct msgu_queue data;
 };
 
@@ -40,41 +77,6 @@ size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count);
  * add events to the back of the queue
  */
 size_t ep_event_queue_push(struct ep_event_queue *q, void *e, size_t count);
-
-
-/*
- * handles events with threads
- */
-typedef void (*msgs_thread_callback_t)(void *);
-
-
-/*
- * collection of handler threads
- */
-struct ep_thread_pool {
-    struct ep_event_queue  queue;
-    msgs_thread_callback_t callback;
-    pthread_t             *threads;
-    size_t                 thread_count;
-};
-
-
-/*
- * configure thread pool
- */
-void ep_thread_pool_init(struct ep_thread_pool *pool, size_t esize, msgs_thread_callback_t cb);
-
-
-/*
- * alloc memory for the pool and start threads
- */
-void ep_thread_pool_start(struct ep_thread_pool *pool, size_t threads);
-
-
-/*
- * wait for all source threads to complete
- */
-void ep_thread_pool_join(struct ep_thread_pool *pool);
 
 
 #endif

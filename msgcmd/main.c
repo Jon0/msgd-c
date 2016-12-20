@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libsys/socket.h>
+#include <libsys/endpoint.h>
 #include <libmsg/cmdline.h>
 #include <libmsg/msgd.h>
 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
 
     // try connecting
-    struct ep_address addr;
+    struct msgu_address addr;
     ep_local(&addr, "msgd-ipc");
     err = msg_connect(&nstate, &addr);
     if (err < 0) {

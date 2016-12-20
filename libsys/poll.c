@@ -18,7 +18,7 @@ int ep_poll_wait(int epfd, void *obj, ep_poll_callback_t cb) {
     }
     else {
         for (int i = 0; i < p; ++i) {
-            cb(obj, event[i].data.u32);
+            cb(obj, event[i].data.u64);
         }
     }
     return 0;
@@ -28,7 +28,7 @@ int ep_poll_wait(int epfd, void *obj, ep_poll_callback_t cb) {
 void ep_poll_enable(int epfd, int epid, int fd) {
     struct epoll_event ev;
     ev.events = EPOLLIN | EPOLLET;
-    ev.data.u32 = epid;
+    ev.data.u64 = epid;
 
     // add to epoll
     int err = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);

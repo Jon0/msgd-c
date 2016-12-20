@@ -41,9 +41,10 @@ struct msgu_disconnect_event {
 };
 
 
-
 struct msgu_recv_event {
+    int                 id;
     struct msgu_fd      fd;
+    struct msgu_buffer *buf;
 };
 
 

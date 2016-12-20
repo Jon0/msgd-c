@@ -27,13 +27,14 @@ struct msg_client_update {
  * include queue of requests awaiting a response
  */
 struct msg_client_state {
-    struct ep_table    tb;
-    int                server_id;   // used to write messages to server
+    struct msgs_table  tb;
+    struct msgs_socket server;    // used to write messages to server
+    int                server_id;
     int                hdlid;
     int                connected;
     int                pcount;    // number of used internal ids
     char               proc_name [256];
-    struct ep_buffer *evqueue;
+    struct msgu_buffer write_buf;
 
     // internal node id -> handler id
     struct msgu_multimap node_to_hdl;
@@ -44,7 +45,7 @@ struct msg_client_state {
 
 struct msg_host *msg_client_host(struct msg_client_state *cs);
 int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message *msg);
-int msg_connect(struct msg_client_state *cs, struct ep_address *addr);
+int msg_connect(struct msg_client_state *cs, struct msgu_address *addr);
 
 
 /*

@@ -5,16 +5,10 @@
 #include <libutil/map.h>
 #include <libutil/share.h>
 #include <libsys/network.h>
-#include <libsys/socket.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
 
 #include "protocol.h"
-
-
-struct msg_server_event {
-
-};
 
 
 /*
@@ -35,9 +29,7 @@ struct msg_connection {
  * TODO record each socket, and the type of connection (peer or client)
  */
 struct msg_server {
-    struct ep_table tb;
-    struct ep_thread_pool pool;
-
+    struct msgs_table tb;
 
     // type of socket
     // epid -> struct msg_channel
@@ -92,15 +84,9 @@ void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_messa
 void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
 void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
 void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *buf);
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct ep_channel *out);
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct msgs_socket *out);
 void msg_server_print_debug(struct msg_server *serv);
-
-/*
- * implementing table functions
- */
-void msg_server_accept(struct ep_table *t, int epid, void *serv);
-void msg_server_handler(int ex, struct ep_event_view *ev);
-void msg_server_notify(int ex, struct ep_event_view *ev);
+void msg_server_accept(struct msgs_table *t, int epid, void *serv);
 
 
 #endif

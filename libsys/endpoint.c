@@ -1,8 +1,91 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/inotify.h>
 
 #include "endpoint.h"
+
+
+void ep_unlink(const char *address) {
+    unlink(address);
+}
+
+
+void ep_local(struct msgu_address *a, const char *address) {
+
+    // intialise address struct with address name
+    struct sockaddr_un *saun; // = (struct sockaddr_un *) &a->data;
+    saun->sun_family = AF_UNIX;
+    strcpy(saun->sun_path, address);
+    //a->len = sizeof(saun->sun_family) + strlen(saun->sun_path);
+}
+
+
+void ep_listen_remote(struct msgu_address *a, short portnum) {
+    struct sockaddr_in *addr; // = (struct sockaddr_in *) &a->data;
+    bzero(addr, sizeof(struct sockaddr_in));
+    addr->sin_family = AF_INET;
+    addr->sin_addr.s_addr = INADDR_ANY;
+    addr->sin_port = htons(portnum);
+    //a->len = sizeof(struct sockaddr_in);
+}
+
+
+void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum) {
+    struct sockaddr_in *addr; // = (struct sockaddr_in *) &a->data;
+    bzero(addr, sizeof(struct sockaddr_in));
+
+    struct in_addr buf;
+	if (inet_pton(AF_INET, ip, &buf) <= 0) {
+        perror("inet_pton");
+    }
+
+    addr->sin_family = AF_INET;
+    addr->sin_addr = buf;
+    addr->sin_port = htons(portnum);
+    //a->len = sizeof(struct sockaddr_in);
+}
+
+
+void ep_init_acceptor(struct msgs_acceptor *a) {
+    struct sockaddr *sa = (struct sockaddr *) &a->addr.data;
+    a->fd = socket(sa->sa_family, SOCK_STREAM, 0);
+    if (a->fd < 0) {
+        perror("socket");
+        return;
+    }
+
+    // bind and listen on the socket
+    int err = bind(a->fd, sa, a->addr.len);
+    if (err < 0) {
+        perror("bind");
+        close(a->fd);
+        return;
+    }
+    listen(a->fd, 5);
+}
+
+
+int ep_init_channel(struct msgs_socket *s) {
+    struct sockaddr *sa = (struct sockaddr *) &s->addr.data;
+    s->fd = socket(sa->sa_family, SOCK_STREAM, 0);
+    if (s->fd < 0) {
+        perror("socket");
+        return -1;
+    }
+
+    // connect to address
+    int err = connect(s->fd, sa, s->addr.len);
+    if (err == -1) {
+        perror("connect");
+        close(s->fd);
+        return -1;
+    }
+    return s->fd;
+}
 
 
 int ep_notify_create() {
@@ -21,43 +104,13 @@ int ep_notify_read(int infd) {
 }
 
 
-void ep_handler_init(struct ep_handler *h, size_t size, ep_callback_t c, void *d) {
-    ep_buffer_init(&h->buf, malloc(size), size);
-    pthread_mutex_init(&h->mutex, NULL);
-    h->callback = c;
-    h->min_input = 0;
-    h->data = d;
+void ep_notify_init(struct msgs_file *f, int infd, const char *path) {
+    inotify_add_watch(f->wd, path, IN_OPEN | IN_CLOSE);
 }
 
 
-void ep_notify_init(struct ep_notify *n, int infd, const char *path) {
-    inotify_add_watch(n->wd, path, IN_OPEN | IN_CLOSE);
-}
-
-
-size_t ep_channel_flush(struct ep_channel *c) {
-    ep_buffer_write(&c->write_buf, c->fd, c->write_buf.begin);
-    ep_buffer_clear(&c->write_buf);
-}
-
-
-void ep_address_print(struct ep_address *a) {
+void ep_address_print(struct msgs_address *a) {
     struct sockaddr_in *s = (struct sockaddr_in *) &a->data;
     char *addr = (char *) &s->sin_addr;
     printf("%u.%u.%u.%u\n", addr[0], addr[1], addr[2], addr[3]);
-}
-
-
-size_t ep_ch_write_blk(struct ep_channel *c, char *b, size_t count) {
-    size_t wr = write(c->fd, b, count);
-    if (wr < 0) {
-        perror("write");
-        return 0;
-    }
-    return wr;
-}
-
-
-size_t ep_hdl_write_blk(struct ep_handler *h, char *b, size_t count) {
-    return ep_buffer_insert(&h->buf, b, count);
 }
