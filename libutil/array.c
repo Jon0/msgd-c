@@ -51,7 +51,7 @@ size_t msgu_array_get_wrap(struct msgu_array *a, size_t index, void *elem, size_
     size_t block1 = a->allocated - index;
     if (count > block1) {
         memmove(elem, &a->data[a->esize * index], a->esize * block1);
-        memmove(&elem[a->esize * block1], a->data, a->esize * (count - block1));
+        memmove(&((char *) elem)[a->esize * block1], a->data, a->esize * (count - block1));
     }
     else {
         memmove(elem, &a->data[a->esize * index], a->esize * count);
@@ -67,7 +67,7 @@ size_t msgu_array_set_wrap(struct msgu_array *a, size_t index, void *elem, size_
     size_t block1 = a->allocated - index;
     if (count > block1) {
         memmove(&a->data[a->esize * index], elem, a->esize * block1);
-        memmove(a->data, &elem[a->esize * block1], a->esize * (count - block1));
+        memmove(a->data, &((char *) elem)[a->esize * block1], a->esize * (count - block1));
     }
     else {
         memmove(&a->data[a->esize * index], elem, a->esize * count);

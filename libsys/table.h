@@ -28,12 +28,13 @@ struct msgs_handlers {
  * no need to store list of endpoints here
  */
 struct msgs_table {
-    pthread_mutex_t      mutex;
-    struct msgs_handlers hdl;
-    void                *arg;
-    int                  next_id;
-    int                  epoll_fd;
-    int                  inotify_fd;
+    pthread_mutex_t        mutex;
+    struct msgs_handlers   hdl;
+    void                  *arg;
+    int                    epoll_fd;
+    int                    inotify_fd;
+    int                    next_id;
+    struct msgu_event_list list;
 };
 
 

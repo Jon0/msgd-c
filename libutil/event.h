@@ -77,6 +77,13 @@ struct msgu_any_event {
 };
 
 
+/*
+ * contains a list of each type of event
+ */
+struct msgu_event_list {
+
+};
+
 
 /*
  * list each specific event handler

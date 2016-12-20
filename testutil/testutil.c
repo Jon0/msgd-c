@@ -13,17 +13,17 @@ void map_test() {
     int key = 123;
     int value = 35;
     void *x = msgu_map_get(&map, &key);
-    printf("map get %x\n", x);
+    printf("map get %lx\n", (unsigned long) x);
 
 
     msgu_map_insert(&map, &key, &value);
     x = msgu_map_get(&map, &key);
-    printf("map get %x\n", x);
+    printf("map get %lx\n", (unsigned long) x);
 
     // should return null again
     msgu_map_erase(&map, &key);
     x = msgu_map_get(&map, &key);
-    printf("map get %x\n", x);
+    printf("map get %lx\n", (unsigned long) x);
 
     // cannot remove twice
     int err = msgu_map_erase(&map, &key);
