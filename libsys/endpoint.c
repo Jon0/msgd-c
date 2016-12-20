@@ -17,25 +17,25 @@ void ep_unlink(const char *address) {
 void ep_local(struct msgu_address *a, const char *address) {
 
     // intialise address struct with address name
-    struct sockaddr_un *saun; // = (struct sockaddr_un *) &a->data;
+    struct sockaddr_un *saun = (struct sockaddr_un *) &a->data;
     saun->sun_family = AF_UNIX;
     strcpy(saun->sun_path, address);
-    //a->len = sizeof(saun->sun_family) + strlen(saun->sun_path);
+    a->len = sizeof(saun->sun_family) + strlen(saun->sun_path);
 }
 
 
 void ep_listen_remote(struct msgu_address *a, short portnum) {
-    struct sockaddr_in *addr; // = (struct sockaddr_in *) &a->data;
+    struct sockaddr_in *addr = (struct sockaddr_in *) &a->data;
     bzero(addr, sizeof(struct sockaddr_in));
     addr->sin_family = AF_INET;
     addr->sin_addr.s_addr = INADDR_ANY;
     addr->sin_port = htons(portnum);
-    //a->len = sizeof(struct sockaddr_in);
+    a->len = sizeof(struct sockaddr_in);
 }
 
 
 void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum) {
-    struct sockaddr_in *addr; // = (struct sockaddr_in *) &a->data;
+    struct sockaddr_in *addr = (struct sockaddr_in *) &a->data;
     bzero(addr, sizeof(struct sockaddr_in));
 
     struct in_addr buf;
@@ -46,7 +46,7 @@ void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum) {
     addr->sin_family = AF_INET;
     addr->sin_addr = buf;
     addr->sin_port = htons(portnum);
-    //a->len = sizeof(struct sockaddr_in);
+    a->len = sizeof(struct sockaddr_in);
 }
 
 
@@ -109,7 +109,7 @@ void ep_notify_init(struct msgs_file *f, int infd, const char *path) {
 }
 
 
-void ep_address_print(struct msgs_address *a) {
+void ep_address_print(struct msgu_address *a) {
     struct sockaddr_in *s = (struct sockaddr_in *) &a->data;
     char *addr = (char *) &s->sin_addr;
     printf("%u.%u.%u.%u\n", addr[0], addr[1], addr[2], addr[3]);

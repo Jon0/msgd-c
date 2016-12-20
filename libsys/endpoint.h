@@ -7,18 +7,9 @@
 #include <libutil/buffer.h>
 
 
-/*
- * converting os addresses to msgu address
- */
-struct msgs_address {
-    char               data [32];
-    socklen_t          len;
-};
-
-
 struct msgs_acceptor {
-    struct msgs_address addr;
     int                 fd;
+    struct msgu_address addr;
 };
 
 
@@ -26,10 +17,10 @@ struct msgs_acceptor {
  * moves input from file descriptors into handlers
  */
 struct msgs_socket {
+    int                  fd;
+    struct msgu_address  addr;
     struct msgu_buffer   read_buf;
     struct msgu_buffer   write_buf;
-    struct msgs_address  addr;
-    int                  fd;
 };
 
 
@@ -64,6 +55,6 @@ int ep_init_channel(struct msgs_socket *s);
 int ep_notify_create();
 int ep_notify_read(int infd);
 void ep_notify_init(struct msgs_file *f, int infd, const char *path);
-void ep_address_print(struct msgs_address *a);
+void ep_address_print(struct msgu_address *a);
 
 #endif

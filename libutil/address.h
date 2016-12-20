@@ -5,13 +5,32 @@
 
 #include "buffer.h"
 
-/*
- * replace host
- */
-struct msgu_address {
-    int name;
+
+struct msgu_ipc {
+    size_t len;
+    char *data;
 };
 
+
+struct msgu_ipv4 {
+    short port;
+    char data [4];
+};
+
+
+struct msgu_ipv6 {
+    short port;
+    char data [16];
+};
+
+
+/*
+ * any type of address
+ */
+struct msgu_address {
+    char   data [32];
+    size_t len;
+};
 
 
 enum ep_host_flags {
