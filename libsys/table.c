@@ -57,11 +57,13 @@ void msgs_table_poll(struct msgs_table *t) {
 
 
 void msgs_table_recv(struct msgs_table *t, uint32_t ev, uint32_t type, uint32_t id) {
-    char data [MSGU_EVENT_SIZE];
+    union msgu_any_event data;
     pthread_mutex_lock(&t->map_mutex);
-    msgu_event_copy(t->emap, type, id, data);
+    int count = msgu_event_copy(t->emap, id, &data);
     pthread_mutex_unlock(&t->map_mutex);
-    msgu_event_notify(t->emap, type, data);
+    if (count) {
+        msgu_event_notify(t->emap, type, &data);
+    }
 }
 
 
@@ -91,7 +93,7 @@ int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc) {
     pthread_mutex_lock(&t->map_mutex);
     int id = msgu_add_conn(t->emap, &ce);
     pthread_mutex_unlock(&t->map_mutex);
-    msgs_table_enable(t, acc->fd, 5, id);
+    msgs_table_enable(t, acc->fd, msgu_connect, id);
 }
 
 
@@ -102,6 +104,6 @@ int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk) {
     pthread_mutex_lock(&t->map_mutex);
     int id = msgu_add_recv(t->emap, &re);
     pthread_mutex_unlock(&t->map_mutex);
-    msgs_table_enable(t, sk->fd, 6, id);
+    msgs_table_enable(t, sk->fd, msgu_recv, id);
     return id;
 }

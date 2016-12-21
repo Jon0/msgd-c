@@ -24,11 +24,13 @@ struct msg_connection {
  * complete server state
  * includes map from host input ids to tree node ids
  * nodes should be removed when connection is ended
- * TODO record each socket, and the type of connection (peer or client)
  */
 struct msg_server {
     struct msgu_event_map emap;
     struct msgs_table     tb;
+
+    struct msgs_acceptor local_acc;
+    struct msgs_acceptor remote_acc;
 
     // type of socket
     // epid -> struct msg_connection

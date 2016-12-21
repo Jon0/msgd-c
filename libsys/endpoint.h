@@ -30,6 +30,29 @@ struct msgs_file {
 };
 
 
+
+
+
+/*
+ * recv available data from a readable file descriptor
+ */
+ssize_t msgs_recv(struct msgu_buffer *b, int fd);
+size_t msgs_recv_src(struct msgu_buffer *b, int fd, size_t count);
+
+
+/*
+ * send data to a file descriptor, make no changes to the buffer
+ */
+ssize_t msgs_send(struct msgu_buffer *b, int fd, size_t begin);
+size_t msgs_send_inc(struct msgu_buffer *b, int fd, size_t *begin);
+
+
+/*
+ * adds a non blocking flag to file descriptor
+ */
+int msgs_set_non_blocking(int fd);
+
+
 /*
  * cleanup old sockets
  */
@@ -48,6 +71,7 @@ void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum);
  */
 int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr);
 int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a);
+int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s);
 
 
 int ep_notify_create();

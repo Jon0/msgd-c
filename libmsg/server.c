@@ -5,14 +5,24 @@
 
 
 void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
-    struct msg_server *s = p;
+    struct msg_server *serv = p;
+    struct msgs_socket newsocket;
+    while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
+        printf("server connect event\n");
+        msg_server_init_connection(serv, &newsocket);
+    }
+}
 
-    printf("server connect event\n");
+
+void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
+    struct msg_server *serv = p;
+    printf("server recv event\n");
 }
 
 
 static struct msgu_handlers msg_server_handlers = {
-    .connect_event = msg_server_connect_event,
+    .connect_event    = msg_server_connect_event,
+    .recv_event       = msg_server_recv_event,
 };
 
 
@@ -126,17 +136,14 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     struct msgu_address local_addr;
     ep_unlink("msgd-ipc");
     ep_local(&local_addr, "msgd-ipc");
-
-    struct msgs_acceptor local_acc;
-    msgs_open_acceptor(&local_acc, &local_addr);
-    msgs_poll_acceptor(&s->tb, &local_acc);
+    msgs_open_acceptor(&s->local_acc, &local_addr);
+    msgs_poll_acceptor(&s->tb, &s->local_acc);
 
     // create a remote acceptor
     struct msgu_address raddr;
-    struct msgs_acceptor acc;
     ep_listen_remote(&raddr, 2204);
-    msgs_open_acceptor(&acc, &raddr);
-    msgs_poll_acceptor(&s->tb, &acc);
+    msgs_open_acceptor(&s->remote_acc, &raddr);
+    msgs_poll_acceptor(&s->tb, &s->remote_acc);
 }
 
 

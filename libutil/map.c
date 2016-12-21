@@ -25,12 +25,12 @@ void msgu_map_alloc(struct msgu_map *m, size_t count) {
     m->array = &mem[pairsize];
 
     // init all pairs to empty
+    m->array_max = count;
     for (size_t i = 0; i < m->array_max; ++i) {
         struct msgu_key_pair *keypair = &m->pair[i];
         keypair->hash = 0;
         keypair->index = -1;
     }
-    m->array_max = count;
 }
 
 

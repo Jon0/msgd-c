@@ -92,6 +92,7 @@ void msg_free_proc(struct msg_client_state *cs) {
 int msg_create_share(struct msg_client_state *cs, const char *path) {
     if (cs->connected) {
         msg_req_share(&cs->write_buf, path);
+        msgs_send(&cs->write_buf, cs->server.fd, cs->write_buf.begin);
         printf("sent msg length: %lu\n", cs->write_buf.size);
     }
     else {

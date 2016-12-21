@@ -88,17 +88,6 @@ size_t ep_buffer_peek(struct msgu_buffer *b, char *outbuf, size_t offset, size_t
  */
 size_t ep_buffer_erase(struct msgu_buffer *b, char *outbuf, size_t count);
 
-/*
- * take available data from a readable file descriptor
- */
-ssize_t ep_buffer_take(struct msgu_buffer *b, int fd);
-size_t ep_buffer_take_src(struct msgu_buffer *b, int fd, size_t count);
-
-/*
- * write data to a file descriptor, make no changes to the buffer
- */
-ssize_t ep_buffer_write(struct msgu_buffer *b, int fd, size_t begin);
-size_t ep_buffer_write_inc(struct msgu_buffer *b, int fd, size_t *begin);
 
 /*
  * increment the buffer front, as data is no longer needed

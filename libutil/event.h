@@ -9,9 +9,14 @@
 
 
 /*
- * maximum size of any event struct
+ * id for each event type
  */
-#define MSGU_EVENT_SIZE 64
+enum msgu_event_type {
+    msgu_connect,
+    msgu_disconnect,
+    msgu_recv,
+    msgu_send,
+};
 
 
 /*
@@ -42,11 +47,9 @@ struct msgu_connect_event {
 };
 
 
-struct msgu_disconnect_event {
-
-};
-
-
+/*
+ * recieve updates to sockets, including socket getting closed
+ */
 struct msgu_recv_event {
     int                 id;
     struct msgu_buffer *buf;
@@ -63,6 +66,15 @@ struct msgu_send_event {
  */
 struct msgu_file_event {
 
+};
+
+
+union msgu_any_event {
+    struct msgu_timer_event timer;
+    struct msgu_connect_event conn;
+    struct msgu_recv_event recv;
+    struct msgu_send_event send;
+    struct msgu_file_event file;
 };
 
 
@@ -83,6 +95,7 @@ size_t msgu_recv_event_callback(struct msgu_recv_event *re, struct msgu_buffer *
  */
 struct msgu_handlers {
     void (*connect_event)(void *, struct msgu_connect_event *);
+    void (*recv_event)(void *, struct msgu_recv_event *);
 };
 
 
@@ -90,6 +103,7 @@ struct msgu_handlers {
  * contains a list of each type of event
  */
 struct msgu_event_map {
+    uint32_t               next_id;
     struct msgu_map        data;
     struct msgu_handlers   hdl;
     void                  *arg;
@@ -105,8 +119,8 @@ void msgu_event_map_init(struct msgu_event_map *map, struct msgu_handlers *h, vo
 /*
  * copy event data before callback gets used
  */
-void msgu_event_copy(struct msgu_event_map *map, uint32_t type, uint32_t id, void *data);
-void msgu_event_notify(struct msgu_event_map *map, uint32_t type, void *data);
+int msgu_event_copy(struct msgu_event_map *map, uint32_t id, union msgu_any_event *data);
+void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any_event *data);
 
 
 /*
@@ -115,7 +129,7 @@ void msgu_event_notify(struct msgu_event_map *map, uint32_t type, void *data);
 int msgu_add_conn(struct msgu_event_map *map, struct msgu_connect_event *ce);
 int msgu_add_recv(struct msgu_event_map *map, struct msgu_recv_event *re);
 int msgu_add_file(struct msgu_event_map *map, struct msgu_file_event *fe);
-int msgu_remove(struct msgu_event_map *map, int id);
+int msgu_remove(struct msgu_event_map *map, uint32_t id);
 
 
 #endif

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <unistd.h>
 
 #include "buffer.h"
 
@@ -139,73 +138,6 @@ size_t ep_buffer_erase(struct msgu_buffer *b, char *outbuf, size_t count) {
     size_t s = ep_buffer_peek(b, outbuf, 0, count);
     ep_buffer_release(b, s);
     return s;
-}
-
-
-ssize_t ep_buffer_take(struct msgu_buffer *b, int fd) {
-    char *back;
-    size_t space = 0;
-    ep_buffer_endmem(b, &back, &space);
-
-    // try read from file descriptor
-    ssize_t r = read(fd, back, space);
-    if (r < 0) {
-        perror("read");
-    }
-    else {
-        b->size += r;
-    }
-    return r;
-}
-
-
-size_t ep_buffer_take_src(struct msgu_buffer *b, int fd, size_t count) {
-    char *back;
-    size_t space = 0;
-    ep_buffer_endmem(b, &back, &space);
-
-    if (count > space) {
-        count = space;
-    }
-
-    ssize_t r = read(fd, back, count);
-    if (r < 0) {
-        perror("read");
-        return 0;
-    }
-    else {
-        b->size += r;
-        return r;
-    }
-}
-
-
-ssize_t ep_buffer_write(struct msgu_buffer *b, int fd, size_t begin) {
-
-    // write as much as possible from begin
-    size_t end = b->begin + b->size;
-    if (end < b->avail) {
-        return write(fd, &b->ptr[begin], end - begin);
-    }
-    else if (begin < (end - b->avail)) {
-        // begin is positioned before end, only one write is required
-        return write(fd, &b->ptr[begin], (end - b->avail) - begin);
-    }
-    else {
-        // begin is positioned after end, not all can be written
-        return write(fd, &b->ptr[begin], (b->begin - b->avail));
-    }
-}
-
-
-size_t ep_buffer_write_inc(struct msgu_buffer *b, int fd, size_t *begin) {
-    ssize_t w = ep_buffer_write(b, fd, *begin);
-    if (w > 0) {
-        *begin = (*begin + w) % b->avail;
-    }
-
-    // return remainder
-    return ((b->avail + b->begin + b->size) - *begin) % b->avail;
 }
 
 
