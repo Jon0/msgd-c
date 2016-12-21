@@ -14,34 +14,18 @@ void *msgs_table_thread(void *t) {
 }
 
 
-void msgs_table_init(struct msgs_table *t, size_t max, struct msgs_handlers *h, void *arg) {
-    pthread_mutex_init(&t->mutex, NULL);
-    t->hdl = *h;
-    t->arg = arg;
-
-    // reserve id 0 for inotify events
-    t->next_id = 1;
+void msgs_table_init(struct msgs_table *t, struct msgu_event_map *map) {
     t->epoll_fd = epoll_create1(0);
     t->inotify_fd = inotify_init1(IN_NONBLOCK);
-    msgs_table_enable(t->epoll_fd, t->inotify_fd, 4, 0);
+    t->emap = map;
+    pthread_mutex_init(&t->ctl_mutex, NULL);
+    pthread_mutex_init(&t->map_mutex, NULL);
+    msgs_table_enable(t, t->inotify_fd, 4, 0);
 }
 
 
 void msgs_table_free(struct msgs_table *t) {
     close(t->inotify_fd);
-}
-
-
-void msgs_table_enable(int epfd, int fd, uint32_t type, uint32_t id) {
-    struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLET;
-    ev.data.u64 = (((uint64_t) type) << 32) | id;
-
-    // add to epoll
-    int err = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
-    if (err == -1) {
-        perror("epoll_ctl");
-    }
 }
 
 
@@ -72,50 +56,52 @@ void msgs_table_poll(struct msgs_table *t) {
 }
 
 
-void msgs_table_recv(struct msgs_table *t, uint32_t e, uint32_t type, uint32_t id) {
-    printf("table recv: %u, %u, %u\n", e, type, id);
-
-    // TODO lookup event type
-    //t->callback(t->arg, NULL);
-}
-
-
-int msgs_add_acceptor(struct msgs_table *t, struct msgs_acceptor *a) {
-    pthread_mutex_lock(&t->mutex);
-    int epid = t->next_id++;
-    msgs_table_enable(t->epoll_fd, a->fd, 5, epid);
-    pthread_mutex_unlock(&t->mutex);
-    return epid;
-}
-
-
-int msgs_add_socket(struct msgs_table *t, struct msgs_socket *s) {
-    pthread_mutex_lock(&t->mutex);
-    int epid = t->next_id++;
-    msgs_table_enable(t->epoll_fd, s->fd, 6, epid);
-    pthread_mutex_unlock(&t->mutex);
-    return epid;
-}
-
-
-int msgs_add_file(struct msgs_table *t, struct msgs_file *f) {
-    pthread_mutex_lock(&t->mutex);
-    int epid = t->next_id++;
-    pthread_mutex_unlock(&t->mutex);
-    return epid;
-}
-
-
-int msgs_remove(struct msgs_table *t, int epid) {
-    pthread_mutex_lock(&t->mutex);
-    // remove from epoll
-
-    pthread_mutex_unlock(&t->mutex);
-    return 0;
+void msgs_table_recv(struct msgs_table *t, uint32_t ev, uint32_t type, uint32_t id) {
+    char data [MSGU_EVENT_SIZE];
+    pthread_mutex_lock(&t->map_mutex);
+    msgu_event_copy(t->emap, type, id, data);
+    pthread_mutex_unlock(&t->map_mutex);
+    msgu_event_notify(t->emap, type, data);
 }
 
 
 int ep_table_notify_read(struct msgs_table *t) {
     int wd = ep_notify_read(t->inotify_fd);
     return 0;
+}
+
+
+void msgs_table_enable(struct msgs_table *t, int fd, uint32_t type, uint32_t id) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.u64 = (((uint64_t) type) << 32) | id;
+
+    // add to epoll
+    pthread_mutex_lock(&t->ctl_mutex);
+    int err = epoll_ctl(t->epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    if (err == -1) {
+        perror("epoll_ctl");
+    }
+    pthread_mutex_unlock(&t->ctl_mutex);
+}
+
+
+int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc) {
+    struct msgu_connect_event ce;
+    pthread_mutex_lock(&t->map_mutex);
+    int id = msgu_add_conn(t->emap, &ce);
+    pthread_mutex_unlock(&t->map_mutex);
+    msgs_table_enable(t, acc->fd, 5, id);
+}
+
+
+int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk) {
+
+    // fill event using socket
+    struct msgu_recv_event re;
+    pthread_mutex_lock(&t->map_mutex);
+    int id = msgu_add_recv(t->emap, &re);
+    pthread_mutex_unlock(&t->map_mutex);
+    msgs_table_enable(t, sk->fd, 6, id);
+    return id;
 }

@@ -1,8 +1,8 @@
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#ifndef LIBUTIL_PROTOCOL_H
+#define LIBUTIL_PROTOCOL_H
 
-#include <libutil/buffer.h>
-#include <libutil/host.h>
+#include "buffer.h"
+#include "host.h"
 
 
 /*

@@ -50,26 +50,28 @@ void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum) {
 }
 
 
-void ep_init_acceptor(struct msgs_acceptor *a) {
-    struct sockaddr *sa = (struct sockaddr *) &a->addr.data;
-    a->fd = socket(sa->sa_family, SOCK_STREAM, 0);
-    if (a->fd < 0) {
+int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr) {
+    acc->addr = *addr;
+    struct sockaddr *sa = (struct sockaddr *) &acc->addr.data;
+    acc->fd = socket(sa->sa_family, SOCK_STREAM, 0);
+    if (acc->fd < 0) {
         perror("socket");
-        return;
+        return -1;
     }
 
     // bind and listen on the socket
-    int err = bind(a->fd, sa, a->addr.len);
+    int err = bind(acc->fd, sa, acc->addr.len);
     if (err < 0) {
         perror("bind");
-        close(a->fd);
-        return;
+        close(acc->fd);
+        return -1;
     }
-    listen(a->fd, 5);
+    listen(acc->fd, 5);
+    return acc->fd;
 }
 
 
-int msgu_open_socket(struct msgs_socket *s, struct msgu_address *a) {
+int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a) {
     s->addr = *a;
     struct sockaddr *sa = (struct sockaddr *) &s->addr.data;
     s->fd = socket(sa->sa_family, SOCK_STREAM, 0);

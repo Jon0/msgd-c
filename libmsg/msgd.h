@@ -2,11 +2,10 @@
 #define MSGD_H
 
 #include <libutil/buffer.h>
+#include <libutil/protocol.h>
 #include <libsys/endpoint.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
-
-#include "protocol.h"
 
 
 /*
@@ -27,19 +26,20 @@ struct msg_client_update {
  * include queue of requests awaiting a response
  */
 struct msg_client_state {
-    struct msgs_table  tb;
-    struct msgs_socket server;    // used to write messages to server
-    int                server_id;
-    int                hdlid;
-    int                connected;
-    int                pcount;    // number of used internal ids
-    char               proc_name [256];
-    struct msgu_buffer write_buf;
+    struct msgu_event_map emap;
+    struct msgs_table     tb;
+    struct msgs_socket    server;    // used to write messages to server
+    int                   server_id;
+    int                   hdlid;
+    int                   connected;
+    int                   pcount;    // number of used internal ids
+    char                  proc_name [256];
+    struct msgu_buffer    write_buf;
 
     // internal node id -> handler id
-    struct msgu_multimap node_to_hdl;
+    struct msgu_multimap  node_to_hdl;
 
-    struct msg_host_list hosts;
+    struct msg_host_list  hosts;
 };
 
 

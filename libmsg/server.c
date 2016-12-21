@@ -1,18 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "protocol.h"
 #include "server.h"
 
 
 void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msg_server *s = p;
 
-    // handle events
+    printf("server connect event\n");
 }
 
 
-static struct msgs_handlers msg_server_handlers = {
+static struct msgu_handlers msg_server_handlers = {
     .connect_event = msg_server_connect_event,
 };
 
@@ -53,11 +52,11 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 
 
 void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf) {
-    struct msgs_file f;
+    struct msgu_file_event fe;
     char path [256];
     ep_buffer_peek(buf, path, 0, buf->size);
     printf("share %s\n", path);
-    int i = msgs_add_file(&serv->tb, &f);
+    int i = msgu_add_file(&serv->emap, &fe);
     msg_share_file(&serv->shares);
 }
 
@@ -78,9 +77,9 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection ch;
     ch.socket = *socket;
-    ep_buffer_init(&ch.read_buf, malloc(1024), 1024);
-    ep_buffer_init(&ch.write_buf, malloc(1024), 1024);
-    int id = msgs_add_socket(&s->tb, socket);
+    msgu_buffer_init(&ch.read_buf, malloc(1024), 1024);
+    msgu_buffer_init(&ch.write_buf, malloc(1024), 1024);
+    int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &ch);
     return id;
 }
@@ -108,11 +107,12 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *bu
 
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
+    msgu_event_map_init(&s->emap, &msg_server_handlers, s);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
     msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     msgu_multimap_init(&s->node_to_sub, sizeof(struct msgu_channel), 1024);
-    msgs_table_init(&s->tb, 256, &msg_server_handlers, s);
+    msgs_table_init(&s->tb, &s->emap);
 
     // find own address and hostname
     struct ep_host host;
@@ -123,17 +123,20 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msg_share_set_init(&s->shares);
 
     // create a local acceptor
-    struct msgs_acceptor local_acc;
+    struct msgu_address local_addr;
     ep_unlink("msgd-ipc");
-    ep_local(&local_acc.addr, "msgd-ipc");
-    ep_init_acceptor(&local_acc);
-    msgs_add_acceptor(&s->tb, &local_acc);
+    ep_local(&local_addr, "msgd-ipc");
+
+    struct msgs_acceptor local_acc;
+    msgs_open_acceptor(&local_acc, &local_addr);
+    msgs_poll_acceptor(&s->tb, &local_acc);
 
     // create a remote acceptor
+    struct msgu_address raddr;
     struct msgs_acceptor acc;
-    ep_listen_remote(&acc.addr, 2204);
-    ep_init_acceptor(&acc);
-    msgs_add_acceptor(&s->tb, &acc);
+    ep_listen_remote(&raddr, 2204);
+    msgs_open_acceptor(&acc, &raddr);
+    msgs_poll_acceptor(&s->tb, &acc);
 }
 
 
@@ -142,7 +145,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     struct msgs_socket socket;
 
     ep_connect_remote(&raddr, addr, 2204);
-    int fd = msgu_open_socket(&socket, &raddr);
+    int fd = msgs_open_socket(&socket, &raddr);
     if (fd == -1) {
         return fd;
     }

@@ -46,8 +46,8 @@ void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum);
 /*
  * adds source and dest to table
  */
-void ep_init_acceptor(struct msgs_acceptor *a);
-int msgu_open_socket(struct msgs_socket *s, struct msgu_address *a);
+int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr);
+int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a);
 
 
 int ep_notify_create();

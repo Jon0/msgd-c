@@ -3,12 +3,11 @@
 
 #include <libutil/channel.h>
 #include <libutil/map.h>
+#include <libutil/protocol.h>
 #include <libutil/share.h>
 #include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
-
-#include "protocol.h"
 
 
 /*
@@ -28,7 +27,8 @@ struct msg_connection {
  * TODO record each socket, and the type of connection (peer or client)
  */
 struct msg_server {
-    struct msgs_table tb;
+    struct msgu_event_map emap;
+    struct msgs_table     tb;
 
     // type of socket
     // epid -> struct msg_connection

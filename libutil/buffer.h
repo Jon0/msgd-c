@@ -38,8 +38,8 @@ struct msgu_block {
 /*
  * give the buffer some memory
  */
-void ep_buffer_init_default(struct msgu_buffer *b);
-void ep_buffer_init(struct msgu_buffer *b, void *mem, size_t count);
+void msgu_buffer_init_default(struct msgu_buffer *b);
+void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count);
 
 
 /*

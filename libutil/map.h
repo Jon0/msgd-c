@@ -7,25 +7,6 @@
 
 
 /*
- * returns a hash for elements
- */
-typedef hash_t (*msgu_map_hash_t)(void *);
-
-/*
- * returns 0 for equal elements
- */
-typedef int (*msgu_map_cmp_t)(void *, void *);
-
-
-
-/*
- * functions for int keys
- */
-hash_t msgu_int_hash(void *p);
-int msgu_int_cmp(void *a, void *b);
-
-
-/*
  * hash pairs,
  * allow used elements to be stored continuously
  * negative index indicates free pair space

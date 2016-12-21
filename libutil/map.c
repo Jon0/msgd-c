@@ -3,18 +3,6 @@
 #include "map.h"
 
 
-hash_t msgu_int_hash(void *p) {
-    return msgu_fast_hash(p, sizeof(int));
-}
-
-
-int msgu_int_cmp(void *a, void *b) {
-    int *ia = a;
-    int *ib = b;
-    return *ia == *ib;
-}
-
-
 void msgu_map_init(struct msgu_map *m, msgu_map_hash_t hash, msgu_map_cmp_t cmp, size_t ksize, size_t vsize) {
     m->elem_count = 0;
     m->array_max = 0;

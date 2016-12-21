@@ -6,12 +6,12 @@
 #include "buffer.h"
 
 
-void ep_buffer_init_default(struct msgu_buffer *b) {
-    ep_buffer_init(b, malloc(EP_BUFFER_DEFAULT_SIZE), EP_BUFFER_DEFAULT_SIZE);
+void msgu_buffer_init_default(struct msgu_buffer *b) {
+    msgu_buffer_init(b, malloc(EP_BUFFER_DEFAULT_SIZE), EP_BUFFER_DEFAULT_SIZE);
 }
 
 
-void ep_buffer_init(struct msgu_buffer *b, void *mem, size_t count) {
+void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count) {
     b->ptr = mem;
     b->avail = count;
     b->begin = 0;

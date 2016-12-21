@@ -9,7 +9,7 @@ void msg_client_connect_event(void *p, struct msgu_connect_event *e) {
 }
 
 
-static struct msgs_handlers msg_client_handlers = {
+static struct msgu_handlers msg_client_handlers = {
     .connect_event = msg_client_connect_event,
 };
 
@@ -53,12 +53,16 @@ int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message 
 
 
 int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
-    msgs_table_init(&cs->tb, 256, &msg_client_handlers, cs);
+    msgu_event_map_init(&cs->emap, &msg_client_handlers, cs);
     msgu_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
+    msgu_buffer_init(&cs->write_buf, malloc(1024), 1024);
+    msgs_table_init(&cs->tb, &cs->emap);
 
-    msgu_open_socket(&cs->server, addr);
-    cs->server_id = msgs_add_socket(&cs->tb, &cs->server);
+
+    msgs_open_socket(&cs->server, addr);
+    cs->server_id = msgs_poll_socket(&cs->tb, &cs->server);
     cs->connected = 1;
+
 
     // init host memory
     msg_host_list_init(&cs->hosts);

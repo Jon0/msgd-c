@@ -51,7 +51,7 @@ void tree_test() {
 
 
     struct msgu_buffer buf;
-    ep_buffer_init(&buf, malloc(1024), 1024);
+    msgu_buffer_init(&buf, malloc(1024), 1024);
 
     printf("write\n\n");
     ep_tree_write(&tree, &buf);
