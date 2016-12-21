@@ -69,7 +69,8 @@ void ep_init_acceptor(struct msgs_acceptor *a) {
 }
 
 
-int ep_init_channel(struct msgs_socket *s) {
+int msgu_open_socket(struct msgs_socket *s, struct msgu_address *a) {
+    s->addr = *a;
     struct sockaddr *sa = (struct sockaddr *) &s->addr.data;
     s->fd = socket(sa->sa_family, SOCK_STREAM, 0);
     if (s->fd < 0) {
@@ -85,11 +86,6 @@ int ep_init_channel(struct msgs_socket *s) {
         return -1;
     }
     return s->fd;
-}
-
-
-int ep_notify_create() {
-    return inotify_init1(IN_NONBLOCK);
 }
 
 

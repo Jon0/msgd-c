@@ -4,8 +4,9 @@
 #include "thread.h"
 
 
-void msgs_thread_pool_init(struct msgs_thread_pool *pool, msgs_thread_callback_t cb) {
+void msgs_thread_pool_init(struct msgs_thread_pool *pool, msgs_thread_callback_t cb, void *arg) {
     pool->callback = cb;
+    pool->arg = arg;
     pool->threads = NULL;
     pool->thread_count = 0;
 }
@@ -19,7 +20,7 @@ void msgs_thread_pool_start(struct msgs_thread_pool *pool, size_t threads) {
 
     // create the threads
     for (int i = 0; i < threads; ++i) {
-        int err = pthread_create(&pool->threads[i], NULL, pool->callback, pool);
+        int err = pthread_create(&pool->threads[i], NULL, pool->callback, pool->arg);
         if (err) {
             perror("pthread_create");
         }

@@ -13,12 +13,11 @@
 
 /*
  * either local-filesystems, local-processes or remote connections
- * TODO replace ep_table with specific functions
  */
 struct msg_connection {
-    int epid;
-    int type;
-    int subs;
+    struct msgs_socket   socket;
+    struct msgu_buffer   read_buf;
+    struct msgu_buffer   write_buf;
 };
 
 
@@ -32,8 +31,8 @@ struct msg_server {
     struct msgs_table tb;
 
     // type of socket
-    // epid -> struct msg_channel
-    struct msgu_map socket_type;
+    // epid -> struct msg_connection
+    struct msgu_map connections;
 
     // the nodes owned by each socket connection
     // int -> int[]
@@ -64,7 +63,8 @@ int msg_node_of_host(struct msg_server *s, int epid);
 void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
-void msg_server_init_channel(struct msg_server *s, int epid);
+int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
+struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *buf);
 
 
@@ -86,7 +86,6 @@ void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_messa
 void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *buf);
 void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct msgs_socket *out);
 void msg_server_print_debug(struct msg_server *serv);
-void msg_server_accept(struct msgs_table *t, int epid, void *serv);
 
 
 #endif

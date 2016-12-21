@@ -4,12 +4,14 @@
 #include "msgd.h"
 
 
-static struct msgs_handlers msg_client_handlers = {};
-
-
-void msg_client_table(void *p, struct msgu_any_event *e) {
+void msg_client_connect_event(void *p, struct msgu_connect_event *e) {
     struct msg_client_state *cs = p;
 }
+
+
+static struct msgs_handlers msg_client_handlers = {
+    .connect_event = msg_client_connect_event,
+};
 
 
 void msg_client_socket_recv(void *p, struct msgu_recv_event *recv) {
@@ -54,7 +56,8 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msgs_table_init(&cs->tb, 256, &msg_client_handlers, cs);
     msgu_multimap_init(&cs->node_to_hdl, sizeof(int), 1024);
 
-    cs->server_id = msgs_open_socket(&cs->tb, &cs->server);
+    msgu_open_socket(&cs->server, addr);
+    cs->server_id = msgs_add_socket(&cs->tb, &cs->server);
     cs->connected = 1;
 
     // init host memory

@@ -5,14 +5,16 @@
 #include "server.h"
 
 
-static struct msgs_handlers msg_server_handlers = {};
-
-
-void msg_server_table(void *p, struct msgu_any_event *e) {
+void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msg_server *s = p;
 
     // handle events
 }
+
+
+static struct msgs_handlers msg_server_handlers = {
+    .connect_event = msg_server_connect_event,
+};
 
 
 struct msg_host *msg_server_self(struct msg_server *s) {
@@ -55,7 +57,7 @@ void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf) {
     char path [256];
     ep_buffer_peek(buf, path, 0, buf->size);
     printf("share %s\n", path);
-    int i = msgs_open_file(&serv->tb, &f);
+    int i = msgs_add_file(&serv->tb, &f);
     msg_share_file(&serv->shares);
 }
 
@@ -73,12 +75,19 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 }
 
 
-void msg_server_init_channel(struct msg_server *s, int epid) {
+int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection ch;
-    ch.epid = epid;
-    ch.type = 0;
-    ch.subs = 0;
-    msgu_map_insert(&s->socket_type, &epid, &ch);
+    ch.socket = *socket;
+    ep_buffer_init(&ch.read_buf, malloc(1024), 1024);
+    ep_buffer_init(&ch.write_buf, malloc(1024), 1024);
+    int id = msgs_add_socket(&s->tb, socket);
+    msgu_map_insert(&s->connections, &id, &ch);
+    return id;
+}
+
+
+struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
+    return msgu_map_get(&s->connections, &id);
 }
 
 
@@ -99,8 +108,8 @@ void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *bu
 
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
-    msgu_map_init(&s->socket_type, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
-    msgu_map_alloc(&s->socket_type, 1024);
+    msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
+    msgu_map_alloc(&s->connections, 1024);
     msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
     msgu_multimap_init(&s->node_to_sub, sizeof(struct msgu_channel), 1024);
     msgs_table_init(&s->tb, 256, &msg_server_handlers, s);
@@ -118,29 +127,31 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_unlink("msgd-ipc");
     ep_local(&local_acc.addr, "msgd-ipc");
     ep_init_acceptor(&local_acc);
-    msgs_open_acceptor(&s->tb, &local_acc);
+    msgs_add_acceptor(&s->tb, &local_acc);
 
     // create a remote acceptor
     struct msgs_acceptor acc;
     ep_listen_remote(&acc.addr, 2204);
     ep_init_acceptor(&acc);
-    msgs_open_acceptor(&s->tb, &acc);
+    msgs_add_acceptor(&s->tb, &acc);
 }
 
 
 int msg_server_connect(struct msg_server *serv, const char *addr) {
-    struct msgs_socket s;
-    ep_connect_remote(&s.addr, addr, 2204);
-    int err = ep_init_channel(&s);
-    if (err == -1) {
-        return err;
+    struct msgu_address raddr;
+    struct msgs_socket socket;
+
+    ep_connect_remote(&raddr, addr, 2204);
+    int fd = msgu_open_socket(&socket, &raddr);
+    if (fd == -1) {
+        return fd;
     }
-    int remote = msgs_open_socket(&serv->tb, &s);
-    msg_server_init_channel(serv, remote);
+    int cid = msg_server_init_connection(serv, &socket);
+    struct msg_connection *conn = msg_server_connection(serv, cid);
 
     // request table of known addresses
-    msg_req_peer_init(&s.write_buf, &serv->hosts.ptr[0]);
-    return remote;
+    msg_req_peer_init(&conn->write_buf, &serv->hosts.ptr[0]);
+    return cid;
 }
 
 
@@ -233,14 +244,9 @@ void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *
 
 void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct msgs_socket *out) {
     struct msg_message msg;
+    struct msg_connection *conn = msg_server_connection(serv, src_epid);
     while(msg_poll_message(in, &msg)) {
-        msg_server_apply(serv, src_epid, &msg, &out->write_buf);
+        msg_server_apply(serv, src_epid, &msg, &conn->write_buf);
         ep_buffer_release(msg.body, msg.head.size);
     }
-}
-
-
-void msg_server_accept(struct msgs_table *t, int epid, void *serv) {
-    printf("new connection id %d\n", epid);
-    msg_server_init_channel(serv, epid);
 }

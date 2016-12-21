@@ -17,6 +17,7 @@ typedef void *(*msgs_thread_callback_t)(void *);
  */
 struct msgs_thread_pool {
     msgs_thread_callback_t callback;
+    void                  *arg;
     pthread_t             *threads;
     size_t                 thread_count;
 };
@@ -25,7 +26,7 @@ struct msgs_thread_pool {
 /*
  * configure thread pool
  */
-void msgs_thread_pool_init(struct msgs_thread_pool *pool, msgs_thread_callback_t cb);
+void msgs_thread_pool_init(struct msgs_thread_pool *pool, msgs_thread_callback_t cb, void *arg);
 
 
 /*

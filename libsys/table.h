@@ -8,15 +8,11 @@
 #include "thread.h"
 
 
-typedef uint32_t msgs_event_t;
-typedef uint64_t msgs_poll_t;
-
-
 /*
  * callbacks for each event type
  */
 struct msgs_handlers {
-    void (*any_event)(void *, struct msgu_any_event *);
+    void (*connect_event)(void *, struct msgu_connect_event *);
 };
 
 
@@ -46,20 +42,26 @@ void msgs_table_free(struct msgs_table *t);
 
 
 /*
+ * add new file descriptors to epoll
+ */
+void msgs_table_enable(int epfd, int fd, uint32_t type, uint32_t id);
+
+
+/*
  * loop waiting for events
  */
 void msgs_table_start(struct msgs_table *t, int threads);
 void msgs_table_poll(struct msgs_table *t);
-void msgs_table_recv(struct msgs_table *t, msgs_event_t e, msgs_poll_t id);
+void msgs_table_recv(struct msgs_table *t, uint32_t e, uint32_t type, uint32_t id);
 
 
 /*
  * returns the id of the new element
  */
-int msgs_open_acceptor(struct msgs_table *t, struct msgs_acceptor *a);
-int msgs_open_socket(struct msgs_table *t, struct msgs_socket *s);
-int msgs_open_file(struct msgs_table *t, struct msgs_file *f);
-int msgs_close(struct msgs_table *t, int epid);
+int msgs_add_acceptor(struct msgs_table *t, struct msgs_acceptor *a);
+int msgs_add_socket(struct msgs_table *t, struct msgs_socket *s);
+int msgs_add_file(struct msgs_table *t, struct msgs_file *f);
+int msgs_remove(struct msgs_table *t, int epid);
 
 
 /*

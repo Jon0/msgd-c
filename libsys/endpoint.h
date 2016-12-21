@@ -14,13 +14,11 @@ struct msgs_acceptor {
 
 
 /*
- * moves input from file descriptors into handlers
+ * read and write from sockets
  */
 struct msgs_socket {
     int                  fd;
     struct msgu_address  addr;
-    struct msgu_buffer   read_buf;
-    struct msgu_buffer   write_buf;
 };
 
 
@@ -49,7 +47,7 @@ void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum);
  * adds source and dest to table
  */
 void ep_init_acceptor(struct msgs_acceptor *a);
-int ep_init_channel(struct msgs_socket *s);
+int msgu_open_socket(struct msgs_socket *s, struct msgu_address *a);
 
 
 int ep_notify_create();
