@@ -7,8 +7,10 @@
 void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msg_server *serv = p;
     struct msgs_socket newsocket;
+
+    // which acceptor was updated?
     while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
-        printf("server connect event\n");
+        printf("server connect event id %d\n", e->id);
         msg_server_init_connection(serv, &newsocket);
     }
 }
@@ -16,7 +18,10 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
-    printf("server recv event\n");
+    printf("server recv event id %d\n", e->id);
+
+    // which connection recieved update?
+
 }
 
 

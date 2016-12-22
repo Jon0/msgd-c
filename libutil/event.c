@@ -48,6 +48,7 @@ void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any
 
 int msgu_add_conn(struct msgu_event_map *map, struct msgu_connect_event *ce) {
     uint32_t id = map->next_id++;
+    ce->id = id;
     msgu_map_insert(&map->data, &id, ce);
     return id;
 }
@@ -55,6 +56,7 @@ int msgu_add_conn(struct msgu_event_map *map, struct msgu_connect_event *ce) {
 
 int msgu_add_recv(struct msgu_event_map *map, struct msgu_recv_event *re) {
     uint32_t id = map->next_id++;
+    re->id = id;
     msgu_map_insert(&map->data, &id, re);
     return id;
 }
@@ -62,6 +64,7 @@ int msgu_add_recv(struct msgu_event_map *map, struct msgu_recv_event *re) {
 
 int msgu_add_file(struct msgu_event_map *map, struct msgu_file_event *fe) {
     uint32_t id = map->next_id++;
+    fe->id = id;
     msgu_map_insert(&map->data, &id, fe);
     return id;
 }

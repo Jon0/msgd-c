@@ -3,6 +3,14 @@
 
 
 /*
+ * defines attributes of a connection
+ */
+struct msgu_link {
+
+};
+
+
+/*
  * a set of hosts
  */
 struct msgu_network {

@@ -38,11 +38,12 @@ struct msgu_open_file {
 
 
 struct msgu_timer_event {
-
+    int id;
 };
 
 
 struct msgu_connect_event {
+    int id;
     struct msgu_address local;
 };
 
@@ -57,7 +58,7 @@ struct msgu_recv_event {
 
 
 struct msgu_send_event {
-
+    int id;
 };
 
 
@@ -65,7 +66,7 @@ struct msgu_send_event {
  * inotify
  */
 struct msgu_file_event {
-
+    int id;
 };
 
 
@@ -118,6 +119,7 @@ void msgu_event_map_init(struct msgu_event_map *map, struct msgu_handlers *h, vo
 
 /*
  * copy event data before callback gets used
+ * returns 1 for success
  */
 int msgu_event_copy(struct msgu_event_map *map, uint32_t id, union msgu_any_event *data);
 void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any_event *data);

@@ -3,6 +3,7 @@
 
 #include <libutil/channel.h>
 #include <libutil/map.h>
+#include <libutil/network.h>
 #include <libutil/protocol.h>
 #include <libutil/share.h>
 #include <libsys/network.h>
@@ -17,6 +18,7 @@ struct msg_connection {
     struct msgs_socket   socket;
     struct msgu_buffer   read_buf;
     struct msgu_buffer   write_buf;
+    struct msgu_link     link;
 };
 
 
