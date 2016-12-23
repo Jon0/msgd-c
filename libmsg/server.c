@@ -20,7 +20,8 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
     printf("server recv event id %d\n", e->id);
 
-    // which connection recieved update?
+    // find connection by id
+    struct msg_connection *conn = msg_server_connection(serv, e->id);
 
 }
 
