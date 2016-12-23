@@ -10,4 +10,13 @@ struct msgu_key {
 };
 
 
+/*
+ * a set of keys which form a network
+ */
+struct msgu_key_set {
+
+};
+
+
+
 #endif
