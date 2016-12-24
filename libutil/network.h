@@ -18,4 +18,7 @@ struct msgu_network {
 };
 
 
+void msgu_any_request(struct msgu_link *l);
+
+
 #endif

@@ -22,7 +22,9 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
 
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
-
+    if (conn) {
+        msgu_any_request(&conn->link);
+    }
 }
 
 
@@ -243,24 +245,19 @@ void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_messa
 }
 
 
-
-void msg_server_recv(struct msg_server *serv, int src_epid, struct msgu_buffer *buf) {
+void msg_server_recv(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
     printf("recv from: %d\n", src_epid);
-    printf("initial bytes: %lu\n", buf->size);
-
-    // TODO find socket
-    struct msgs_socket *out = NULL;
-    msg_server_reply(serv, src_epid, buf, out);
+    printf("initial bytes: %lu\n", conn->read_buf.size);
+    msg_server_reply(serv, src_epid, conn);
     msg_host_list_debug(&serv->hosts);
     printf("server config:\n");
     msg_server_printsub(serv);
-    printf("remaining bytes: %lu\n\n", buf->size);
+    printf("remaining bytes: %lu\n\n", conn->read_buf.size);
 }
 
 
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msgu_buffer *in, struct msgs_socket *out) {
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
     struct msg_message msg;
-    struct msg_connection *conn = msg_server_connection(serv, src_epid);
     while(msg_poll_message(in, &msg)) {
         msg_server_apply(serv, src_epid, &msg, &conn->write_buf);
         ep_buffer_release(msg.body, msg.head.size);
