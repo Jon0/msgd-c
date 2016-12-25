@@ -18,12 +18,20 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
-    printf("server recv event id %d\n", e->id);
+    printf("recv from: %d\n", e->id);
 
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
     if (conn) {
-        msgu_any_request(&conn->link);
+        printf("initial bytes: %lu\n", conn->read_buf.size);
+        msg_server_reply(serv, e->id, conn);
+        msg_host_list_debug(&serv->hosts);
+        printf("server config:\n");
+        msg_server_printsub(serv);
+        printf("remaining bytes: %lu\n\n", conn->read_buf.size);
+    }
+    else {
+        printf("connection not found\n");
     }
 }
 
@@ -47,13 +55,6 @@ void msg_server_printsub(struct msg_server *s) {
     for (int i = 0; i < s->node_to_sub.keys.elem_count; ++i) {
         struct msgu_subarray *sa = msgu_multimap_get_index(&s->node_to_sub, i);
         printf("key %d (%d to %d)\n", i, sa->begin, sa->end);
-
-        // print values
-        for (int i = sa->begin; i < sa->end; ++i) {
-            size_t addr = sizeof(struct msgu_channel) * i;
-            struct msgu_channel *sub = (struct msgu_channel *) &s->node_to_sub.values[addr];
-            printf("\tsub %d => %d\n", sub->subid, sub->epid);
-        }
     }
 }
 
@@ -105,22 +106,6 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
 
 struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
     return msgu_map_get(&s->connections, &id);
-}
-
-
-void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *buf) {
-    struct msg_subscribe subs;
-    ep_buffer_peek(buf, (char *) &subs, 0, sizeof(subs));
-    printf("subscribe updates on node id %d to epid %d\n", subs.nodeid, epid);
-    int index = msgu_multimap_insert(&s->node_to_sub, subs.nodeid, 1);
-    struct msgu_channel *sub = msgu_multimap_get(&s->node_to_sub, subs.nodeid, index);
-    if (sub) {
-        sub->epid = epid;
-        sub->subid = subs.subid;
-    }
-    else {
-        printf("id %d not found\n", subs.nodeid);
-    }
 }
 
 
@@ -181,14 +166,12 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
-    struct msg_host *self = msg_server_self(serv);
 
-    if (m->head.share_id < 0) {
-
-    }
-    else {
-
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
+    struct msg_message msg;
+    while(msg_poll_message(&conn->read_buf, &msg)) {
+        msg_server_apply_local(serv, src_epid, &msg, &conn->write_buf);
+        ep_buffer_release(msg.body, msg.head.size);
     }
 }
 
@@ -242,24 +225,4 @@ void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_mess
 void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
     printf("recv update for share %d\n", m->head.share_id);
      // TODO shares
-}
-
-
-void msg_server_recv(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
-    printf("recv from: %d\n", src_epid);
-    printf("initial bytes: %lu\n", conn->read_buf.size);
-    msg_server_reply(serv, src_epid, conn);
-    msg_host_list_debug(&serv->hosts);
-    printf("server config:\n");
-    msg_server_printsub(serv);
-    printf("remaining bytes: %lu\n\n", conn->read_buf.size);
-}
-
-
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
-    struct msg_message msg;
-    while(msg_poll_message(&conn->read_buf, &msg)) {
-        msg_server_apply(serv, src_epid, &msg, &conn->write_buf);
-        ep_buffer_release(msg.body, msg.head.size);
-    }
 }

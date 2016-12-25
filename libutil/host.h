@@ -16,7 +16,7 @@ struct msg_host {
     char hostname [256];
 
     // tree containing struct msg_node
-    struct msg_share_set shares;
+    struct msgu_share_set shares;
 };
 
 

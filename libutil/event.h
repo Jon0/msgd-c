@@ -70,6 +70,17 @@ struct msgu_file_event {
 };
 
 
+/*
+ * a client process which requires updates when events occur
+ * can be set to ignore some update types
+ */
+struct msgu_proc_event {
+    int epid;
+    int subid;
+    int event_mask;
+};
+
+
 union msgu_any_event {
     struct msgu_timer_event timer;
     struct msgu_connect_event conn;

@@ -11,21 +11,21 @@
  * functions on nodes
  * will cover most of the fuse functions
  */
-typedef size_t (*ep_node_open_t)(void *);
-typedef size_t (*ep_node_close_t)(void *);
-typedef size_t (*ep_node_read_t)(void *, char *, size_t);
-typedef size_t (*ep_node_write_t)(void *, const char *, size_t);
-typedef size_t (*ep_node_list_t)(void *, const char *);
+typedef size_t (*msgu_node_open_t)(void *);
+typedef size_t (*msgu_node_close_t)(void *);
+typedef size_t (*msgu_node_read_t)(void *, char *, size_t);
+typedef size_t (*msgu_node_write_t)(void *, const char *, size_t);
+typedef size_t (*msgu_node_list_t)(void *, const char *);
 
 
 /*
  * per node file system functions
  */
-struct ep_operations {
-    ep_node_open_t open;
-    ep_node_close_t close;
-    ep_node_read_t read;
-    ep_node_write_t write;
+struct msgu_operations {
+    msgu_node_open_t open;
+    msgu_node_close_t close;
+    msgu_node_read_t read;
+    msgu_node_write_t write;
 };
 
 
@@ -41,7 +41,7 @@ struct msgu_share_meta {
     int label;
     int attributes;
     void *data;
-    struct ep_operations ops;
+    struct msgu_operations ops;
 };
 
 
@@ -49,22 +49,22 @@ struct msgu_share_meta {
  * shares as seen by other hosts
  * does not distinguish types
  */
-struct msg_share_set {
+struct msgu_share_set {
     size_t share_count;
 };
 
 
-void ep_share_set_print(struct msg_share_set *set);
-void ep_share_set_init(struct msg_share_set *set);
-size_t ep_share_set_size(struct msg_share_set *set);
-size_t ep_share_set_read(struct msg_share_set *set, struct msgu_buffer *buf, size_t offset);
-size_t ep_share_set_write(struct msg_share_set *set, struct msgu_buffer *buf);
+void ep_share_set_print(struct msgu_share_set *set);
+void ep_share_set_init(struct msgu_share_set *set);
+size_t ep_share_set_size(struct msgu_share_set *set);
+size_t ep_share_set_read(struct msgu_share_set *set, struct msgu_buffer *buf, size_t offset);
+size_t ep_share_set_write(struct msgu_share_set *set, struct msgu_buffer *buf);
 
 
 /*
  * only processes have epid
  */
-struct msg_share_id {
+struct msgu_share_id {
     int id;
     int type;
     int epid;

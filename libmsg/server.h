@@ -1,7 +1,6 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include <libutil/channel.h>
 #include <libutil/map.h>
 #include <libutil/network.h>
 #include <libutil/protocol.h>
@@ -18,7 +17,7 @@ struct msg_connection {
     struct msgs_socket   socket;
     struct msgu_buffer   read_buf;
     struct msgu_buffer   write_buf;
-    struct msgu_link     link;
+    struct msgu_channel  ch;
 };
 
 
@@ -69,7 +68,6 @@ void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
-void msg_server_subscribe(struct msg_server *s, int epid, struct msgu_buffer *buf);
 
 
 /*
@@ -83,12 +81,10 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-void msg_server_apply(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn);
 void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
 void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
 void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
-void msg_server_recv(struct msg_server *serv, int src_epid, struct msg_connection *conn);
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn);
 void msg_server_print_debug(struct msg_server *serv);
 
 
