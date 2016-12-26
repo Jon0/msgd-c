@@ -26,4 +26,7 @@ struct msgu_network {
 };
 
 
+void msgu_apply_msg(struct msgu_network *n, struct msgu_channel *c);
+
+
 #endif
