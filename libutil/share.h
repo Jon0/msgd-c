@@ -19,9 +19,9 @@ typedef size_t (*msgu_node_list_t)(void *, const char *);
 
 
 /*
- * per node file system functions
+ * shared file system functions
  */
-struct msgu_operations {
+struct msgu_fs_operations {
     msgu_node_open_t open;
     msgu_node_close_t close;
     msgu_node_read_t read;
@@ -41,7 +41,7 @@ struct msgu_share_meta {
     int label;
     int attributes;
     void *data;
-    struct msgu_operations ops;
+    struct msgu_fs_operations ops;
 };
 
 

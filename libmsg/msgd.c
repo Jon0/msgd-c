@@ -58,11 +58,10 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msgu_buffer_init(&cs->write_buf, malloc(1024), 1024);
     msgs_table_init(&cs->tb, &cs->emap);
 
-
+    // open socket to server
     msgs_open_socket(&cs->server, addr);
     cs->server_id = msgs_poll_socket(&cs->tb, &cs->server);
     cs->connected = 1;
-
 
     // init host memory
     msg_host_list_init(&cs->hosts);

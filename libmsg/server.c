@@ -23,6 +23,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
     if (conn) {
+        msgs_recv(&conn->read_buf, conn->socket.fd);
         printf("initial bytes: %lu\n", conn->read_buf.size);
         msg_server_reply(serv, e->id, conn);
         msg_host_list_debug(&serv->hosts);
@@ -96,8 +97,8 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection ch;
     ch.socket = *socket;
-    msgu_buffer_init(&ch.read_buf, malloc(1024), 1024);
-    msgu_buffer_init(&ch.write_buf, malloc(1024), 1024);
+    msgu_buffer_init(&ch.read_buf, malloc(256), 256);
+    msgu_buffer_init(&ch.write_buf, malloc(256), 256);
     int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &ch);
     return id;
@@ -166,7 +167,6 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-
 void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
     struct msg_message msg;
     while(msg_poll_message(&conn->read_buf, &msg)) {
@@ -190,7 +190,6 @@ void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_messa
             msg_send_host_list(&serv->hosts, out);
             break;
         case msg_type_peer_update:
-            printf("TODO: peer update\n");
             break;
         case msg_type_peer_one:
         case msg_type_peer_all:

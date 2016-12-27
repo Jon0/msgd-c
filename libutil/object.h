@@ -17,7 +17,7 @@ typedef size_t (*msgu_write_t)(struct msgu_buffer *, void *);
 /*
  * functions required to read and write objects
  */
-struct msgu_fd {
+struct msgu_stream {
     msgu_read_t read;
     msgu_write_t write;
 };

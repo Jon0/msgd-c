@@ -38,8 +38,8 @@ enum msg_type_id {
 struct msg_header {
     enum msg_type_id type;
     int32_t host_id;
+    int32_t network_id;
     int32_t share_id;
-    int32_t state;
     int32_t size;
 };
 
