@@ -5,6 +5,10 @@
 
 #include <libutil/address.h>
 #include <libutil/buffer.h>
+#include <libutil/stream.h>
+
+
+static struct msgu_stream_fn msgs_socket_fn;
 
 
 struct msgs_acceptor {
@@ -28,9 +32,6 @@ struct msgs_socket {
 struct msgs_file {
     int wd;
 };
-
-
-
 
 
 /*

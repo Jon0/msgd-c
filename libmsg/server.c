@@ -23,16 +23,13 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
     if (conn) {
-        msgs_recv(&conn->read_buf, conn->socket.fd);
-        printf("initial bytes: %lu\n", conn->read_buf.size);
-        msg_server_reply(serv, e->id, conn);
-        msg_host_list_debug(&serv->hosts);
-        printf("server config:\n");
-        msg_server_printsub(serv);
-        printf("remaining bytes: %lu\n\n", conn->read_buf.size);
+        while (msg_server_read(serv, e->id, conn)) {
+            msg_host_list_debug(&serv->hosts);
+            msg_server_printsub(serv);
+        }
     }
     else {
-        printf("connection not found\n");
+        printf("connection %d not found\n", e->id);
     }
 }
 
@@ -95,12 +92,11 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 
 
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
-    struct msg_connection ch;
-    ch.socket = *socket;
-    msgu_buffer_init(&ch.read_buf, malloc(256), 256);
-    msgu_buffer_init(&ch.write_buf, malloc(256), 256);
+    struct msg_connection conn;
+    conn.socket = *socket;
+    msgu_stream_init(&conn.ch.stream, socket->fd, &msgs_socket_fn);
     int id = msgs_poll_socket(&s->tb, socket);
-    msgu_map_insert(&s->connections, &id, &ch);
+    msgu_map_insert(&s->connections, &id, &conn);
     return id;
 }
 
@@ -154,7 +150,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     struct msg_connection *conn = msg_server_connection(serv, cid);
 
     // request table of known addresses
-    msg_req_peer_init(&conn->write_buf, &serv->hosts.ptr[0]);
+    msg_req_peer_init(&conn->ch.stream, &serv->hosts.ptr[0]);
     return cid;
 }
 
@@ -167,24 +163,22 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn) {
-    struct msg_message msg;
-    while(msg_poll_message(&conn->read_buf, &msg)) {
-        msg_server_apply_local(serv, src_epid, &msg, &conn->write_buf);
-        ep_buffer_release(msg.body, msg.head.size);
-    }
+int msg_server_read(struct msg_server *serv, int srcid, struct msg_connection *conn) {
+
+
+    return 0;
 }
 
 
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_connection *conn) {
     struct msg_host *self = msg_server_self(serv);
 
     // recv from local processes
-
-    if (m->head.share_id < 0) {
+    struct msgu_header *head = &conn->ch.stat.header;
+    if (head->share_id < 0) {
         // requests for shared memory, or registering new processes and files
         printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
-        switch (m->head.type) {
+        switch (head->type) {
         case msg_type_peer_init:
             msg_host_list_merge(&serv->hosts, m->body, 0);
             msg_send_host_list(&serv->hosts, out);
@@ -209,7 +203,7 @@ void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_messa
 }
 
 
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_connection *conn) {
     if (m->head.share_id < 0) {
 
     }
@@ -221,7 +215,7 @@ void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_mess
 }
 
 
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out) {
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_connection *conn) {
     printf("recv update for share %d\n", m->head.share_id);
      // TODO shares
 }

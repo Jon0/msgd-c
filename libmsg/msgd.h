@@ -29,6 +29,7 @@ struct msg_client_state {
     struct msgu_event_map emap;
     struct msgs_table     tb;
     struct msgs_socket    server;    // used to write messages to server
+    struct msgu_stream    stream;
     int                   server_id;
     int                   hdlid;
     int                   connected;
@@ -44,7 +45,6 @@ struct msg_client_state {
 
 
 struct msg_host *msg_client_host(struct msg_client_state *cs);
-int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message *msg);
 int msg_connect(struct msg_client_state *cs, struct msgu_address *addr);
 
 

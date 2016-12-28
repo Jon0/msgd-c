@@ -102,8 +102,8 @@ struct msg_share_net {
  * map id to resources
  * for server side
  */
-struct msg_share_server {
-    struct msgu_map          id_map;
+struct msg_share_map {
+    struct msgu_map        id_map;
     struct msg_share_proc *procs;
     struct msg_share_file *files;
     size_t proc_shares;
@@ -112,16 +112,16 @@ struct msg_share_server {
 };
 
 
-void msg_share_debug(struct msg_share_server *set);
-int msg_share_set_init(struct msg_share_server *set);
-int msg_share_proc(struct msg_share_server *set);
-int msg_share_file(struct msg_share_server *set);
+void msg_share_debug(struct msg_share_map *set);
+int msg_share_set_init(struct msg_share_map *set);
+int msg_share_proc(struct msg_share_map *set);
+int msg_share_file(struct msg_share_map *set);
 
 
 /*
  * handle one of the fuse filesystem requests
  */
-int msg_share_lsdir(struct msg_share_server *set, int share_id);
+int msg_share_lsdir(struct msg_share_map *set, int share_id);
 
 
 

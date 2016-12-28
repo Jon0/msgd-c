@@ -3,6 +3,7 @@
 
 #include "buffer.h"
 #include "host.h"
+#include "stream.h"
 
 
 /*
@@ -35,7 +36,10 @@ enum msg_type_id {
 };
 
 
-struct msg_header {
+/*
+ * messages to the server have this header
+ */
+struct msgu_header {
     enum msg_type_id type;
     int32_t host_id;
     int32_t network_id;
@@ -45,20 +49,14 @@ struct msg_header {
 
 
 /*
- * messages between client and server
+ * state of message reading
  */
-struct msg_message {
-    struct msg_header head;
-    struct msgu_buffer *body;
+struct msgu_read_status {
+    struct msgu_header header;
+    size_t header_read;
+    size_t message_read;
 };
 
-/*
- * data sent in a subscribe action
- */
-struct msg_subscribe {
-    int nodeid;
-    int subid;
-};
 
 
 /*
@@ -70,7 +68,7 @@ int msg_invalid_buffer(struct msgu_buffer *in);
 /*
  * take next message header from incoming buffer
  */
-int msg_poll_message(struct msgu_buffer *in, struct msg_message *out);
+int msg_poll_message(struct msgu_stream *in, struct msgu_read_status *out);
 
 
 /*
@@ -78,8 +76,8 @@ int msg_poll_message(struct msgu_buffer *in, struct msg_message *out);
  */
 void msg_write_header(struct msgu_buffer *b, enum msg_type_id id, int32_t length);
 void msg_req_share(struct msgu_buffer *b, const char *path);
-void msg_req_peer_init(struct msgu_buffer *b, struct msg_host *h);
-void msg_req_proc_init(struct msgu_buffer *b, const char *msg, size_t count);
+void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h);
+void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count);
 
 
 /*

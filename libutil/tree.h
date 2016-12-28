@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "buffer.h"
-#include "object.h"
+#include "stream.h"
 
 
 struct ep_link {

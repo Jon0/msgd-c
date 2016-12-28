@@ -11,6 +11,12 @@
 #include "endpoint.h"
 
 
+static struct msgu_stream_fn msgs_socket_fn = {
+    .read  = read,
+    .write = write,
+};
+
+
 ssize_t msgs_recv(struct msgu_buffer *b, int fd) {
     char *back;
     size_t space = 0;

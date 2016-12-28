@@ -15,8 +15,6 @@
  */
 struct msg_connection {
     struct msgs_socket   socket;
-    struct msgu_buffer   read_buf;
-    struct msgu_buffer   write_buf;
     struct msgu_channel  ch;
 };
 
@@ -36,6 +34,7 @@ struct msg_server {
     // type of socket
     // epid -> struct msg_connection
     struct msgu_map connections;
+    struct msgu_channel_set cs;
 
     // the nodes owned by each socket connection
     // int -> int[]
@@ -46,8 +45,8 @@ struct msg_server {
 
     struct msg_host_list hosts;
 
-    // local shared objects
-    struct msg_share_server shares;
+    // maps events to and from local shares
+    struct msg_share_map    shares;
 };
 
 
@@ -81,10 +80,10 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-void msg_server_reply(struct msg_server *serv, int src_epid, struct msg_connection *conn);
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_message *m, struct msgu_buffer *out);
+int msg_server_read(struct msg_server *serv, int srcid, struct msg_connection *conn);
+void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_connection *conn);
+void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_connection *conn);
+void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_connection *conn);
 void msg_server_print_debug(struct msg_server *serv);
 
 

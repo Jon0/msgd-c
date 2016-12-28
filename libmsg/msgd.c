@@ -9,46 +9,23 @@ void msg_client_connect_event(void *p, struct msgu_connect_event *e) {
 }
 
 
-static struct msgu_handlers msg_client_handlers = {
-    .connect_event = msg_client_connect_event,
-};
-
-
-void msg_client_socket_recv(void *p, struct msgu_recv_event *recv) {
+void msg_client_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_client_state *cs = p;
-    struct msgu_buffer *recv_buf = recv->buf;
-    struct msg_host *server = msg_client_host(cs);
-    struct msg_message msg;
-    printf("recv msg length: %lu\n", recv_buf->size);
-    while(msg_poll_message(recv_buf, &msg)) {
-        msg_client_apply(cs, recv->id, &msg);
-        ep_buffer_release(msg.body, msg.head.size);
-    }
-    msg_host_list_debug(&cs->hosts);
-}
-
-
-struct msg_host *msg_client_host(struct msg_client_state *cs) {
-    return &cs->hosts.ptr[0];
-}
-
-
-int msg_client_apply(struct msg_client_state *cs, int srcid, struct msg_message *msg) {
     struct msg_host *server = msg_client_host(cs);
     int read_size;
 
 
     // TODO queue events to be polled
-    printf("recv type %d (%d bytes)\n", msg->head.type, msg->head.size);
-    switch (msg->head.type) {
-    case msg_type_peer_one:
-    case msg_type_peer_all:
-        msg_merge_peers(&cs->hosts, msg->body, 0);
-        break;
-    case msg_type_data:
-        printf("recv data\n");
-        break;
-    }
+}
+
+
+static struct msgu_handlers msg_client_handlers = {
+    .connect_event = msg_client_connect_event,
+};
+
+
+struct msg_host *msg_client_host(struct msg_client_state *cs) {
+    return &cs->hosts.ptr[0];
 }
 
 
@@ -61,6 +38,7 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     // open socket to server
     msgs_open_socket(&cs->server, addr);
     cs->server_id = msgs_poll_socket(&cs->tb, &cs->server);
+    msgu_stream_init(&cs->stream, cs->server.fd, &msgs_socket_fn);
     cs->connected = 1;
 
     // init host memory
@@ -74,7 +52,7 @@ void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) 
     if (cs->connected) {
 
         // send connect request
-        msg_req_proc_init(&cs->write_buf, name, strlen(name));
+        msg_req_proc_init(&cs->stream, name, strlen(name));
         printf("sent msg length: %lu\n", cs->write_buf.size);
     }
     else {
