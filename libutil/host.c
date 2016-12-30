@@ -14,19 +14,19 @@ int msg_host_init(struct msg_host *h, const char *addr, const char *name) {
 }
 
 
-size_t msg_host_read(struct msg_host *out, struct msgu_buffer *in, size_t offset) {
+size_t msg_host_read(struct msg_host *out, struct msgu_stream *s) {
     // one of these may segfault if buffer is too short
-    ep_buffer_peek(in, out->addr, offset + 0, 32);
-    ep_buffer_peek(in, out->hostname, offset + 32, 256);
-    size_t size = ep_share_set_read(&out->shares, in, offset + 32 + 256);
+    msgu_stream_read(s, out->addr, 32);
+    msgu_stream_read(s, out->hostname, 256);
+    size_t size = ep_share_set_read(&out->shares, s);
     return 32 + 256 + size;
 }
 
 
-void msg_host_write(struct msg_host *in, struct msgu_buffer *out) {
-    ep_buffer_insert(out, in->addr, 32);
-    ep_buffer_insert(out, in->hostname, 256);
-    ep_share_set_write(&in->shares, out);
+void msg_host_write(struct msg_host *in, struct msgu_stream *s) {
+    msgu_stream_write(s, in->addr, 32);
+    msgu_stream_write(s, in->hostname, 256);
+    ep_share_set_write(&in->shares, s);
 }
 
 
@@ -66,23 +66,22 @@ int msg_host_list_add(struct msg_host_list *h, const char *addr, const char *nam
 }
 
 
-void msg_merge_peers(struct msg_host_list *h, struct msgu_buffer *buf, size_t offset) {
+void msg_merge_peers(struct msg_host_list *h, struct msgu_stream *s) {
     size_t recv_hosts;
-    ep_buffer_peek(buf, (char *) &recv_hosts, offset, sizeof(recv_hosts));
-    offset += sizeof(recv_hosts);
+    msgu_stream_read(s, (char *) &recv_hosts, sizeof(recv_hosts));
 
     // TODO require notification of changes
     for (int i = 0; i < recv_hosts; ++i) {
-        offset += msg_host_list_merge(h, buf, offset);
+        msg_host_list_merge(h, s);
     }
 }
 
 
-size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_buffer *in, size_t offset) {
+size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_stream *s) {
     char addr [32];
     char hostname [256];
-    ep_buffer_peek(in, addr, offset + 0, 32);
-    ep_buffer_peek(in, hostname, offset + 32, 256);
+    msgu_stream_read(s, addr, 32);
+    msgu_stream_read(s, hostname, 256);
     printf("recv host %s, %s\n", addr, hostname);
 
     // try match existing hosts
@@ -98,7 +97,7 @@ size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_buffer *in, size
             out = &h->ptr[index];
         }
     }
-    size_t size = ep_share_set_read(&out->shares, in, offset + 32 + 256);
+    size_t size = ep_share_set_read(&out->shares, s);
     return 32 + 256 + size;
 }
 

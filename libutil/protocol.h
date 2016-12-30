@@ -84,8 +84,8 @@ void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count);
  * send and recieve objects
  */
 size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, size_t count);
-void msg_send_host(struct msg_host *h, struct msgu_buffer *buf);
-void msg_send_host_list(struct msg_host_list *h, struct msgu_buffer *buf);
+void msg_send_host(struct msg_host *h, struct msgu_stream *s);
+void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s);
 
 
 #endif

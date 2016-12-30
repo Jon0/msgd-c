@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include "buffer.h"
 #include "map.h"
+#include "stream.h"
 
 
 /*
@@ -57,8 +57,8 @@ struct msgu_share_set {
 void ep_share_set_print(struct msgu_share_set *set);
 void ep_share_set_init(struct msgu_share_set *set);
 size_t ep_share_set_size(struct msgu_share_set *set);
-size_t ep_share_set_read(struct msgu_share_set *set, struct msgu_buffer *buf, size_t offset);
-size_t ep_share_set_write(struct msgu_share_set *set, struct msgu_buffer *buf);
+size_t ep_share_set_read(struct msgu_share_set *set, struct msgu_stream *s);
+size_t ep_share_set_write(struct msgu_share_set *set, struct msgu_stream *s);
 
 
 /*

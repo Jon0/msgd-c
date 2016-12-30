@@ -68,10 +68,10 @@ int msg_node_of_host(struct msg_server *s, int epid) {
 }
 
 
-void msg_server_add_share(struct msg_server *serv, struct msgu_buffer *buf) {
+void msg_server_add_share(struct msg_server *serv, struct msgu_stream *s) {
     struct msgu_file_event fe;
     char path [256];
-    ep_buffer_peek(buf, path, 0, buf->size);
+    msgu_stream_read(s, path, sizeof(path));
     printf("share %s\n", path);
     int i = msgu_add_file(&serv->emap, &fe);
     msg_share_file(&serv->shares);
@@ -177,45 +177,46 @@ void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_conne
     struct msgu_header *head = &conn->ch.stat.header;
     if (head->share_id < 0) {
         // requests for shared memory, or registering new processes and files
-        printf("recv type %d (%d bytes)\n", m->head.type, m->head.size);
         switch (head->type) {
         case msg_type_peer_init:
-            msg_host_list_merge(&serv->hosts, m->body, 0);
-            msg_send_host_list(&serv->hosts, out);
+            msg_host_list_merge(&serv->hosts, &conn->ch.stream);
+            msg_send_host_list(&serv->hosts, &conn->ch.stream);
             break;
         case msg_type_peer_update:
             break;
         case msg_type_peer_one:
         case msg_type_peer_all:
-            msg_merge_peers(&serv->hosts, m->body, 0);
+            msg_merge_peers(&serv->hosts, &conn->ch.stream);
             break;
         case msg_type_share_proc:
         case msg_type_share_file:
-            msg_server_add_share(serv, m->body);
-            msg_send_host(self, out);
+            msg_server_add_share(serv, &conn->ch.stream);
+            msg_send_host(self, &conn->ch.stream);
             break;
         }
     }
     else {
         // request gets passed to existing shares
-        msg_server_apply_share(serv, srcid, m, out);
+        msg_server_apply_share(serv, srcid, conn);
     }
 }
 
 
 void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-    if (m->head.share_id < 0) {
+    struct msgu_header *head = &conn->ch.stat.header;
+    if (head->share_id < 0) {
 
     }
     else {
         // request gets passed to existing shares
-        msg_server_apply_share(serv, srcid, m, out);
+        msg_server_apply_share(serv, srcid, conn);
     }
 
 }
 
 
 void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-    printf("recv update for share %d\n", m->head.share_id);
+    struct msgu_header *head = &conn->ch.stat.header;
+    printf("recv update for share %d\n", head->share_id);
      // TODO shares
 }

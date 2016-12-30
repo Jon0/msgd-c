@@ -90,42 +90,29 @@ size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, 
 }
 
 
-void msg_send_host(struct msg_host *h, struct msgu_buffer *buf) {
+void msg_send_host(struct msg_host *h, struct msgu_stream *s) {
     struct msgu_header head;
     size_t host_count = 1;
-
-    printf("send self\n");
     head.type = msg_type_peer_one;
     head.size = sizeof(size_t);
     head.size += 32 + 256 + ep_share_set_size(&h->shares);
     printf("send %d bytes\n", head.size);
-    ep_buffer_insert(buf, (char *) &head, sizeof(struct msgu_header));
-    ep_buffer_insert(buf, (char *) &host_count, sizeof(size_t));
-    msg_host_write(h, buf);
-
-    if (msg_invalid_buffer(buf)) {
-        printf("error sending buffer (%lu should be %d)\n", buf->size, head.size);
-    }
+    msgu_stream_write(s, (char *) &head, sizeof(struct msgu_header));
+    msgu_stream_write(s, (char *) &host_count, sizeof(size_t));
+    msg_host_write(h, s);
 }
 
 
-void msg_send_host_list(struct msg_host_list *h, struct msgu_buffer *buf) {
+void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s) {
     struct msgu_header head;
-
-    printf("send %lu hosts\n", h->host_count);
     head.type = msg_type_peer_all;
     head.size = sizeof(size_t);
     for (int i = 0; i < h->host_count; ++i) {
         head.size += 32 + 256 + ep_share_set_size(&h->ptr[i].shares);
     }
-    printf("send %d bytes\n", head.size);
-    ep_buffer_insert(buf, (char *) &head, sizeof(struct msgu_header));
-    ep_buffer_insert(buf, (char *) &h->host_count, sizeof(size_t));
+    msgu_stream_write(s, (char *) &head, sizeof(struct msgu_header));
+    msgu_stream_write(s, (char *) &h->host_count, sizeof(size_t));
     for (int i = 0; i < h->host_count; ++i) {
-        msg_host_write(&h->ptr[i], buf);
-    }
-
-    if (msg_invalid_buffer(buf)) {
-        printf("error sending buffer (%lu should be %d)\n", buf->size, head.size);
+        msg_host_write(&h->ptr[i], s);
     }
 }
