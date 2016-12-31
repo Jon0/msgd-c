@@ -53,8 +53,19 @@ struct msg_server {
 /*
  * modifications applied to server state
  */
-struct msg_server_delta {
-    int type;
+struct msg_delta {
+    int                     source_id;
+    struct msg_connection  *source;
+    int                     update_type;
+    union msgu_any_update   update;
+};
+
+
+/*
+ * result of applying delta
+ */
+struct msg_status {
+    int error;
 };
 
 
@@ -80,11 +91,13 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-int msg_server_read(struct msg_server *serv, int srcid, struct msg_connection *conn);
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_connection *conn);
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_connection *conn);
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_connection *conn);
-void msg_server_print_debug(struct msg_server *serv);
+int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta);
+int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta);
+int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status);
+int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
+int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
+
+//void msg_server_print_debug(struct msg_server *serv);
 
 
 #endif

@@ -19,27 +19,87 @@ int msg_invalid_buffer(struct msgu_buffer *in) {
 }
 
 
-int msg_poll_message(struct msgu_stream *in, struct msgu_read_status *out) {
+void msgu_stat_reset(struct msgu_read_status *stat) {
+    stat->header_read = 0;
+    stat->message_read = 0;
+}
+
+
+int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
 
     // recieving requests to the local server
-    char *buf = (char *) &out->header;
+    char *buf = (char *) &stat->header;
     size_t headsize = sizeof(struct msgu_header);
-    size_t begin = out->header_read;
+    size_t begin = stat->header_read;
     size_t count = headsize - begin;
-    ssize_t rs = msgu_stream_read(in, (char *) &out->header, count);
+    ssize_t rs = msgu_stream_read(in, (char *) &stat->header, count);
     if (rs <= 0) {
         return rs;
     }
     else {
-        out->header_read += rs;
+        stat->header_read += rs;
     }
-    if (out->header_read == headsize) {
+    if (stat->header_read == headsize) {
         return 1;
     }
     return 0;
 }
 
 
+int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
+    ssize_t read;
+    struct msgu_header *head = &stat->header;
+    if (head->share_id < 0) {
+        switch (head->type) {
+        case msg_type_share_file:
+            read += msgu_add_share(in, stat->message_read, &update->sh_add);
+            break;
+        default:
+            return -1;
+        }
+
+        // check socket is still open
+        if (read > 0) {
+            stat->message_read += read;
+        }
+        else if (read < 0) {
+            return -1;
+        }
+
+
+        // check message was completely read
+        if (stat->header.size == stat->message_read) {
+            return head->type;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return msgu_poll_update_share(in, stat, update);
+    }
+}
+
+
+int msgu_poll_update_share(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
+    // update existing shares
+    return -1;
+}
+
+
+ssize_t msgu_add_peer(struct msgu_stream *in, size_t offset, struct msgu_peer_update *u) {
+    return 0;
+}
+
+
+ssize_t msgu_add_share(struct msgu_stream *in, size_t offset, struct msgu_share_add_update *u) {
+    return 0;
+}
+
+
+
+
+// unused
 void msg_write_header(struct msgu_buffer *b, enum msg_type_id id, int32_t length) {
     struct msgu_header head;
     head.type = id;

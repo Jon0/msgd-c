@@ -18,14 +18,18 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
-    printf("recv from: %d\n", e->id);
 
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
+    struct msg_delta delta;
     if (conn) {
-        while (msg_server_read(serv, e->id, conn)) {
-            msg_host_list_debug(&serv->hosts);
-            msg_server_printsub(serv);
+        delta.source_id = e->id;
+        delta.source = conn;
+        while ((delta.update_type = msgu_channel_read(&conn->ch, &delta.update)) > 0) {
+            msg_server_apply(serv, &delta);
+        }
+        if (delta.update_type < 0) {
+            // socket was closed
         }
     }
     else {
@@ -95,6 +99,7 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
     struct msg_connection conn;
     conn.socket = *socket;
     msgu_stream_init(&conn.ch.stream, socket->fd, &msgs_socket_fn);
+    msgu_stat_reset(&conn.ch.stat);
     int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &conn);
     return id;
@@ -163,60 +168,43 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-int msg_server_read(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-
-
+int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
+    struct msg_status status;
+    if (msg_server_validate(serv, delta)) {
+        if (msg_server_modify(serv, delta, &status)) {
+            msg_server_notify(serv, delta, &status);
+            msg_server_reply(serv, delta, &status);
+        }
+        else {
+            return -1;
+        }
+    }
     return 0;
 }
 
 
-void msg_server_apply_local(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-    struct msg_host *self = msg_server_self(serv);
-
-    // recv from local processes
-    struct msgu_header *head = &conn->ch.stat.header;
-    if (head->share_id < 0) {
-        // requests for shared memory, or registering new processes and files
-        switch (head->type) {
-        case msg_type_peer_init:
-            msg_host_list_merge(&serv->hosts, &conn->ch.stream);
-            msg_send_host_list(&serv->hosts, &conn->ch.stream);
-            break;
-        case msg_type_peer_update:
-            break;
-        case msg_type_peer_one:
-        case msg_type_peer_all:
-            msg_merge_peers(&serv->hosts, &conn->ch.stream);
-            break;
-        case msg_type_share_proc:
-        case msg_type_share_file:
-            msg_server_add_share(serv, &conn->ch.stream);
-            msg_send_host(self, &conn->ch.stream);
-            break;
-        }
-    }
-    else {
-        // request gets passed to existing shares
-        msg_server_apply_share(serv, srcid, conn);
-    }
+int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta) {
+    // check update is valid
+    return 1;
 }
 
 
-void msg_server_apply_remote(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-    struct msgu_header *head = &conn->ch.stat.header;
-    if (head->share_id < 0) {
+int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status) {
+    // lock mutex and apply state changes
 
-    }
-    else {
-        // request gets passed to existing shares
-        msg_server_apply_share(serv, srcid, conn);
-    }
-
+    // print new state
+    msg_host_list_debug(&serv->hosts);
+    msg_server_printsub(serv);
+    return 1;
 }
 
 
-void msg_server_apply_share(struct msg_server *serv, int srcid, struct msg_connection *conn) {
-    struct msgu_header *head = &conn->ch.stat.header;
-    printf("recv update for share %d\n", head->share_id);
-     // TODO shares
+int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
+    // send notification to any update listeners
+    return 1;
+}
+
+
+int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
+    return 1;
 }

@@ -4,6 +4,7 @@
 #include "protocol.h"
 #include "share.h"
 #include "stream.h"
+#include "update.h"
 
 
 
@@ -32,12 +33,11 @@ struct msgu_network {
 };
 
 
-struct msgu_server {
-
-};
-
-
-void msgu_server_signal(struct msgu_server *s, struct msgu_channel *c);
+/*
+ * return type of update, or zero for incomplete read
+ */
+int msgu_channel_read(struct msgu_channel *c, union msgu_any_update *u);
+int msgu_channel_is_local(struct msgu_channel *c);
 
 
 #endif

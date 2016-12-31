@@ -3,37 +3,13 @@
 
 #include "buffer.h"
 #include "host.h"
-#include "stream.h"
+#include "update.h"
 
 
 /*
  * TODO send a fixed width type
  */
 typedef int32_t msg_int_t;
-
-
-/*
- * types of messages
- */
-enum msg_type_id {
-    msg_type_error,
-    msg_type_mount,
-    msg_type_server,
-    msg_type_client,
-    msg_type_peer_init,
-    msg_type_peer_update,
-    msg_type_peer_all,
-    msg_type_peer_one,
-    msg_type_share_proc,
-    msg_type_share_file,
-    msg_type_publ,
-    msg_type_subs,
-    msg_type_avail,
-    msg_type_availp,
-    msg_type_avails,
-    msg_type_poll,
-    msg_type_data
-};
 
 
 /*
@@ -65,10 +41,31 @@ struct msgu_read_status {
 int msg_invalid_buffer(struct msgu_buffer *in);
 
 
+void msgu_stat_reset(struct msgu_read_status *stat);
+
+
 /*
  * take next message header from incoming buffer
  */
-int msg_poll_message(struct msgu_stream *in, struct msgu_read_status *out);
+int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat);
+
+
+/*
+ * read update
+ */
+int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update);
+int msgu_poll_update_share(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update);
+
+
+
+/*
+ * partial read
+ * may depend on existing read
+ */
+ ssize_t msgu_add_peer(struct msgu_stream *in, size_t offset, struct msgu_peer_update *u);
+ ssize_t msgu_add_share(struct msgu_stream *in, size_t offset, struct msgu_share_add_update *u);
+
+
 
 
 /*
