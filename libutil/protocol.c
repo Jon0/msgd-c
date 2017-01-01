@@ -32,6 +32,9 @@ int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
     size_t headsize = sizeof(struct msgu_header);
     size_t begin = stat->header_read;
     size_t count = headsize - begin;
+    if (count == 0) {
+        return 1;
+    }
     ssize_t rs = msgu_stream_read(in, (char *) &stat->header, count);
     if (rs <= 0) {
         return rs;
@@ -49,65 +52,65 @@ int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
 int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
     ssize_t read;
     struct msgu_header *head = &stat->header;
-    if (head->share_id < 0) {
-        switch (head->type) {
-        case msg_type_share_file:
-            read += msgu_add_share(in, stat->message_read, &update->sh_add);
-            break;
-        default:
-            return -1;
-        }
+    switch (head->type) {
+    case msg_type_share_file:
+        read = msgu_add_share(in, &update->sh_add, stat->message_read);
+        break;
+    default:
+        read = -1;
+        break;
+    }
 
-        // check socket is still open
-        if (read > 0) {
-            stat->message_read += read;
-        }
-        else if (read < 0) {
-            return -1;
-        }
+    // check socket is still open
+    if (read > 0) {
+        stat->message_read += read;
+    }
+    else if (read < 0) {
+        return -1;
+    }
 
 
-        // check message was completely read
-        if (stat->header.size == stat->message_read) {
-            return head->type;
-        }
-        else {
-            return 0;
-        }
+    // check message was completely read
+    if (stat->header.size == stat->message_read) {
+        return head->type;
     }
     else {
-        return msgu_poll_update_share(in, stat, update);
+        return 0;
     }
 }
 
 
-int msgu_poll_update_share(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
-    // update existing shares
-    return -1;
-}
-
-
-ssize_t msgu_add_peer(struct msgu_stream *in, size_t offset, struct msgu_peer_update *u) {
+ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_add_peer_update *u, size_t offset) {
     return 0;
 }
 
 
-ssize_t msgu_add_share(struct msgu_stream *in, size_t offset, struct msgu_share_add_update *u) {
-    return 0;
+ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_add_share_update *as, size_t offset) {
+    return msgu_string_read(&as->share_name, in, offset);
 }
 
 
-
-
-// unused
-void msg_write_header(struct msgu_buffer *b, enum msg_type_id id, int32_t length) {
+ssize_t msgu_header_write(struct msgu_stream *out, enum msg_type_id id, int32_t length, size_t offset) {
     struct msgu_header head;
     head.type = id;
     head.size = length;
-    ep_buffer_insert(b, (char *) &head, sizeof(head));
+    char *headbuf = (char *) &head;
+    return msgu_stream_write(out, &headbuf[offset], sizeof(head) - offset);
 }
 
 
+ssize_t msgu_add_peer_write(struct msgu_stream *out, struct msgu_add_peer_update *u, size_t offset) {
+    return 0;
+}
+
+
+ssize_t msgu_add_share_write(struct msgu_stream *out, struct msgu_add_share_update *as, size_t offset) {
+    if (msgu_header_write(out, msg_type_add_share, msgu_string_size(&as->share_name), offset)); 
+    return msgu_string_write(&as->share_name, out, offset);
+}
+
+
+// unused
 void msg_req_share(struct msgu_buffer *b, const char *path) {
     struct msgu_header head;
     head.type = msg_type_share_file;

@@ -11,7 +11,7 @@ hash_t msgu_int_hash(void *p) {
 int msgu_int_cmp(void *a, void *b) {
     int *ia = a;
     int *ib = b;
-    return *ia == *ib;
+    return (*ia < *ib) ? -1 : (*ia > *ib);
 }
 
 
@@ -23,7 +23,7 @@ hash_t msgu_uint32_hash(void *p) {
 int msgu_uint32_cmp(void *a, void *b) {
     uint32_t *ia = a;
     uint32_t *ib = b;
-    return *ia == *ib;
+    return (*ia < *ib) ? -1 : (*ia > *ib);
 }
 
 

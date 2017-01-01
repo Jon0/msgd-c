@@ -64,6 +64,9 @@ void msgs_table_recv(struct msgs_table *t, uint32_t ev, uint32_t type, uint32_t 
     if (count) {
         msgu_event_notify(t->emap, type, &data);
     }
+    else {
+        printf("event %d, %d not found\n", type, id);
+    }
 }
 
 
@@ -93,7 +96,7 @@ int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc) {
     pthread_mutex_lock(&t->map_mutex);
     int id = msgu_add_conn(t->emap, &ce);
     pthread_mutex_unlock(&t->map_mutex);
-    msgs_table_enable(t, acc->fd, msgu_connect, id);
+    msgs_table_enable(t, acc->fd, msgu_connect_id, id);
 }
 
 
@@ -104,6 +107,6 @@ int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk) {
     pthread_mutex_lock(&t->map_mutex);
     int id = msgu_add_recv(t->emap, &re);
     pthread_mutex_unlock(&t->map_mutex);
-    msgs_table_enable(t, sk->fd, msgu_recv, id);
+    msgs_table_enable(t, sk->fd, msgu_recv_id, id);
     return id;
 }

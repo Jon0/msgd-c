@@ -24,3 +24,14 @@ ssize_t msgu_stream_read(struct msgu_stream *s, void *buf, size_t count) {
 ssize_t msgu_stream_write(struct msgu_stream *s, const void *buf, size_t count) {
     return s->fn->write(s->id, buf, count);
 }
+
+
+ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count) {
+    char c;
+    for (int i = 0; i < count; ++i) {
+        if (s->fn->read(s->id, &c, 1) != 1) {
+            return -1;
+        }
+    }
+    return count;
+}

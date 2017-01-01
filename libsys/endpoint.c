@@ -11,10 +11,44 @@
 #include "endpoint.h"
 
 
-static struct msgu_stream_fn msgs_socket_fn = {
-    .read  = read,
-    .write = write,
-};
+ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
+    ssize_t e = read(id, buf, count);
+    if (e == -1) {
+        int err = errno;
+        if ((err == EAGAIN) || (err == EWOULDBLOCK)) {
+            return 0;
+        }
+        else {
+            perror("read");
+            return -2;
+        }
+    }
+    else if (e == 0) {
+        printf("read: remote closed socket\n");
+        return -1;
+    }
+    else {
+        return e;
+    }
+}
+
+
+ssize_t msgs_socket_write_fn(msgu_stream_id_t id, const void *buf, size_t count) {
+    ssize_t e = write(id, buf, count);
+    if (e == -1) {
+        int err = errno;
+        if ((err == EAGAIN) || (err == EWOULDBLOCK)) {
+            return 0;
+        }
+        else {
+            perror("write");
+            return -2;
+        }
+    }
+    else {
+        return e;
+    }
+}
 
 
 ssize_t msgs_recv(struct msgu_buffer *b, int fd) {

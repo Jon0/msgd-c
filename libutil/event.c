@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "event.h"
 
@@ -36,10 +37,10 @@ int msgu_event_copy(struct msgu_event_map *map, uint32_t id, union msgu_any_even
 
 void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any_event *data) {
     switch (type) {
-    case msgu_connect:
+    case msgu_connect_id:
         map->hdl.connect_event(map->arg, &data->conn);
         break;
-    case msgu_recv:
+    case msgu_recv_id:
         map->hdl.recv_event(map->arg, &data->recv);
         break;
     }
@@ -49,7 +50,10 @@ void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any
 int msgu_add_conn(struct msgu_event_map *map, struct msgu_connect_event *ce) {
     uint32_t id = map->next_id++;
     ce->id = id;
-    msgu_map_insert(&map->data, &id, ce);
+    int count = msgu_map_insert(&map->data, &id, ce);
+    if (count == 0) {
+        printf("map insert error\n");
+    }
     return id;
 }
 

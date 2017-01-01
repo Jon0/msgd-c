@@ -12,10 +12,9 @@
  * id for each event type
  */
 enum msgu_event_type {
-    msgu_connect,
-    msgu_disconnect,
-    msgu_recv,
-    msgu_send,
+    msgu_connect_id = 16,
+    msgu_recv_id    = 40,
+    msgu_send_id    = 41,
 };
 
 

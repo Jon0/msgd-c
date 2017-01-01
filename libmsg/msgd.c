@@ -21,6 +21,7 @@ void msg_client_recv_event(void *p, struct msgu_recv_event *e) {
 
 static struct msgu_handlers msg_client_handlers = {
     .connect_event = msg_client_connect_event,
+    .recv_event = msg_client_recv_event,
 };
 
 
@@ -66,11 +67,13 @@ void msg_free_proc(struct msg_client_state *cs) {
 }
 
 
-int msg_create_share(struct msg_client_state *cs, const char *path) {
+int msg_create_share(struct msg_client_state *cs, char *path) {
+    struct msgu_add_share_update up;
+    up.share_name.count = strlen(path);
+    up.share_name.buf = path;
     if (cs->connected) {
-        msg_req_share(&cs->write_buf, path);
-        msgs_send(&cs->write_buf, cs->server.fd, cs->write_buf.begin);
-        printf("sent msg length: %lu\n", cs->write_buf.size);
+        ssize_t sent = msgu_add_share_write(&cs->stream, &up, 0);
+        printf("sent msg length: %d\n", sent);
     }
     else {
         printf("no connection\n");

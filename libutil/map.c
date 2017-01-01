@@ -61,8 +61,9 @@ int msgu_map_insert(struct msgu_map *m, void *key, void *elem) {
             // place at the end of the value array
             keypair->hash = hash;
             keypair->index = m->elem_count++;
-            void *item = &m->array[keypair->index * m->elem_size];
-            memcpy(item, elem, m->elem_size);
+            char *item = &m->array[keypair->index * m->elem_size];
+            memcpy(item, key, m->key_size);
+            memcpy(&item[m->key_size], elem, m->data_size);
             return 1;
         }
     }

@@ -2,6 +2,7 @@
 #define LIBUTIL_UPDATE_H
 
 #include "stream.h"
+#include "string.h"
 
 
 /*
@@ -19,6 +20,7 @@ enum msg_type_id {
     msg_type_share_proc,
     msg_type_share_file,
     msg_type_add_share,
+    msg_type_rm_share,
     msg_type_publ,
     msg_type_subs,
     msg_type_avail,
@@ -40,8 +42,8 @@ struct msgu_host_update {
 /*
  * adds or removes local shares
  */
-struct msgu_share_add_update {
-
+struct msgu_add_share_update {
+    struct msgu_string share_name;
 };
 
 
@@ -55,7 +57,7 @@ struct msgu_share_update {
 };
 
 
-struct msgu_peer_update {
+struct msgu_add_peer_update {
 
 };
 
@@ -85,7 +87,7 @@ struct msgu_broadcast_update {
 
 
 union msgu_any_update {
-    struct msgu_share_add_update  sh_add;
+    struct msgu_add_share_update  sh_add;
     struct msgu_share_update      share;
 };
 

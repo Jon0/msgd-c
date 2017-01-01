@@ -12,6 +12,8 @@ typedef int msgu_stream_id_t;
 
 /*
  * functions for reading and writing to files / sockets
+ * return 0 for no available input
+ * return negative for errors and disconnections
  */
 typedef ssize_t (*msgu_read_t)(msgu_stream_id_t, void *, size_t);
 typedef ssize_t (*msgu_write_t)(msgu_stream_id_t, const void *, size_t);
@@ -39,7 +41,14 @@ struct msgu_stream {
 
 void msgu_stream_init(struct msgu_stream *s, msgu_stream_id_t id, struct msgu_stream_fn *fn);
 void msgu_stream_free(struct msgu_stream *s);
+
+
+/*
+ * return number of bytes read, or zero for no available input
+ * -1 indicates errors
+ */
 ssize_t msgu_stream_read(struct msgu_stream *s, void *buf, size_t count);
 ssize_t msgu_stream_write(struct msgu_stream *s, const void *buf, size_t count);
+ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count);
 
 #endif

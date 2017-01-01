@@ -59,7 +59,7 @@ void msg_free_proc(struct msg_client_state *cs);
 /*
  * request to server process
  */
-int msg_create_share(struct msg_client_state *cs, const char *path);
+int msg_create_share(struct msg_client_state *cs, char *path);
 
 
 /*

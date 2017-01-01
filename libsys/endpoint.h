@@ -8,7 +8,14 @@
 #include <libutil/stream.h>
 
 
-static struct msgu_stream_fn msgs_socket_fn;
+ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count);
+ssize_t msgs_socket_write_fn(msgu_stream_id_t id, const void *buf, size_t count);
+
+
+static struct msgu_stream_fn msgs_socket_fn = {
+    .read  = msgs_socket_read_fn,
+    .write = msgs_socket_write_fn,
+};
 
 
 struct msgs_acceptor {

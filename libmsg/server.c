@@ -170,6 +170,7 @@ void msg_server_run(struct msg_server *serv) {
 
 int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
     struct msg_status status;
+    printf("applying msg\n");
     if (msg_server_validate(serv, delta)) {
         if (msg_server_modify(serv, delta, &status)) {
             msg_server_notify(serv, delta, &status);
@@ -191,6 +192,7 @@ int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta) 
 
 int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status) {
     // lock mutex and apply state changes
+    printf("apply %d\n", delta->update_type);
 
     // print new state
     msg_host_list_debug(&serv->hosts);
