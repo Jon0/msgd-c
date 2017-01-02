@@ -13,6 +13,20 @@ typedef int32_t msg_int_t;
 
 
 /*
+ * general stream functions
+ */
+typedef size_t (*msgu_size_t)(struct msgu_stream *, void *, size_t);
+typedef ssize_t (*msgu_read_t)(struct msgu_stream *, void *, size_t);
+typedef ssize_t (*msgu_write_t)(struct msgu_stream *, const void *, size_t);
+
+
+/*
+ * reads array of read functions object pointers
+ */
+ssize_t msgu_read_many(struct msgu_stream *stream, msgu_read_t *read_fns, void *objs, size_t count, size_t offset);
+
+
+/*
  * messages to the server have this header
  */
 struct msgu_header {

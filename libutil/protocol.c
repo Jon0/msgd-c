@@ -4,6 +4,17 @@
 #include "protocol.h"
 
 
+ssize_t msgu_read_many(struct msgu_stream *stream, msgu_read_t *read_fns, void *objs, size_t count, size_t offset) {
+
+    // where is offset?
+
+
+    for (int i = 0; i < count; ++i) {
+
+    }
+}
+
+
 int msg_invalid_buffer(struct msgu_buffer *in) {
     struct msgu_header msg;
     size_t hs = sizeof(struct msgu_header);
@@ -105,7 +116,7 @@ ssize_t msgu_add_peer_write(struct msgu_stream *out, struct msgu_add_peer_update
 
 
 ssize_t msgu_add_share_write(struct msgu_stream *out, struct msgu_add_share_update *as, size_t offset) {
-    if (msgu_header_write(out, msg_type_add_share, msgu_string_size(&as->share_name), offset)); 
+    if (msgu_header_write(out, msg_type_add_share, msgu_string_size(&as->share_name), offset));
     return msgu_string_write(&as->share_name, out, offset);
 }
 
