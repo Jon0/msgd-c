@@ -13,20 +13,6 @@ typedef int32_t msg_int_t;
 
 
 /*
- * general stream functions
- */
-typedef size_t (*msgu_size_t)(struct msgu_stream *, void *, size_t);
-typedef ssize_t (*msgu_read_t)(struct msgu_stream *, void *, size_t);
-typedef ssize_t (*msgu_write_t)(struct msgu_stream *, const void *, size_t);
-
-
-/*
- * reads array of read functions object pointers
- */
-ssize_t msgu_read_many(struct msgu_stream *stream, msgu_read_t *read_fns, void *objs, size_t count, size_t offset);
-
-
-/*
  * messages to the server have this header
  */
 struct msgu_header {
@@ -45,6 +31,9 @@ struct msgu_read_status {
     struct msgu_header header;
     size_t header_read;
     size_t message_read;
+    size_t fragments_read;
+    size_t fragments_total;
+    struct msgu_fragment *fragment;
 };
 
 
@@ -58,7 +47,9 @@ int msg_invalid_buffer(struct msgu_buffer *in);
 /*
  * resets state to read next header
  */
+void msgu_stat_init(struct msgu_read_status *stat);
 void msgu_stat_reset(struct msgu_read_status *stat);
+void msgu_stat_set_fragments(struct msgu_read_status *stat, int type);
 
 
 /*
@@ -77,8 +68,8 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
  * partial read
  * may depend on existing read
  */
-ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_add_peer_update *u, size_t offset);
-ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_add_share_update *as, size_t offset);
+ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_peer_update *u);
+ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_share_update *as);
 
 
 /*

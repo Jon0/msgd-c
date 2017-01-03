@@ -92,4 +92,8 @@ union msgu_any_update {
 };
 
 
+size_t msgu_update_fragments(int type);
+void msgu_update_free(int type, union msgu_any_update *u);
+
+
 #endif

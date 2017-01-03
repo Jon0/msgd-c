@@ -25,10 +25,12 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     if (conn) {
         delta.source_id = e->id;
         delta.source = conn;
-        while ((delta.update_type = msgu_channel_read(&conn->ch, &delta.update)) > 0) {
-            msg_server_apply(serv, &delta);
+        while (msgu_channel_read(&conn->ch)) {
+            if (msgu_channel_update_copy(&conn->ch, &delta.update_type, &delta.update)) {
+                msg_server_apply(serv, &delta);
+            }
         }
-        if (delta.update_type < 0) {
+        if (msgu_channel_is_closed(&conn->ch)) {
             // socket was closed
         }
     }
@@ -98,8 +100,7 @@ void msg_server_rm_client(struct msg_server *s, int i) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     conn.socket = *socket;
-    msgu_stream_init(&conn.ch.stream, socket->fd, &msgs_socket_fn);
-    msgu_stat_reset(&conn.ch.stat);
+    msgu_channel_init(&conn.ch, socket->fd, &msgs_socket_fn);
     int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &conn);
     return id;

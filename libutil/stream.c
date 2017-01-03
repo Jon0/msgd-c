@@ -35,3 +35,14 @@ ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count) {
     }
     return count;
 }
+
+
+ssize_t msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void *objs, size_t count) {
+
+    // where is offset?
+
+
+    for (int i = 0; i < count; ++i) {
+
+    }
+}

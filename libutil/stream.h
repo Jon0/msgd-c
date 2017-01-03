@@ -51,4 +51,29 @@ ssize_t msgu_stream_read(struct msgu_stream *s, void *buf, size_t count);
 ssize_t msgu_stream_write(struct msgu_stream *s, const void *buf, size_t count);
 ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count);
 
+
+/*
+ * shows size and or write progress
+ */
+struct msgu_fragment {
+    size_t known_size;
+    size_t progress;
+    int    complete;
+};
+
+
+/*
+ * fragment stream functions
+ */
+typedef size_t (*msgu_frag_size_t)(struct msgu_stream *, void *);
+typedef ssize_t (*msgu_frag_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
+typedef ssize_t (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
+
+
+/*
+ * reads array of read functions object pointers
+ */
+ssize_t msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void *objs, size_t count);
+
+
 #endif

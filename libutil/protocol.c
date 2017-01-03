@@ -3,16 +3,7 @@
 
 #include "protocol.h"
 
-
-ssize_t msgu_read_many(struct msgu_stream *stream, msgu_read_t *read_fns, void *objs, size_t count, size_t offset) {
-
-    // where is offset?
-
-
-    for (int i = 0; i < count; ++i) {
-
-    }
-}
+#define FRAGMENT_MAX 32
 
 
 int msg_invalid_buffer(struct msgu_buffer *in) {
@@ -30,9 +21,28 @@ int msg_invalid_buffer(struct msgu_buffer *in) {
 }
 
 
+void msgu_stat_init(struct msgu_read_status *stat) {
+    stat->fragment = malloc(sizeof(struct msgu_fragment) * FRAGMENT_MAX);
+    msgu_stat_reset(stat);
+}
+
+
 void msgu_stat_reset(struct msgu_read_status *stat) {
     stat->header_read = 0;
     stat->message_read = 0;
+    stat->fragments_read = 0;
+    stat->fragments_total = 0;
+}
+
+
+void msgu_stat_set_fragments(struct msgu_read_status *stat, int type) {
+    size_t frags = msgu_update_fragments(type);
+    stat->fragments_total = frags;
+    for (int i = 0; i < frags; ++i) {
+        stat->fragment[i].known_size = 0;
+        stat->fragment[i].progress = 0;
+        stat->fragment[i].complete = 0;
+    }
 }
 
 
@@ -54,6 +64,7 @@ int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
         stat->header_read += rs;
     }
     if (stat->header_read == headsize) {
+        msgu_stat_set_fragments(stat, stat->header.type);
         return 1;
     }
     return 0;
@@ -65,7 +76,7 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
     struct msgu_header *head = &stat->header;
     switch (head->type) {
     case msg_type_share_file:
-        read = msgu_add_share(in, &update->sh_add, stat->message_read);
+        read = msgu_add_share(in, stat->fragment, &update->sh_add);
         break;
     default:
         read = -1;
@@ -91,13 +102,13 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
 }
 
 
-ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_add_peer_update *u, size_t offset) {
+ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_peer_update *u) {
     return 0;
 }
 
 
-ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_add_share_update *as, size_t offset) {
-    return msgu_string_read(&as->share_name, in, offset);
+ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_share_update *as) {
+    return msgu_string_read(in, f, &as->share_name);
 }
 
 

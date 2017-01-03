@@ -20,8 +20,8 @@ void msgu_string_alloc(struct msgu_string *str, size_t size);
  * length of string data including header
  */
 size_t msgu_string_size(struct msgu_string *str);
-ssize_t msgu_string_read(struct msgu_string *str, struct msgu_stream *src, size_t off);
-ssize_t msgu_string_write(struct msgu_string *str, struct msgu_stream *dest, size_t off);
+ssize_t msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_string *str);
+ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str);
 
 
 #endif

@@ -18,57 +18,75 @@ size_t msgu_string_size(struct msgu_string *str) {
 }
 
 
-ssize_t msgu_string_read(struct msgu_string *str, struct msgu_stream *src, size_t off) {
+ssize_t msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_string *str) {
     ssize_t read_size = 0;
 
-    if (off < sizeof(str->count)) {
-        size_t remain = sizeof(str->count) - off;
+    if (f->progress < sizeof(str->count)) {
+        size_t remain = sizeof(str->count) - f->progress;
         char *countbuf = (char *) &str->count;
-        read_size = msgu_stream_read(src, &countbuf[off], remain);
+        read_size = msgu_stream_read(src, &countbuf[f->progress], remain);
         if (read_size < 0) {
             return -1;
         }
         else if (read_size < remain) {
+            f->progress += read_size;
             return read_size;
         }
         else {
             str->buf = malloc(str->count);
-            off += read_size;
+            f->known_size = sizeof(str->count) + str->count;
+            f->progress += read_size;
         }
     }
 
     // read remaining string data
-    size_t str_start = off - sizeof(str->count);
+    size_t str_start = f->progress - sizeof(str->count);
     ssize_t bsize = msgu_stream_read(src, &str->buf[str_start], str->count - str_start);
     if (bsize < 0) {
         return -1;
+    }
+    else {
+        f->progress += bsize;
+    }
+
+    if (f->progress == sizeof(str->count) + str->count) {
+        f->complete = 1;
     }
     return read_size + bsize;
 }
 
 
-ssize_t msgu_string_write(struct msgu_string *str, struct msgu_stream *dest, size_t off) {
+ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str) {
     ssize_t write_size = 0;
-    if (off < sizeof(str->count)) {
-        size_t remain = sizeof(str->count) - off;
+    f->known_size = sizeof(str->count) + str->count;
+    if (f->progress < sizeof(str->count)) {
+        size_t remain = sizeof(str->count) - f->progress;
         char *countbuf = (char *) &str->count;
-        write_size = msgu_stream_write(dest, &countbuf[off], remain);
+        write_size = msgu_stream_write(dest, &countbuf[f->progress], remain);
         if (write_size < 0) {
             return -1;
         }
         else if (write_size < remain) {
+            f->progress += write_size;
             return write_size;
         }
         else {
-            off += write_size;
+            f->progress += write_size;
         }
     }
 
     // read remaining string data
-    size_t str_start = off - sizeof(str->count);
+    size_t str_start = f->progress - sizeof(str->count);
     ssize_t bsize = msgu_stream_write(dest, &str->buf[str_start], str->count - str_start);
     if (bsize < 0) {
         return -1;
+    }
+    else {
+        f->progress += bsize;
+    }
+
+    if (f->progress == sizeof(str->count) + str->count) {
+        f->complete = 1;
     }
     return write_size + bsize;
 }
