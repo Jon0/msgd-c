@@ -31,9 +31,7 @@ struct msgu_read_status {
     struct msgu_header header;
     size_t header_read;
     size_t message_read;
-    size_t fragments_read;
-    size_t fragments_total;
-    struct msgu_fragment *fragment;
+    struct msgu_fragment fragment;
 };
 
 
@@ -49,35 +47,20 @@ int msg_invalid_buffer(struct msgu_buffer *in);
  */
 void msgu_stat_init(struct msgu_read_status *stat);
 void msgu_stat_reset(struct msgu_read_status *stat);
-void msgu_stat_set_fragments(struct msgu_read_status *stat, int type);
 
 
 /*
  * take next message header from incoming stream
  */
 int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat);
+int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msg_type_id id, int32_t length);
 
 
 /*
  * read update, return type of update or 0 for incomplete read, and -1 for errors
  */
 int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update);
-
-
-/*
- * partial read
- * may depend on existing read
- */
-ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_peer_update *u);
-ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_share_update *as);
-
-
-/*
- * write
- */
-ssize_t msgu_header_write(struct msgu_stream *out, enum msg_type_id id, int32_t length, size_t offset);
-ssize_t msgu_add_peer_write(struct msgu_stream *out, struct msgu_add_peer_update *u, size_t offset);
-ssize_t msgu_add_share_write(struct msgu_stream *out, struct msgu_add_share_update *as, size_t offset);
+int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int update_type, union msgu_any_update *update);
 
 
 /*

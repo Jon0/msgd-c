@@ -24,4 +24,8 @@ ssize_t msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struc
 ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str);
 
 
+int msgu_string_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str);
+int msgu_string_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str);
+
+
 #endif

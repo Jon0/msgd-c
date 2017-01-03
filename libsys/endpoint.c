@@ -13,6 +13,7 @@
 
 ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
     ssize_t e = read(id, buf, count);
+    printf("read: %d\n", e);
     if (e == -1) {
         int err = errno;
         if ((err == EAGAIN) || (err == EWOULDBLOCK)) {
@@ -35,6 +36,7 @@ ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
 
 ssize_t msgs_socket_write_fn(msgu_stream_id_t id, const void *buf, size_t count) {
     ssize_t e = write(id, buf, count);
+    printf("write: %d\n", e);
     if (e == -1) {
         int err = errno;
         if ((err == EAGAIN) || (err == EWOULDBLOCK)) {

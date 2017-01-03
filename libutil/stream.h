@@ -7,6 +7,17 @@
 #include "buffer.h"
 
 
+/*
+ * types of read and write error
+ */
+enum msgu_stream_error {
+    msgu_waiting = 0,
+    msgu_remote_closed = -1,
+    msgu_operation_error = -2,
+    msgu_format_error = -3,
+};
+
+
 typedef int msgu_stream_id_t;
 
 
@@ -53,27 +64,37 @@ ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count);
 
 
 /*
- * shows size and or write progress
+ * shows size and write progress
  */
 struct msgu_fragment {
+    size_t section_begin;
     size_t known_size;
     size_t progress;
     int    complete;
+    int    base;
 };
 
 
 /*
  * fragment stream functions
  */
-typedef size_t (*msgu_frag_size_t)(struct msgu_stream *, void *);
-typedef ssize_t (*msgu_frag_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
-typedef ssize_t (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
+typedef int (*msgu_frag_init_t)(struct msgu_stream *, struct msgu_fragment **);
+typedef int (*msgu_frag_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
+typedef int (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
+
+
+/*
+ *
+ */
+void msgu_fragment_inc(struct msgu_fragment *f);
+void msgu_fragment_base_zero(struct msgu_fragment *f);
+void msgu_fragment_base_inc(struct msgu_fragment *f);
 
 
 /*
  * reads array of read functions object pointers
  */
-ssize_t msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void *objs, size_t count);
-
+int msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count);
+int msgu_write_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count);
 
 #endif

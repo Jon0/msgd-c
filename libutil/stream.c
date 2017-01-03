@@ -37,12 +37,46 @@ ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count) {
 }
 
 
-ssize_t msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void *objs, size_t count) {
+void msgu_fragment_inc(struct msgu_fragment *f) {
+    f->section_begin += f->progress;
+    f->progress = 0;
+    f->complete += 1;
+}
 
-    // where is offset?
+
+void msgu_fragment_base_zero(struct msgu_fragment *f) {
+    f->base = 0;
+}
 
 
-    for (int i = 0; i < count; ++i) {
+void msgu_fragment_base_inc(struct msgu_fragment *f) {
+    f->base = f->complete;
+}
 
+
+int msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count) {
+    for (int i = (f->complete - f->base); i < count; ++i) {
+        int result = fns[i](stream, f, objs[i]);
+        if (result <= 0) {
+            return result;
+        }
+        else {
+            msgu_fragment_inc(f);
+        }
     }
+    return count;
+}
+
+
+int msgu_write_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count) {
+    for (int i = (f->complete - f->base); i < count; ++i) {
+        int result = fns[i](stream, f, objs[i]);
+        if (result <= 0) {
+            return result;
+        }
+        else {
+            msgu_fragment_inc(f);
+        }
+    }
+    return count;
 }

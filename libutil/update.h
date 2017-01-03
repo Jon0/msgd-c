@@ -92,7 +92,23 @@ union msgu_any_update {
 };
 
 
-size_t msgu_update_fragments(int type);
+/*
+ * functions for each update type
+ */
+size_t msgu_add_share_size(struct msgu_add_share_update *u);
+int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
+int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
+
+
+/*
+ * print type
+ */
+void msgu_update_print(int type, union msgu_any_update *u);
+
+
+/*
+ * free memory
+ */
 void msgu_update_free(int type, union msgu_any_update *u);
 
 

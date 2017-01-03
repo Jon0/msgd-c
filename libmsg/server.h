@@ -77,6 +77,7 @@ void msg_server_add_share(struct msg_server *serv, struct msgu_stream *s);
 void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
 void msg_server_rm_client(struct msg_server *s, int i);
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
+int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 
 

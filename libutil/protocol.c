@@ -3,8 +3,6 @@
 
 #include "protocol.h"
 
-#define FRAGMENT_MAX 32
-
 
 int msg_invalid_buffer(struct msgu_buffer *in) {
     struct msgu_header msg;
@@ -22,7 +20,6 @@ int msg_invalid_buffer(struct msgu_buffer *in) {
 
 
 void msgu_stat_init(struct msgu_read_status *stat) {
-    stat->fragment = malloc(sizeof(struct msgu_fragment) * FRAGMENT_MAX);
     msgu_stat_reset(stat);
 }
 
@@ -30,19 +27,6 @@ void msgu_stat_init(struct msgu_read_status *stat) {
 void msgu_stat_reset(struct msgu_read_status *stat) {
     stat->header_read = 0;
     stat->message_read = 0;
-    stat->fragments_read = 0;
-    stat->fragments_total = 0;
-}
-
-
-void msgu_stat_set_fragments(struct msgu_read_status *stat, int type) {
-    size_t frags = msgu_update_fragments(type);
-    stat->fragments_total = frags;
-    for (int i = 0; i < frags; ++i) {
-        stat->fragment[i].known_size = 0;
-        stat->fragment[i].progress = 0;
-        stat->fragment[i].complete = 0;
-    }
 }
 
 
@@ -63,38 +47,11 @@ int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
     else {
         stat->header_read += rs;
     }
+
+    // check if read has completed
     if (stat->header_read == headsize) {
-        msgu_stat_set_fragments(stat, stat->header.type);
+        msgu_fragment_inc(&stat->fragment);
         return 1;
-    }
-    return 0;
-}
-
-
-int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
-    ssize_t read;
-    struct msgu_header *head = &stat->header;
-    switch (head->type) {
-    case msg_type_share_file:
-        read = msgu_add_share(in, stat->fragment, &update->sh_add);
-        break;
-    default:
-        read = -1;
-        break;
-    }
-
-    // check socket is still open
-    if (read > 0) {
-        stat->message_read += read;
-    }
-    else if (read < 0) {
-        return -1;
-    }
-
-
-    // check message was completely read
-    if (stat->header.size == stat->message_read) {
-        return head->type;
     }
     else {
         return 0;
@@ -102,33 +59,72 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
 }
 
 
-ssize_t msgu_add_peer(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_peer_update *u) {
-    return 0;
-}
-
-
-ssize_t msgu_add_share(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_add_share_update *as) {
-    return msgu_string_read(in, f, &as->share_name);
-}
-
-
-ssize_t msgu_header_write(struct msgu_stream *out, enum msg_type_id id, int32_t length, size_t offset) {
+int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msg_type_id id, int32_t length) {
     struct msgu_header head;
     head.type = id;
     head.size = length;
     char *headbuf = (char *) &head;
-    return msgu_stream_write(out, &headbuf[offset], sizeof(head) - offset);
+    ssize_t write_size = msgu_stream_write(out, &headbuf[f->progress], sizeof(head) - f->progress);
+    if (write_size > 0) {
+        f->progress += write_size;
+    }
+
+    // check if write has completed
+    if (f->progress == sizeof(head)) {
+        msgu_fragment_inc(f);
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 
-ssize_t msgu_add_peer_write(struct msgu_stream *out, struct msgu_add_peer_update *u, size_t offset) {
-    return 0;
+int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, union msgu_any_update *update) {
+    ssize_t read;
+    msgu_fragment_base_zero(&stat->fragment);
+    int have_header = msgu_poll_header(in, stat);
+    if (have_header <= 0) {
+        return have_header;
+    }
+
+    // read message
+    msgu_fragment_base_inc(&stat->fragment);
+    switch (stat->header.type) {
+    case msg_type_add_share:
+        read = msgu_add_share_read(in, &stat->fragment, &update->sh_add);
+        printf("poll update %d\n", read);
+        break;
+    default:
+        printf("unknown update %d\n", stat->header.type);
+        read = -3;
+        break;
+    }
+
+    // check socket is still open
+    if (read > 0) {
+        return stat->header.type;
+    }
+    else if (read < 0) {
+        return read;
+    }
 }
 
 
-ssize_t msgu_add_share_write(struct msgu_stream *out, struct msgu_add_share_update *as, size_t offset) {
-    if (msgu_header_write(out, msg_type_add_share, msgu_string_size(&as->share_name), offset));
-    return msgu_string_write(&as->share_name, out, offset);
+int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int update_type, union msgu_any_update *update) {
+    msgu_fragment_base_zero(f);
+    size_t update_size;
+    switch (update_type) {
+    case msg_type_add_share:
+        update_size = msgu_add_share_size(&update->sh_add);
+        msgu_push_header(out, f, update_type, update_size);
+        msgu_fragment_base_inc(f);
+        msgu_add_share_write(out, f, &update->sh_add);
+        break;
+    default:
+        break;
+    }
+    return 1;
 }
 
 

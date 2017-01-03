@@ -26,16 +26,23 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
         delta.source_id = e->id;
         delta.source = conn;
         while (msgu_channel_read(&conn->ch)) {
-            if (msgu_channel_update_copy(&conn->ch, &delta.update_type, &delta.update)) {
+            if (msgu_channel_update_move(&conn->ch, &delta.update_type, &delta.update)) {
+                msgu_update_print(delta.update_type, &delta.update);
                 msg_server_apply(serv, &delta);
+                msgu_update_free(delta.update_type, &delta.update);
+            }
+            else {
+                printf("update: move failed\n");
             }
         }
         if (msgu_channel_is_closed(&conn->ch)) {
             // socket was closed
+            printf("connection %d: closed\n", e->id);
+            msg_server_close_connection(serv, e->id);
         }
     }
     else {
-        printf("connection %d not found\n", e->id);
+        printf("connection %d: not found\n", e->id);
     }
 }
 
@@ -104,6 +111,11 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
     int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &conn);
     return id;
+}
+
+
+int msg_server_close_connection(struct msg_server *s, int id) {
+
 }
 
 

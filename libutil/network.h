@@ -45,10 +45,9 @@ int msgu_channel_read(struct msgu_channel *c);
 
 
 /*
- * copy update
+ * move update to accessable location
  */
-int msgu_channel_update_copy(struct msgu_channel *c, int *update_type, union msgu_any_update *update);
-int msgu_channel_update_free(struct msgu_channel *c);
+int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msgu_any_update *update);
 
 
 #endif
