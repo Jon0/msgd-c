@@ -97,6 +97,7 @@ int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc) {
     int id = msgu_add_conn(t->emap, &ce);
     pthread_mutex_unlock(&t->map_mutex);
     msgs_table_enable(t, acc->fd, msgu_connect_id, id);
+    return id;
 }
 
 

@@ -9,9 +9,14 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msgs_socket newsocket;
 
     // which acceptor was updated?
-    while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
-        printf("server connect event id %d\n", e->id);
-        msg_server_init_connection(serv, &newsocket);
+    if (e->id == serv->local_id) {
+        while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
+            printf("server accept: %d (local)\n", e->id);
+            msg_server_init_connection(serv, &newsocket);
+        }
+    }
+    else {
+        printf("server accept: %d (unknown)\n", e->id);
     }
 }
 
@@ -145,7 +150,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_unlink("msgd-ipc");
     ep_local(&local_addr, "msgd-ipc");
     msgs_open_acceptor(&s->local_acc, &local_addr);
-    msgs_poll_acceptor(&s->tb, &s->local_acc);
+    s->local_id = msgs_poll_acceptor(&s->tb, &s->local_acc);
 
     // create a remote acceptor
     struct msgu_address raddr;

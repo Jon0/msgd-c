@@ -9,7 +9,9 @@
  * types of messages
  */
 enum msg_type_id {
+    msg_type_wait,
     msg_type_error,
+    msg_type_init_conn,
     msg_type_mount,
     msg_type_server,
     msg_type_client,
@@ -28,6 +30,16 @@ enum msg_type_id {
     msg_type_avails,
     msg_type_poll,
     msg_type_data
+};
+
+
+/*
+ * should be sent first to setup connection
+ */
+struct msg_init_conn_update {
+    int32_t protocol_version_maj;
+    int32_t protocol_version_min;
+    struct msgu_string host_name;
 };
 
 

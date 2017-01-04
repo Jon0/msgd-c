@@ -28,6 +28,7 @@ struct msg_server {
     struct msgu_event_map emap;
     struct msgs_table     tb;
 
+    int                  local_id;
     struct msgs_acceptor local_acc;
     struct msgs_acceptor remote_acc;
 
