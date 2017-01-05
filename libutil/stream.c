@@ -80,3 +80,13 @@ int msgu_write_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_fr
     }
     return count;
 }
+
+
+int msgu_i32_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str) {
+    return 0;
+}
+
+
+int msgu_i32_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str) {
+    return 0;
+}

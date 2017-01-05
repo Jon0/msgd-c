@@ -4,6 +4,21 @@
 #include "update.h"
 
 
+size_t msgu_init_conn_size(struct msgu_add_share_update *u) {
+    return 0;
+}
+
+
+int msgu_init_conn_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+    return 0;
+}
+
+
+int msgu_init_conn_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+    return 0;
+}
+
+
 /*
  * read and write lists
  */

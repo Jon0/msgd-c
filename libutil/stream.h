@@ -97,4 +97,13 @@ void msgu_fragment_base_inc(struct msgu_fragment *f);
 int msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count);
 int msgu_write_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count);
 
+
+/*
+ * read write basic types
+ */
+int msgu_i32_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str);
+int msgu_i32_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str);
+
+
+
 #endif
