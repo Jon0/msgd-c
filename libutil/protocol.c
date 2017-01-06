@@ -91,9 +91,14 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
     // read message
     msgu_fragment_base_inc(&stat->fragment);
     switch (stat->header.type) {
+    case msg_type_init_local:
+        read = msgu_init_local_read(in, &stat->fragment, &update->init_local);
+        break;
+    case msg_type_init_remote:
+        read = msgu_init_remote_read(in, &stat->fragment, &update->init_remote);
+        break;
     case msg_type_add_share:
         read = msgu_add_share_read(in, &stat->fragment, &update->sh_add);
-        printf("poll update %d\n", read);
         break;
     default:
         printf("unknown update %d\n", stat->header.type);
@@ -101,11 +106,15 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
         break;
     }
 
-    // check socket is still open
-    if (read > 0) {
+    if (msgu_fragment_read_check(&stat->fragment, stat->header.size)) {
+        // message is completely read
         return stat->header.type;
     }
-    else if (read < 0) {
+    else if (read > 0) {
+        // socket is still open but waiting
+        return 0;
+    }
+    else {
         return read;
     }
 }
@@ -113,12 +122,17 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
 
 int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int update_type, union msgu_any_update *update) {
     msgu_fragment_base_zero(f);
-    size_t update_size;
+    size_t update_size = msgu_update_size(update_type, update);
+    msgu_push_header(out, f, update_type, update_size);
+    msgu_fragment_base_inc(f);
     switch (update_type) {
+    case msg_type_init_local:
+        msgu_init_local_write(out, f, &update->init_local);
+        break;
+    case msg_type_init_remote:
+        msgu_init_remote_write(out, f, &update->init_remote);
+        break;
     case msg_type_add_share:
-        update_size = msgu_add_share_size(&update->sh_add);
-        msgu_push_header(out, f, update_type, update_size);
-        msgu_fragment_base_inc(f);
         msgu_add_share_write(out, f, &update->sh_add);
         break;
     default:

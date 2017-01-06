@@ -11,7 +11,8 @@
 enum msg_type_id {
     msg_type_wait,
     msg_type_error,
-    msg_type_init_conn,
+    msg_type_init_local,
+    msg_type_init_remote,
     msg_type_mount,
     msg_type_server,
     msg_type_client,
@@ -36,9 +37,16 @@ enum msg_type_id {
 /*
  * should be sent first to setup connection
  */
-struct msg_init_conn_update {
-    int32_t protocol_version_maj;
-    int32_t protocol_version_min;
+struct msgu_init_local_update {
+     int32_t            version_maj;
+     int32_t            version_min;
+};
+
+
+
+struct msgu_init_remote_update {
+    int32_t            version_maj;
+    int32_t            version_min;
     struct msgu_string host_name;
 };
 
@@ -99,23 +107,35 @@ struct msgu_broadcast_update {
 
 
 union msgu_any_update {
-    struct msgu_add_share_update  sh_add;
-    struct msgu_share_update      share;
+    struct msgu_init_local_update  init_local;
+    struct msgu_init_remote_update init_remote;
+    struct msgu_add_share_update   sh_add;
+    struct msgu_share_update       share;
 };
 
 
 /*
  * functions for each update type
  */
-size_t msgu_init_conn_size(struct msgu_add_share_update *u);
-int msgu_init_conn_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
-int msgu_init_conn_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
+size_t msgu_init_local_size(struct msgu_init_local_update *u);
+int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
+int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
 
+
+size_t msgu_init_remote_size(struct msgu_init_remote_update *u);
+int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u);
+int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u);
 
 
 size_t msgu_add_share_size(struct msgu_add_share_update *u);
 int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
 int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
+
+
+/*
+ * return message size
+ */
+size_t msgu_update_size(int type, union msgu_any_update *u);
 
 
 /*

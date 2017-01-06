@@ -90,6 +90,11 @@ void msgu_fragment_inc(struct msgu_fragment *f);
 void msgu_fragment_base_zero(struct msgu_fragment *f);
 void msgu_fragment_base_inc(struct msgu_fragment *f);
 
+/*
+ * check at least count bytes have been transferred
+ */
+int msgu_fragment_read_check(struct msgu_fragment *f, size_t count);
+
 
 /*
  * reads array of read functions object pointers

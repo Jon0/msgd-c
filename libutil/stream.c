@@ -54,6 +54,11 @@ void msgu_fragment_base_inc(struct msgu_fragment *f) {
 }
 
 
+int msgu_fragment_read_check(struct msgu_fragment *f, size_t count) {
+    return (f->section_begin + f->progress) >= count;
+}
+
+
 int msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count) {
     for (int i = (f->complete - f->base); i < count; ++i) {
         int result = fns[i](stream, f, objs[i]);

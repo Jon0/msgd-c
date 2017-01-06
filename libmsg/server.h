@@ -35,7 +35,6 @@ struct msg_server {
     // type of socket
     // epid -> struct msg_connection
     struct msgu_map connections;
-    struct msgu_channel_set cs;
 
     // the nodes owned by each socket connection
     // int -> int[]

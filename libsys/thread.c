@@ -77,7 +77,6 @@ void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue) {
 }
 
 
-
 size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count) {
     pthread_mutex_lock(&q->mutex);
     while (msgu_queue_size(&q->data) == 0) {

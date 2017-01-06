@@ -29,6 +29,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // init connection
+    msg_init_local(&nstate);
+
     // send command
     msg_create_share(&nstate, argv[1]);
 

@@ -188,7 +188,6 @@ void msg_server_run(struct msg_server *serv) {
 
 int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
     struct msg_status status;
-    printf("applying msg\n");
     if (msg_server_validate(serv, delta)) {
         if (msg_server_modify(serv, delta, &status)) {
             msg_server_notify(serv, delta, &status);
@@ -209,8 +208,19 @@ int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta) 
 
 
 int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status) {
+
     // lock mutex and apply state changes
-    printf("apply %d\n", delta->update_type);
+    switch (delta->update_type) {
+    case msg_type_init_local:
+        printf("updating: init local connection\n");
+        break;
+    case msg_type_init_remote:
+        printf("updating: init remote connection\n");
+        break;
+    case msg_type_add_share:
+        printf("updating: add share\n");
+        break;
+    }
 
     // print new state
     msg_host_list_debug(&serv->hosts);

@@ -4,19 +4,35 @@
 #include "update.h"
 
 
-size_t msgu_init_conn_size(struct msgu_add_share_update *u) {
+size_t msgu_init_local_size(struct msgu_init_local_update *u) {
     return 0;
 }
 
 
-int msgu_init_conn_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u) {
     return 0;
 }
 
 
-int msgu_init_conn_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u) {
     return 0;
 }
+
+
+size_t msgu_init_remote_size(struct msgu_init_remote_update *u) {
+    return 0;
+}
+
+
+int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u) {
+    return 0;
+}
+
+
+int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u) {
+    return 0;
+}
+
 
 
 /*
@@ -61,8 +77,28 @@ int msgu_add_share_layout(struct msgu_add_share_update *u, void **l, size_t coun
 }
 
 
+size_t msgu_update_size(int type, union msgu_any_update *u) {
+    switch (type) {
+    case msg_type_init_local:
+        return msgu_init_local_size(&u->init_local);
+    case msg_type_init_remote:
+        return msgu_init_remote_size(&u->init_remote);
+    case msg_type_add_share:
+        return msgu_add_share_size(&u->sh_add);
+    default:
+        return 0;
+    }
+}
+
+
 void msgu_update_print(int type, union msgu_any_update *u) {
     switch (type) {
+    case msg_type_init_local:
+        printf("update: init local\n");
+        break;
+    case msg_type_init_remote:
+        printf("update: init remote\n");
+        break;
     case msg_type_add_share:
         printf("update: add share (%s)\n", u->sh_add.share_name.buf);
         break;

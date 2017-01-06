@@ -67,6 +67,25 @@ void msg_free_proc(struct msg_client_state *cs) {
 }
 
 
+int msg_init_local(struct msg_client_state *cs) {
+    struct msgu_init_local_update init;
+    init.version_maj = 0;
+    init.version_min = 1;
+    union msgu_any_update *update = (union msgu_any_update *) &init;
+    struct msgu_fragment f;
+    f.progress = 0;
+    if (cs->connected) {
+        msgu_update_print(msg_type_init_local, update);
+        int result = msgu_push_update(&cs->stream, &f, msg_type_init_local, update);
+        return 0;
+    }
+    else {
+        printf("no connection\n");
+        return -1;
+    }
+}
+
+
 int msg_create_share(struct msg_client_state *cs, char *path) {
     struct msgu_add_share_update addshare;
     addshare.share_name.count = strlen(path);
@@ -75,13 +94,13 @@ int msg_create_share(struct msg_client_state *cs, char *path) {
     struct msgu_fragment f;
     f.progress = 0;
     if (cs->connected) {
-        printf("type %d\n", msg_type_add_share);
         msgu_update_print(msg_type_add_share, update);
         int result = msgu_push_update(&cs->stream, &f, msg_type_add_share, update);
-        printf("sent msg length: %d\n", result);
+        return 0;
     }
     else {
         printf("no connection\n");
+        return -1;
     }
 }
 
