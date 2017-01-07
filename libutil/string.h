@@ -7,8 +7,8 @@
 
 
 struct msgu_string {
-    uint32_t    count;
-    char *buf;
+    uint32_t   count;
+    char      *buf;
 };
 
 
@@ -26,6 +26,13 @@ ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, con
 
 int msgu_string_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str);
 int msgu_string_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str);
+
+
+struct msgu_string_array {
+    uint32_t    substrs;
+    uint32_t    total_bytes;
+    char       *buf;
+};
 
 
 #endif
