@@ -34,19 +34,13 @@ struct msg_server {
 
     // type of socket
     // epid -> struct msg_connection
-    struct msgu_map connections;
-
-    // the nodes owned by each socket connection
-    // int -> int[]
-    struct msgu_multimap  host_to_tree;
-
-    // nodeid -> struct msg_subscriber
-    struct msgu_multimap  node_to_sub;
-
-    struct msg_host_list hosts;
+    struct msgu_map      connections;
 
     // maps events to and from local shares
-    struct msg_share_map    shares;
+    struct msgu_share_map shares;
+
+    // move into connections?
+    struct msg_host_list hosts;
 };
 
 
@@ -70,12 +64,11 @@ struct msg_status {
 
 
 struct msg_host *msg_server_self(struct msg_server *s);
-int msg_server_add_host(struct msg_server *s, const char *addr, const char *name);
-void msg_server_printsub(struct msg_server *s);
-int msg_node_of_host(struct msg_server *s, int epid);
-void msg_server_add_share(struct msg_server *serv, struct msgu_stream *s);
-void msg_server_add_client(struct msg_server *s, int epid, int nodeid);
-void msg_server_rm_client(struct msg_server *s, int i);
+
+
+/*
+ * manage connections
+ */
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
 int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
@@ -84,6 +77,7 @@ struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 /*
  * run generic server
  */
+void msg_server_print_state(struct msg_server *serv);
 void msg_server_init(struct msg_server *serv, const char *sockpath);
 int msg_server_connect(struct msg_server *serv, const char *addr);
 void msg_server_run(struct msg_server *serv);

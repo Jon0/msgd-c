@@ -35,6 +35,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
                 msgu_update_print(delta.update_type, &delta.update);
                 msg_server_apply(serv, &delta);
                 msgu_update_free(delta.update_type, &delta.update);
+                msg_server_print_state(serv);
             }
             else {
                 printf("update: move failed\n");
@@ -63,52 +64,6 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 }
 
 
-void msg_server_printsub(struct msg_server *s) {
-    printf("%lu sub keys\n", s->node_to_sub.keys.elem_count);
-    printf("%lu sub values\n", s->node_to_sub.value_count);
-
-    // find all the keys
-    for (int i = 0; i < s->node_to_sub.keys.elem_count; ++i) {
-        struct msgu_subarray *sa = msgu_multimap_get_index(&s->node_to_sub, i);
-        printf("key %d (%d to %d)\n", i, sa->begin, sa->end);
-    }
-}
-
-
-int msg_node_of_host(struct msg_server *s, int epid) {
-    int *nodelist = msgu_multimap_get(&s->host_to_tree, epid, 0);
-    if (nodelist) {
-        return nodelist[0];
-    }
-    else {
-        return 0;
-    }
-}
-
-
-void msg_server_add_share(struct msg_server *serv, struct msgu_stream *s) {
-    struct msgu_file_event fe;
-    char path [256];
-    msgu_stream_read(s, path, sizeof(path));
-    printf("share %s\n", path);
-    int i = msgu_add_file(&serv->emap, &fe);
-    msg_share_file(&serv->shares);
-}
-
-
-void msg_server_add_client(struct msg_server *s, int epid, int nodeid) {
-    printf("connect epid %d => node %d\n", epid, nodeid);
-    int index = msgu_multimap_insert(&s->host_to_tree, epid, 1);
-    int *nodelist = msgu_multimap_get(&s->host_to_tree, epid, index);
-    nodelist[0] = nodeid;
-}
-
-
-void msg_server_rm_client(struct msg_server *s, int i) {
-
-}
-
-
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     conn.socket = *socket;
@@ -129,12 +84,17 @@ struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
 }
 
 
+void msg_server_print_state(struct msg_server *serv) {
+    printf("server state:\n");
+    msg_host_list_debug(&serv->hosts);
+}
+
+
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
-    msgu_multimap_init(&s->host_to_tree, sizeof(int), 1024);
-    msgu_multimap_init(&s->node_to_sub, sizeof(struct msgu_channel), 1024);
+    msgu_share_set_init(&s->shares);
     msgs_table_init(&s->tb, &s->emap);
 
     // find own address and hostname
@@ -143,7 +103,6 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msg_host_list_init(&s->hosts);
     msg_host_list_alloc(&s->hosts, 32);
     msg_host_list_add(&s->hosts, host.addr, host.hostname);
-    msg_share_set_init(&s->shares);
 
     // create a local acceptor
     struct msgu_address local_addr;
@@ -208,6 +167,9 @@ int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta) 
 
 
 int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status) {
+    struct msgu_file_event fevent;
+    char path [256];
+    int i;
 
     // lock mutex and apply state changes
     switch (delta->update_type) {
@@ -219,12 +181,9 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
         break;
     case msg_type_add_share:
         printf("updating: add share\n");
+        msgu_share_file(&serv->shares, &delta->update.sh_add.share_name);
         break;
     }
-
-    // print new state
-    msg_host_list_debug(&serv->hosts);
-    msg_server_printsub(serv);
     return 1;
 }
 

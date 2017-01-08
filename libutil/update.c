@@ -34,26 +34,15 @@ int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, 
 }
 
 
-
-/*
- * read and write lists
- */
-static msgu_frag_read_t msgu_add_share_read_fns[] = {
-    msgu_string_read_frag,
-};
-
-
-static msgu_frag_write_t msgu_add_share_write_fns[] = {
-    msgu_string_write_frag,
-};
-
-
 size_t msgu_add_share_size(struct msgu_add_share_update *u) {
     return msgu_string_size(&u->share_name);
 }
 
 
 int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+    static msgu_frag_read_t msgu_add_share_read_fns[] = {
+        msgu_string_read_frag,
+    };
     void *layout[] = {
         &u->share_name,
     };
@@ -62,6 +51,9 @@ int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, str
 
 
 int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+    static msgu_frag_write_t msgu_add_share_write_fns[] = {
+        msgu_string_write_frag,
+    };
     const void *layout[] = {
         &u->share_name,
     };

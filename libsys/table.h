@@ -51,6 +51,7 @@ int ep_table_notify_read(struct msgs_table *t);
 void msgs_table_enable(struct msgs_table *t, int fd, uint32_t type, uint32_t id);
 int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc);
 int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk);
+int msgs_poll_file(struct msgs_table *t, struct msgs_file *file);
 
 
 #endif

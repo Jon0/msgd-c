@@ -111,3 +111,8 @@ int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk) {
     msgs_table_enable(t, sk->fd, msgu_recv_id, id);
     return id;
 }
+
+
+int msgs_poll_file(struct msgs_table *t, struct msgs_file *file) {
+    return 0;
+}
