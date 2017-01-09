@@ -87,7 +87,7 @@ int msg_init_local(struct msg_client_state *cs) {
 
 
 int msg_create_share(struct msg_client_state *cs, char *path) {
-    struct msgu_add_share_update addshare;
+    struct msgu_share_file_update addshare;
     addshare.share_name.count = strlen(path);
     addshare.share_name.buf = path;
     union msgu_any_update *update = (union msgu_any_update *) &addshare;

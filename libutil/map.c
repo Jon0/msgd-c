@@ -50,7 +50,7 @@ hash_t msgu_map_id(struct msgu_map *m, int index) {
 }
 
 
-int msgu_map_insert(struct msgu_map *m, void *key, void *elem) {
+int msgu_map_insert(struct msgu_map *m, const void *key, void *elem) {
     hash_t hash = m->hash(key);
     size_t array_pos = hash % m->array_max;
     for (size_t i = 0; i < m->chain_max; ++i) {
@@ -71,7 +71,7 @@ int msgu_map_insert(struct msgu_map *m, void *key, void *elem) {
 }
 
 
-int msgu_map_erase(struct msgu_map *m, void *key) {
+int msgu_map_erase(struct msgu_map *m, const void *key) {
     hash_t hash = m->hash(key);
     size_t array_pos = hash % m->array_max;
     for (size_t i = 0; i < m->chain_max; ++i) {
@@ -100,7 +100,7 @@ int msgu_map_erase(struct msgu_map *m, void *key) {
 }
 
 
-void *msgu_map_get(struct msgu_map *m, void *key) {
+void *msgu_map_get(struct msgu_map *m, const void *key) {
     hash_t hash = m->hash(key);
     size_t array_pos = hash % m->array_max;
     for (size_t i = 0; i < m->chain_max; ++i) {

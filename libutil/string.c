@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "string.h"
 
 
@@ -99,4 +101,24 @@ int msgu_string_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, voi
 
 int msgu_string_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str) {
     return msgu_string_write(dest, f, str);
+}
+
+
+hash_t msgu_string_hash(const void *p) {
+    const struct msgu_string *str = p;
+    return msgu_fast_hash(str->buf, str->count);
+}
+
+
+int msgu_string_cmp(const void *a, const void *b) {
+    const struct msgu_string *str_a = a;
+    const struct msgu_string *str_b = b;
+    int min = (str_a->count < str_b->count) ? str_a->count : str_b->count;
+    int cmp = memcmp(str_a->buf, str_b->buf, min);
+    if (cmp) {
+        return cmp;
+    }
+    else {
+        return str_a->count - str_b->count;
+    }
 }

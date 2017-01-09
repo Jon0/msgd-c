@@ -98,7 +98,7 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
         read = msgu_init_remote_read(in, &stat->fragment, &update->init_remote);
         break;
     case msgtype_add_share:
-        read = msgu_add_share_read(in, &stat->fragment, &update->sh_add);
+        read = msgu_share_file_read(in, &stat->fragment, &update->share_file);
         break;
     default:
         printf("unknown update %d\n", stat->header.type);
@@ -133,7 +133,7 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
         msgu_init_remote_write(out, f, &update->init_remote);
         break;
     case msgtype_add_share:
-        msgu_add_share_write(out, f, &update->sh_add);
+        msgu_share_file_write(out, f, &update->share_file);
         break;
     default:
         break;

@@ -14,6 +14,8 @@
  * either local-filesystems, local-processes or remote connections
  */
 struct msg_connection {
+    msgs_mutex_t         read_mutex;
+    msgs_mutex_t         write_mutex;
     struct msgs_socket   socket;
     struct msgu_channel  ch;
 };

@@ -34,12 +34,12 @@ int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, 
 }
 
 
-size_t msgu_add_share_size(struct msgu_add_share_update *u) {
+size_t msgu_share_file_size(struct msgu_share_file_update *u) {
     return msgu_string_size(&u->share_name);
 }
 
 
-int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u) {
     static msgu_frag_read_t msgu_add_share_read_fns[] = {
         msgu_string_read_frag,
     };
@@ -50,7 +50,7 @@ int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, str
 }
 
 
-int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u) {
+int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u) {
     static msgu_frag_write_t msgu_add_share_write_fns[] = {
         msgu_string_write_frag,
     };
@@ -61,14 +61,6 @@ int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, st
 }
 
 
-int msgu_add_share_layout(struct msgu_add_share_update *u, void **l, size_t count) {
-    if (count < 1) {
-        return 0;
-    }
-    l[0] = &u->share_name;
-}
-
-
 size_t msgu_update_size(int type, union msgu_any_update *u) {
     switch (type) {
     case msgtype_init_local:
@@ -76,7 +68,7 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
     case msgtype_init_remote:
         return msgu_init_remote_size(&u->init_remote);
     case msgtype_add_share:
-        return msgu_add_share_size(&u->sh_add);
+        return msgu_share_file_size(&u->share_file);
     default:
         return 0;
     }
@@ -92,7 +84,7 @@ void msgu_update_print(int type, union msgu_any_update *u) {
         printf("update: init remote\n");
         break;
     case msgtype_add_share:
-        printf("update: add share (%s)\n", u->sh_add.share_name.buf);
+        printf("update: add share (%s)\n", u->share_file.share_name.buf);
         break;
     default:
         printf("update: unknown\n");

@@ -70,9 +70,9 @@ void msgu_map_init(struct msgu_map *m, msgu_map_hash_t hash, msgu_map_cmp_t cmp,
 void msgu_map_alloc(struct msgu_map *m, size_t count);
 void msgu_map_free(struct msgu_map *m);
 hash_t msgu_map_id(struct msgu_map *m, int index);
-int msgu_map_insert(struct msgu_map *m, void *key, void *elem);
-int msgu_map_erase(struct msgu_map *m, void *key);
-void *msgu_map_get(struct msgu_map *m, void *key);
+int msgu_map_insert(struct msgu_map *m, const void *key, void *elem);
+int msgu_map_erase(struct msgu_map *m, const void *key);
+void *msgu_map_get(struct msgu_map *m, const void *key);
 
 
 /*

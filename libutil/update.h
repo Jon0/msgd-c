@@ -24,49 +24,19 @@ struct msgu_init_remote_update {
 
 
 /*
- * add / remove hosts
+ * add, remove and list shares
  */
-struct msgu_host_update {
-
-};
-
-
-/*
- * adds or removes local shares
- */
-struct msgu_add_share_update {
+struct msgu_share_file_update {
     struct msgu_string share_name;
 };
 
 
 /*
- * updates state of a local share
+ * operations requiring a path
  */
-struct msgu_share_update {
-    int share_id;
-    int operation;
-    int data;
-};
-
-
-struct msgu_add_peer_update {
-
-};
-
-
-/*
- *
- */
-struct msgu_local_update {
-    struct msgu_share_update shares;
-};
-
-
-/*
- *
- */
-struct msgu_remote_update {
-    struct msgu_share_update shares;
+struct msgu_share_path_update {
+    struct msgu_string share_name;
+    struct msgu_string file_name;
 };
 
 
@@ -81,8 +51,8 @@ struct msgu_broadcast_update {
 union msgu_any_update {
     struct msgu_init_local_update  init_local;
     struct msgu_init_remote_update init_remote;
-    struct msgu_add_share_update   sh_add;
-    struct msgu_share_update       share;
+    struct msgu_share_file_update  share_file;
+    struct msgu_share_path_update  share_path;
 };
 
 
@@ -99,9 +69,9 @@ int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, s
 int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u);
 
 
-size_t msgu_add_share_size(struct msgu_add_share_update *u);
-int msgu_add_share_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
-int msgu_add_share_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_add_share_update *u);
+size_t msgu_share_file_size(struct msgu_share_file_update *u);
+int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
+int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
 
 
 /*

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "hash.h"
 #include "stream.h"
 
 
@@ -26,6 +27,13 @@ ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, con
 
 int msgu_string_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str);
 int msgu_string_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str);
+
+
+/*
+ * hash functions for strings
+ */
+hash_t msgu_string_hash(const void *p);
+int msgu_string_cmp(const void *a, const void *b);
 
 
 struct msgu_string_array {

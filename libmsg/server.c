@@ -181,7 +181,7 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
         break;
     case msgtype_add_share:
         printf("updating: add share\n");
-        msgu_share_file(&serv->shares, &delta->update.sh_add.share_name);
+        msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
         break;
     }
     return 1;

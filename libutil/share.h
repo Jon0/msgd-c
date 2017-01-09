@@ -37,7 +37,7 @@ struct msgu_fs_operations {
  * to indicate uptime, availability
  */
 struct msgu_share_meta {
-    int name;
+    struct msgu_string name;
     int type;
     int label;
     int attributes;
@@ -99,7 +99,7 @@ struct msg_share_net {
 
 
 /*
- * map id to resources
+ * map share name strings to resources
  * for server side
  */
 struct msgu_share_map {
@@ -108,14 +108,17 @@ struct msgu_share_map {
     struct msg_share_file *files;
     size_t proc_shares;
     size_t file_shares;
-    size_t next_id;
 };
 
 
 void msgu_share_debug(struct msgu_share_map *set);
 int msgu_share_set_init(struct msgu_share_map *set);
-int msgu_share_proc(struct msgu_share_map *set);
-int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *path);
+int msgu_share_proc(struct msgu_share_map *set, const struct msgu_string *name);
+int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *name);
+
+
+int msgu_share_list(struct msgu_share_map *set, struct msgu_stream *out);
+int msgu_share_list_dir(struct msgu_share_map *set, struct msgu_stream *out);
 
 
 #endif
