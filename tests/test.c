@@ -37,7 +37,6 @@ void read_command(struct msg_client_state *ns) {
         msg_read_string(inbuf, sizeof(inbuf));
         len = strlen(inbuf);
         printf("writing %d (%lu bytes)\n", nodebuf, len);
-        msg_write(ns, nodebuf, -1, inbuf, len);
     }
     else {
         printf("cannot match %s\n", inbuf);

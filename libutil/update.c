@@ -71,11 +71,11 @@ int msgu_add_share_layout(struct msgu_add_share_update *u, void **l, size_t coun
 
 size_t msgu_update_size(int type, union msgu_any_update *u) {
     switch (type) {
-    case msg_type_init_local:
+    case msgtype_init_local:
         return msgu_init_local_size(&u->init_local);
-    case msg_type_init_remote:
+    case msgtype_init_remote:
         return msgu_init_remote_size(&u->init_remote);
-    case msg_type_add_share:
+    case msgtype_add_share:
         return msgu_add_share_size(&u->sh_add);
     default:
         return 0;
@@ -85,13 +85,13 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
 
 void msgu_update_print(int type, union msgu_any_update *u) {
     switch (type) {
-    case msg_type_init_local:
+    case msgtype_init_local:
         printf("update: init local\n");
         break;
-    case msg_type_init_remote:
+    case msgtype_init_remote:
         printf("update: init remote\n");
         break;
-    case msg_type_add_share:
+    case msgtype_add_share:
         printf("update: add share (%s)\n", u->sh_add.share_name.buf);
         break;
     default:
@@ -103,7 +103,9 @@ void msgu_update_print(int type, union msgu_any_update *u) {
 
 void msgu_update_free(int type, union msgu_any_update *u) {
     switch (type) {
-    case msg_type_add_share:
+    case msgtype_add_share:
+        break;
+    default:
         break;
     }
 }

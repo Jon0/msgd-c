@@ -75,8 +75,8 @@ int msg_init_local(struct msg_client_state *cs) {
     struct msgu_fragment f;
     f.progress = 0;
     if (cs->connected) {
-        msgu_update_print(msg_type_init_local, update);
-        int result = msgu_push_update(&cs->stream, &f, msg_type_init_local, update);
+        msgu_update_print(msgtype_init_local, update);
+        int result = msgu_push_update(&cs->stream, &f, msgtype_init_local, update);
         return 0;
     }
     else {
@@ -94,26 +94,14 @@ int msg_create_share(struct msg_client_state *cs, char *path) {
     struct msgu_fragment f;
     f.progress = 0;
     if (cs->connected) {
-        msgu_update_print(msg_type_add_share, update);
-        int result = msgu_push_update(&cs->stream, &f, msg_type_add_share, update);
+        msgu_update_print(msgtype_add_share, update);
+        int result = msgu_push_update(&cs->stream, &f, msgtype_add_share, update);
         return 0;
     }
     else {
         printf("no connection\n");
         return -1;
     }
-}
-
-
-size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count) {
-    if (cs->connected) {
-        msg_send_block(&cs->write_buf, nodeid, hdlid, buf, count);
-        printf("write length: %lu\n", cs->write_buf.size);
-    }
-    else {
-        printf("no connection\n");
-    }
-    return count;
 }
 
 

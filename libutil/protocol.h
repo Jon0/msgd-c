@@ -16,11 +16,11 @@ typedef int32_t msg_int_t;
  * messages to the server have this header
  */
 struct msgu_header {
-    enum msg_type_id type;
-    int32_t host_id;
-    int32_t network_id;
-    int32_t share_id;
-    int32_t size;
+    enum msgu_msgtype type;
+    int32_t           host_id;
+    int32_t           network_id;
+    int32_t           share_id;
+    int32_t           size;
 };
 
 
@@ -53,7 +53,7 @@ void msgu_stat_reset(struct msgu_read_status *stat);
  * take next message header from incoming stream
  */
 int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat);
-int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msg_type_id id, int32_t length);
+int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msgu_msgtype id, int32_t length);
 
 
 /*
@@ -75,7 +75,6 @@ void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count);
 /*
  * send and recieve objects
  */
-size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, size_t count);
 void msg_send_host(struct msg_host *h, struct msgu_stream *s);
 void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s);
 

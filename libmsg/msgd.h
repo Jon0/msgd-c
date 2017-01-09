@@ -64,13 +64,6 @@ int msg_create_share(struct msg_client_state *cs, char *path);
 
 
 /*
- * write data to node
- * hdlid is for nodes with distinct output paths
- */
-size_t msg_write(struct msg_client_state *cs, int nodeid, int hdlid, char *buf, size_t count);
-
-
-/*
  * poll new events from subscribed nodes
  * and updates to node structures
  */

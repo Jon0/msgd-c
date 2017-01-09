@@ -1,37 +1,9 @@
 #ifndef LIBUTIL_UPDATE_H
 #define LIBUTIL_UPDATE_H
 
+#include "msgtype.h"
 #include "stream.h"
 #include "string.h"
-
-
-/*
- * types of messages
- */
-enum msg_type_id {
-    msg_type_wait,
-    msg_type_error,
-    msg_type_init_local,
-    msg_type_init_remote,
-    msg_type_mount,
-    msg_type_server,
-    msg_type_client,
-    msg_type_peer_init,
-    msg_type_peer_update,
-    msg_type_peer_all,
-    msg_type_peer_one,
-    msg_type_share_proc,
-    msg_type_share_file,
-    msg_type_add_share,
-    msg_type_rm_share,
-    msg_type_publ,
-    msg_type_subs,
-    msg_type_avail,
-    msg_type_availp,
-    msg_type_avails,
-    msg_type_poll,
-    msg_type_data
-};
 
 
 /*

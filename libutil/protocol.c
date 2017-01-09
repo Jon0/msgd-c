@@ -59,7 +59,7 @@ int msgu_poll_header(struct msgu_stream *in, struct msgu_read_status *stat) {
 }
 
 
-int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msg_type_id id, int32_t length) {
+int msgu_push_header(struct msgu_stream *out, struct msgu_fragment *f, enum msgu_msgtype id, int32_t length) {
     struct msgu_header head;
     head.type = id;
     head.size = length;
@@ -91,13 +91,13 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
     // read message
     msgu_fragment_base_inc(&stat->fragment);
     switch (stat->header.type) {
-    case msg_type_init_local:
+    case msgtype_init_local:
         read = msgu_init_local_read(in, &stat->fragment, &update->init_local);
         break;
-    case msg_type_init_remote:
+    case msgtype_init_remote:
         read = msgu_init_remote_read(in, &stat->fragment, &update->init_remote);
         break;
-    case msg_type_add_share:
+    case msgtype_add_share:
         read = msgu_add_share_read(in, &stat->fragment, &update->sh_add);
         break;
     default:
@@ -126,13 +126,13 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
     msgu_push_header(out, f, update_type, update_size);
     msgu_fragment_base_inc(f);
     switch (update_type) {
-    case msg_type_init_local:
+    case msgtype_init_local:
         msgu_init_local_write(out, f, &update->init_local);
         break;
-    case msg_type_init_remote:
+    case msgtype_init_remote:
         msgu_init_remote_write(out, f, &update->init_remote);
         break;
-    case msg_type_add_share:
+    case msgtype_add_share:
         msgu_add_share_write(out, f, &update->sh_add);
         break;
     default:
@@ -145,7 +145,7 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
 // unused
 void msg_req_share(struct msgu_buffer *b, const char *path) {
     struct msgu_header head;
-    head.type = msg_type_share_file;
+    head.type = msgtype_share_file;
     head.share_id = -1;
     head.size = strlen(path);
     ep_buffer_insert(b, (char *) &head, sizeof(head));
@@ -155,7 +155,7 @@ void msg_req_share(struct msgu_buffer *b, const char *path) {
 
 void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h) {
     struct msgu_header head;
-    head.type = msg_type_peer_init;
+    head.type = msgtype_peer_init;
     head.share_id = -1;
     head.size = 32 + 256 + ep_share_set_size(&h->shares);
     msgu_stream_write(s, (char *) &head, sizeof(head));
@@ -165,7 +165,7 @@ void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h) {
 
 void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count) {
     struct msgu_header head;
-    head.type = msg_type_share_proc;
+    head.type = msgtype_share_proc;
     head.share_id = -1;
     head.size = count;
     msgu_stream_write(s, (char *) &head, sizeof(head));
@@ -173,22 +173,10 @@ void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count) {
 }
 
 
-size_t msg_send_block(struct msgu_buffer *buf, int share_id, int hdl, char *in, size_t count) {
-    struct msgu_header head;
-    head.type = msg_type_data;
-    head.share_id = share_id;
-    head.size = sizeof(share_id) + sizeof(hdl) + count;
-    ep_buffer_insert(buf, (char *) &head, sizeof(head));
-    ep_buffer_insert(buf, (char *) &share_id, sizeof(share_id));
-    ep_buffer_insert(buf, (char *) &hdl, sizeof(hdl));
-    ep_buffer_insert(buf, in, count);
-}
-
-
 void msg_send_host(struct msg_host *h, struct msgu_stream *s) {
     struct msgu_header head;
     size_t host_count = 1;
-    head.type = msg_type_peer_one;
+    head.type = msgtype_peer_one;
     head.size = sizeof(size_t);
     head.size += 32 + 256 + ep_share_set_size(&h->shares);
     printf("send %d bytes\n", head.size);
@@ -200,7 +188,7 @@ void msg_send_host(struct msg_host *h, struct msgu_stream *s) {
 
 void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s) {
     struct msgu_header head;
-    head.type = msg_type_peer_all;
+    head.type = msgtype_peer_all;
     head.size = sizeof(size_t);
     for (int i = 0; i < h->host_count; ++i) {
         head.size += 32 + 256 + ep_share_set_size(&h->ptr[i].shares);

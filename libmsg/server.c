@@ -173,13 +173,13 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
 
     // lock mutex and apply state changes
     switch (delta->update_type) {
-    case msg_type_init_local:
+    case msgtype_init_local:
         printf("updating: init local connection\n");
         break;
-    case msg_type_init_remote:
+    case msgtype_init_remote:
         printf("updating: init remote connection\n");
         break;
-    case msg_type_add_share:
+    case msgtype_add_share:
         printf("updating: add share\n");
         msgu_share_file(&serv->shares, &delta->update.sh_add.share_name);
         break;
