@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libsys/memory.h>
-
+#include "channel.h"
 #include "host.h"
 
 
@@ -109,4 +108,32 @@ struct msg_host *msg_host_match(struct msg_host_list *h, const char *hostname) {
         }
     }
     return NULL;
+}
+
+
+void msg_send_host(struct msg_host *h, struct msgu_stream *s) {
+    struct msgu_channel_header head;
+    size_t host_count = 1;
+    head.data_type = msgtype_peer_one;
+    head.size = sizeof(size_t);
+    head.size += 32 + 256 + ep_share_set_size(&h->shares);
+    printf("send %d bytes\n", head.size);
+    msgu_stream_write(s, (char *) &head, sizeof(struct msgu_channel_header));
+    msgu_stream_write(s, (char *) &host_count, sizeof(size_t));
+    msg_host_write(h, s);
+}
+
+
+void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s) {
+    struct msgu_channel_header head;
+    head.data_type = msgtype_peer_all;
+    head.size = sizeof(size_t);
+    for (int i = 0; i < h->host_count; ++i) {
+        head.size += 32 + 256 + ep_share_set_size(&h->ptr[i].shares);
+    }
+    msgu_stream_write(s, (char *) &head, sizeof(struct msgu_channel_header));
+    msgu_stream_write(s, (char *) &h->host_count, sizeof(size_t));
+    for (int i = 0; i < h->host_count; ++i) {
+        msg_host_write(&h->ptr[i], s);
+    }
 }

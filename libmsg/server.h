@@ -5,8 +5,8 @@
 #include <libutil/network.h>
 #include <libutil/protocol.h>
 #include <libutil/share.h>
+#include <libsys/channel.h>
 #include <libsys/file.h>
-#include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
 

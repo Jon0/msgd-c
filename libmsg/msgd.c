@@ -14,8 +14,8 @@ void msg_client_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_host *server = msg_client_host(cs);
     int read_size;
 
-
     // TODO queue events to be polled
+    printf("client recv message!\n");
 }
 
 
@@ -46,19 +46,6 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msg_host_list_init(&cs->hosts);
     msg_host_list_alloc(&cs->hosts, 32);
     return 0;
-}
-
-
-void msg_register_proc(struct msg_client_state *cs, const char *name, int mode) {
-    if (cs->connected) {
-
-        // send connect request
-        msg_req_proc_init(&cs->stream, name, strlen(name));
-        printf("sent msg length: %lu\n", cs->write_buf.size);
-    }
-    else {
-        printf("no connection\n");
-    }
 }
 
 

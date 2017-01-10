@@ -67,18 +67,14 @@ ssize_t msgu_stream_discard(struct msgu_stream *s, size_t count);
  * shows size and write progress
  */
 struct msgu_fragment {
-    size_t section_begin;
-    size_t known_size;
-    size_t progress;
-    int    complete;
-    int    base;
+    size_t index;
+    size_t count;
 };
 
 
 /*
  * fragment stream functions
  */
-typedef int (*msgu_frag_init_t)(struct msgu_stream *, struct msgu_fragment **);
 typedef int (*msgu_frag_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
 typedef int (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
 
@@ -86,6 +82,10 @@ typedef int (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, c
 /*
  *
  */
+void msgu_fragment_reset(struct msgu_fragment *f, size_t count);
+size_t msgu_fragment_progress(struct msgu_fragment *f);
+size_t msgu_fragment_advance(struct msgu_fragment *f, size_t count);
+int msgu_fragment_check(struct msgu_fragment *f, size_t count);
 void msgu_fragment_inc(struct msgu_fragment *f);
 void msgu_fragment_base_zero(struct msgu_fragment *f);
 void msgu_fragment_base_inc(struct msgu_fragment *f);
@@ -97,17 +97,24 @@ int msgu_fragment_read_check(struct msgu_fragment *f, size_t count);
 
 
 /*
+ * read and write fixed size types
+ */
+int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, size_t count);
+int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, void *obj, size_t count);
+
+
+/*
  * reads array of read functions object pointers
  */
-int msgu_read_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count);
-int msgu_write_many(struct msgu_stream *stream, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count);
+int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count);
+int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count);
 
 
 /*
  * read write basic types
  */
-int msgu_i32_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str);
-int msgu_i32_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *str);
+int msgu_i32_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *i);
+int msgu_i32_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *i);
 
 
 

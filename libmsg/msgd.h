@@ -2,7 +2,8 @@
 #define MSGD_H
 
 #include <libutil/buffer.h>
-#include <libutil/protocol.h>
+#include <libutil/channel.h>
+#include <libutil/host.h>
 #include <libsys/endpoint.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
@@ -46,14 +47,6 @@ struct msg_client_state {
 
 struct msg_host *msg_client_host(struct msg_client_state *cs);
 int msg_connect(struct msg_client_state *cs, struct msgu_address *addr);
-
-
-/*
- * a process connects to the system deamon
- * this should occur after connecting
- */
-void msg_register_proc(struct msg_client_state *cs, const char *name, int mode);
-void msg_free_proc(struct msg_client_state *cs);
 
 
 /*
