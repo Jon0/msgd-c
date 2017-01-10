@@ -17,6 +17,9 @@ struct msgu_channel {
     struct msgu_read_status stat;
     int                     update_type;
     union msgu_any_update   update;
+    struct msgu_fragment    write_stat;
+    int                     write_update_type;
+    union msgu_any_update   write_update;
 };
 
 
@@ -35,14 +38,24 @@ int msgu_channel_is_closed(struct msgu_channel *c);
 
 /*
  * return 1 if new updates are ready
+ * move_update can then be called
  */
 int msgu_channel_read(struct msgu_channel *c);
+
+
+int msgu_channel_write(struct msgu_channel *c);
 
 
 /*
  * move update to accessable location
  */
 int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msgu_any_update *update);
+
+
+/*
+ * return 1 if completed
+ */
+int msgu_channel_update_send(struct msgu_channel *c, int update_type, union msgu_any_update *update);
 
 
 #endif

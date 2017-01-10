@@ -67,7 +67,6 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
  * request types
  * unused?
  */
-void msg_req_share(struct msgu_buffer *b, const char *path);
 void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h);
 void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count);
 

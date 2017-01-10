@@ -11,7 +11,6 @@ typedef int32_t array_id_t;
 struct msgu_array {
     char *data;
     size_t esize;
-    size_t count;
     size_t allocated;
 };
 

@@ -42,6 +42,13 @@ int msgu_channel_read(struct msgu_channel *c) {
 }
 
 
+int msgu_channel_write(struct msgu_channel *c) {
+    // check update is ready to be written
+    // free update when completed
+    return msgu_push_update(&c->stream, &c->write_stat, c->write_update_type, &c->write_update);
+}
+
+
 int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msgu_any_update *update) {
     if (c->update_type > 0) {
         memcpy(update_type, &c->update_type, sizeof(int));
@@ -53,4 +60,12 @@ int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msg
     else {
         return 0;
     }
+}
+
+
+int msgu_channel_update_send(struct msgu_channel *c, int update_type, union msgu_any_update *update) {
+    c->write_update_type = update_type;
+    c->write_update = *update;
+    c->write_stat.progress = 0;
+    return 1;
 }

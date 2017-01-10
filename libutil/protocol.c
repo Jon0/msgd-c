@@ -97,7 +97,7 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_read_status *stat, unio
     case msgtype_init_remote:
         read = msgu_init_remote_read(in, &stat->fragment, &update->init_remote);
         break;
-    case msgtype_add_share:
+    case msgtype_add_share_file:
         read = msgu_share_file_read(in, &stat->fragment, &update->share_file);
         break;
     default:
@@ -132,7 +132,7 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
     case msgtype_init_remote:
         msgu_init_remote_write(out, f, &update->init_remote);
         break;
-    case msgtype_add_share:
+    case msgtype_add_share_file:
         msgu_share_file_write(out, f, &update->share_file);
         break;
     default:
@@ -143,16 +143,6 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int updat
 
 
 // unused
-void msg_req_share(struct msgu_buffer *b, const char *path) {
-    struct msgu_header head;
-    head.type = msgtype_share_file;
-    head.share_id = -1;
-    head.size = strlen(path);
-    ep_buffer_insert(b, (char *) &head, sizeof(head));
-    ep_buffer_insert(b, path, head.size);
-}
-
-
 void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h) {
     struct msgu_header head;
     head.type = msgtype_peer_init;
@@ -165,7 +155,7 @@ void msg_req_peer_init(struct msgu_stream *s, struct msg_host *h) {
 
 void msg_req_proc_init(struct msgu_stream *s, const char *msg, size_t count) {
     struct msgu_header head;
-    head.type = msgtype_share_proc;
+    head.type = msgtype_add_share_proc;
     head.share_id = -1;
     head.size = count;
     msgu_stream_write(s, (char *) &head, sizeof(head));

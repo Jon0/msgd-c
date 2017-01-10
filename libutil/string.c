@@ -3,6 +3,38 @@
 #include "string.h"
 
 
+void msgu_list_init(struct msgu_list *list, size_t elem_size) {
+    msgu_array_init(&list->data, elem_size);
+    list->count = 0;
+}
+
+
+void msgu_list_alloc(struct msgu_list *list, size_t max) {
+    msgu_array_alloc(&list->data, max);
+}
+
+
+void msgu_list_free(struct msgu_list *list) {
+    msgu_array_free(&list->data);
+    list->count = 0;
+}
+
+
+size_t msgu_list_size(struct msgu_list *list) {
+    return sizeof(list->count) + (list->count * list->data.esize);
+}
+
+
+int msgu_list_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_list *list) {
+    return 0;
+}
+
+
+int msgu_list_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_list *list) {
+    return 0;
+}
+
+
 void msgu_string_init(struct msgu_string *str) {
     str->buf = NULL;
     str->count = 0;
@@ -20,7 +52,7 @@ size_t msgu_string_size(struct msgu_string *str) {
 }
 
 
-ssize_t msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_string *str) {
+int msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_string *str) {
     ssize_t read_size = 0;
 
     if (f->progress < sizeof(str->count)) {
@@ -58,7 +90,7 @@ ssize_t msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struc
 }
 
 
-ssize_t msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str) {
+int msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str) {
     ssize_t write_size = 0;
     f->known_size = sizeof(str->count) + str->count;
     if (f->progress < sizeof(str->count)) {

@@ -5,6 +5,7 @@
 #include <libutil/network.h>
 #include <libutil/protocol.h>
 #include <libutil/share.h>
+#include <libsys/file.h>
 #include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
@@ -18,6 +19,25 @@ struct msg_connection {
     msgs_mutex_t         write_mutex;
     struct msgs_socket   socket;
     struct msgu_channel  ch;
+};
+
+
+/*
+ * modifications applied to server state
+ */
+struct msg_delta {
+    int                     source_id;
+    struct msg_connection  *source;
+    int                     update_type;
+    union msgu_any_update   update;
+};
+
+
+/*
+ * result of applying delta
+ */
+struct msg_status {
+    int error;
 };
 
 
@@ -43,25 +63,6 @@ struct msg_server {
 
     // move into connections?
     struct msg_host_list hosts;
-};
-
-
-/*
- * modifications applied to server state
- */
-struct msg_delta {
-    int                     source_id;
-    struct msg_connection  *source;
-    int                     update_type;
-    union msgu_any_update   update;
-};
-
-
-/*
- * result of applying delta
- */
-struct msg_status {
-    int error;
 };
 
 

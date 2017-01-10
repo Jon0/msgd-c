@@ -17,9 +17,9 @@ struct msgu_node {
 
 
 struct msgu_node_list {
-    struct msgu_node *nodes;
-    size_t            node_count;
     size_t            allocated_nodes;
+    size_t            node_count;
+    struct msgu_node *nodes;
 };
 
 

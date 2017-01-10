@@ -57,9 +57,16 @@ void msg_free_proc(struct msg_client_state *cs);
 
 
 /*
+ * sends any update type
+ */
+int msg_send_message(struct msg_client_state *cs, int type, union msgu_any_update *u);
+
+
+/*
  * requests to server process
  */
 int msg_init_local(struct msg_client_state *cs);
+int msg_list_shares(struct msg_client_state *cs);
 int msg_create_share(struct msg_client_state *cs, char *path);
 
 

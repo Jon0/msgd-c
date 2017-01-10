@@ -4,6 +4,21 @@
 #include "update.h"
 
 
+size_t msgu_empty_size(struct msgu_empty_update *u) {
+    return 0;
+}
+
+
+int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u) {
+    return 0;
+}
+
+
+int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u) {
+    return 0;
+}
+
+
 size_t msgu_init_local_size(struct msgu_init_local_update *u) {
     return 0;
 }
@@ -67,7 +82,7 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
         return msgu_init_local_size(&u->init_local);
     case msgtype_init_remote:
         return msgu_init_remote_size(&u->init_remote);
-    case msgtype_add_share:
+    case msgtype_add_share_file:
         return msgu_share_file_size(&u->share_file);
     default:
         return 0;
@@ -76,18 +91,13 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
 
 
 void msgu_update_print(int type, union msgu_any_update *u) {
+    printf("update: %s\n", msgu_msgtype_str(type));
     switch (type) {
-    case msgtype_init_local:
-        printf("update: init local\n");
+    case msgtype_add_share_file:
+        printf("args: %s\n", u->share_file.share_name.buf);
         break;
-    case msgtype_init_remote:
-        printf("update: init remote\n");
-        break;
-    case msgtype_add_share:
-        printf("update: add share (%s)\n", u->share_file.share_name.buf);
-        break;
-    default:
-        printf("update: unknown\n");
+    case msgtype_rm_share:
+        printf("args: %s\n", u->share_file.share_name.buf);
         break;
     }
 }
@@ -95,7 +105,7 @@ void msgu_update_print(int type, union msgu_any_update *u) {
 
 void msgu_update_free(int type, union msgu_any_update *u) {
     switch (type) {
-    case msgtype_add_share:
+    case msgtype_add_share_file:
         break;
     default:
         break;

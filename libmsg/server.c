@@ -179,7 +179,7 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
     case msgtype_init_remote:
         printf("updating: init remote connection\n");
         break;
-    case msgtype_add_share:
+    case msgtype_add_share_file:
         printf("updating: add share\n");
         msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
         break;
@@ -195,5 +195,14 @@ int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, co
 
 
 int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
+    union msgu_any_update update;
+    switch (delta->update_type) {
+    case msgtype_list_shares:
+        printf("reply: list shares\n");
+        msgs_node_list_from_path(&update.node_list.nodes, ".");
+        msgu_channel_update_send(&delta->source->ch, msgtype_return_node_list, &update);
+        msgu_channel_write(&delta->source->ch);
+        break;
+    }
     return 1;
 }

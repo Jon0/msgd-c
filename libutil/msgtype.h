@@ -15,36 +15,44 @@ enum msgu_msgtype {
     msgtype_init_local,
     msgtype_init_remote,
 
-    msgtype_mount,
-    msgtype_server,
-    msgtype_client,
+    /*
+     * network controls
+     */
     msgtype_peer_init,
     msgtype_peer_update,
     msgtype_peer_all,
     msgtype_peer_one,
-    msgtype_share_proc,
-    msgtype_share_file,
+
+    /*
+     * mount controls
+     */
+    msgtype_mount,
+    msgtype_unmount,
 
     /*
      * share controls
      */
-    msgtype_get_shares,
-    msgtype_add_share,
+    msgtype_list_shares,
+    msgtype_add_share_proc,
+    msgtype_add_share_file,
     msgtype_rm_share,
 
     /*
      * operations on single files
      */
-    msgtype_file_read,
-    msgtype_file_write,
+    msgtype_file_stream_read,
+    msgtype_file_stream_write,
+    msgtype_file_block_read,
+    msgtype_file_block_write,
 
     /*
-     * operations filesystems
+     * operations on filesystems
      */
     msgtype_path_list,
-    msgtype_path_read,
-    msgtype_path_write,
-
+    msgtype_path_stream_read,
+    msgtype_path_stream_write,
+    msgtype_path_block_read,
+    msgtype_path_block_write,
 
     /*
      * return types

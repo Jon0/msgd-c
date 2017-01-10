@@ -7,7 +7,17 @@
 
 
 void print_usage() {
-    printf("msgcmd <command>\n");
+    printf("msgcmd <command> <path>\n");
+}
+
+
+void run_command(struct msg_client_state *nstate, char *cmd, int args, char *argv[]) {
+    if (strcmp(cmd, "share") == 0) {
+        msg_create_share(nstate, argv[0]);
+    }
+    else if (strcmp(cmd, "list") == 0) {
+        msg_list_shares(nstate);
+    }
 }
 
 
@@ -15,7 +25,7 @@ int main(int argc, char *argv[]) {
     struct msg_client_state nstate;
     int err;
 
-    if (argc != 2) {
+    if (argc < 3) {
         print_usage();
         return 0;
     }
@@ -33,7 +43,7 @@ int main(int argc, char *argv[]) {
     msg_init_local(&nstate);
 
     // send command
-    msg_create_share(&nstate, argv[1]);
+    run_command(&nstate, argv[1], argc - 2, &argv[2]);
 
     // cleanup
     msg_free_proc(&nstate);

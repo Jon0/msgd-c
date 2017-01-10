@@ -16,7 +16,7 @@ void msgu_queue_alloc(struct msgu_queue *q, size_t max) {
 
 
 size_t msgu_queue_size(struct msgu_queue *q) {
-    return q->arr.count;
+    return q->size;
 }
 
 

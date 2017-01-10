@@ -2,8 +2,15 @@
 #define LIBUTIL_UPDATE_H
 
 #include "msgtype.h"
+#include "node.h"
 #include "stream.h"
 #include "string.h"
+
+
+/*
+ * updates with no arguments
+ */
+struct msgu_empty_update {};
 
 
 /*
@@ -41,6 +48,14 @@ struct msgu_share_path_update {
 
 
 /*
+ * a list of nodes
+ */
+struct msgu_node_list_update {
+    struct msgu_node_list nodes;
+};
+
+
+/*
  * events sent to remotes of changes
  */
 struct msgu_broadcast_update {
@@ -49,16 +64,25 @@ struct msgu_broadcast_update {
 
 
 union msgu_any_update {
+    struct msgu_empty_update       empty;
     struct msgu_init_local_update  init_local;
     struct msgu_init_remote_update init_remote;
     struct msgu_share_file_update  share_file;
     struct msgu_share_path_update  share_path;
+    struct msgu_node_list_update   node_list;
 };
 
 
 /*
  * functions for each update type
  */
+size_t msgu_empty_size(struct msgu_empty_update *u);
+int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u);
+int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u);
+
+
+
+
 size_t msgu_init_local_size(struct msgu_init_local_update *u);
 int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
 int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);

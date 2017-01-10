@@ -1,7 +1,15 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include <libutil/node.h>
 #include <libutil/tree.h>
+
+
+/*
+ * fill using path
+ */
+void msgs_node_list_from_path(struct msgu_node_list *list, const char *path);
+
 
 
 /*
