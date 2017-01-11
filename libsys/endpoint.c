@@ -193,6 +193,20 @@ int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr) {
 }
 
 
+int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s) {
+    s->addr.len = 32;
+    s->fd = accept(acc->fd, (struct sockaddr *) &s->addr.data, (socklen_t *) &s->addr.len);
+    if (s->fd == -1) {
+        if (errno != EAGAIN) {
+            perror("accept");
+        }
+        return 0;
+    }
+    msgs_set_non_blocking(s->fd);
+    return s->fd;
+}
+
+
 int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a) {
     s->addr = *a;
     struct sockaddr *sa = (struct sockaddr *) &s->addr.data;
@@ -214,17 +228,8 @@ int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a) {
 }
 
 
-int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s) {
-    s->addr.len = 32;
-    s->fd = accept(acc->fd, (struct sockaddr *) &s->addr.data, (socklen_t *) &s->addr.len);
-    if (s->fd == -1) {
-        if (errno != EAGAIN) {
-            perror("accept");
-        }
-        return 0;
-    }
-    msgs_set_non_blocking(s->fd);
-    return s->fd;
+int msgs_close_socket(struct msgs_socket *s) {
+    return close(s->fd);
 }
 
 

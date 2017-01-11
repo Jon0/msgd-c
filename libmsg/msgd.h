@@ -47,7 +47,7 @@ struct msg_client_state {
 
 struct msg_host *msg_client_host(struct msg_client_state *cs);
 int msg_connect(struct msg_client_state *cs, struct msgu_address *addr);
-
+int msg_disconnect(struct msg_client_state *cs);
 
 /*
  * sends any update type

@@ -5,7 +5,7 @@ set(TEST_NAME "msgd-test")
 
 # client files
 file(GLOB TEST_FILES
-	"test.c"
+	"*.c"
 )
 
 

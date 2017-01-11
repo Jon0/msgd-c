@@ -49,17 +49,22 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
 }
 
 
-void msg_free_proc(struct msg_client_state *cs) {
+int msg_disconnect(struct msg_client_state *cs) {
+    cs->connected = 0;
+    msgs_close_socket(&cs->server);
     msgs_table_free(&cs->tb);
 }
 
 
 int msg_send_message(struct msg_client_state *cs, int type, union msgu_any_update *u) {
+    struct msgu_channel_header head;
+    struct msgu_fragment f[8];
     if (cs->connected) {
-        struct msgu_fragment f;
-        f.progress = 0;
+        head.data_type = type;
+        head.size = msgu_update_size(type, u);
+        msgu_fragment_reset(f, 8);
         msgu_update_print(type, u);
-        return msgu_push_update(&cs->stream, &f, type, u);
+        return msgu_push_update(&cs->stream, f, &head, u);
     }
     else {
         printf("no connection\n");

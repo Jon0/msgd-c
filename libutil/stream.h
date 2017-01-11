@@ -85,14 +85,22 @@ typedef int (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, c
 void msgu_fragment_reset(struct msgu_fragment *f, size_t count);
 size_t msgu_fragment_progress(struct msgu_fragment *f);
 size_t msgu_fragment_advance(struct msgu_fragment *f, size_t count);
-int msgu_fragment_check(struct msgu_fragment *f, size_t count);
 void msgu_fragment_inc(struct msgu_fragment *f);
-void msgu_fragment_base_zero(struct msgu_fragment *f);
-void msgu_fragment_base_inc(struct msgu_fragment *f);
+
+
+/*
+ * return 1 for no errors
+ */
+int msgu_fragment_check(struct msgu_fragment *f, int result);
 
 /*
  * check at least count bytes have been transferred
  */
+int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count);
+
+
+
+
 int msgu_fragment_read_check(struct msgu_fragment *f, size_t count);
 
 
@@ -100,7 +108,7 @@ int msgu_fragment_read_check(struct msgu_fragment *f, size_t count);
  * read and write fixed size types
  */
 int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, size_t count);
-int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, void *obj, size_t count);
+int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const void *obj, size_t count);
 
 
 /*

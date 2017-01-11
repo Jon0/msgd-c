@@ -65,13 +65,9 @@ void msgu_fragment_inc(struct msgu_fragment *f) {
 
 
 int msgu_fragment_check(struct msgu_fragment *f, int result) {
-    if (f->count >= result) {
-        // message is completely read
-        return f->count;
-    }
-    else if (f->count > 0) {
-        // socket is still open but waiting
-        return 0;
+    if (result > 0) {
+        msgu_fragment_inc(f);
+        return 1;
     }
     else {
         return result;
@@ -79,18 +75,18 @@ int msgu_fragment_check(struct msgu_fragment *f, int result) {
 }
 
 
-void msgu_fragment_base_zero(struct msgu_fragment *f) {
-    f->index = 0;
-}
-
-
-void msgu_fragment_base_inc(struct msgu_fragment *f) {
-    f->index += 1;
-}
-
-
-int msgu_fragment_read_check(struct msgu_fragment *f, size_t count) {
-    return f->count >= count;
+int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count) {
+    if (f->count >= count) {
+        // message is completely read
+        return 1;
+    }
+    else if (result > 0) {
+        // socket is still open but waiting
+        return 0;
+    }
+    else {
+        return result;
+    }
 }
 
 
@@ -101,46 +97,26 @@ int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, 
     if (remain == 0) {
         return 1;
     }
-    ssize_t rs = msgu_stream_read(in, buf, remain);
-    if (rs > 0) {
-        msgu_fragment_advance(f, rs);
+    int read = msgu_stream_read(in, buf, remain);
+    if (read > 0) {
+        msgu_fragment_advance(f, read);
     }
-    else {
-        return rs;
-    }
-
-    // check if read has completed
-    if (f->count == count) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    return msgu_fragment_complete(f, read, count);
 }
 
 
-int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, void *obj, size_t count) {
+int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const void *obj, size_t count) {
     char *buf = (char *) obj;
     size_t begin = msgu_fragment_progress(f);
     size_t remain = count - begin;
     if (remain == 0) {
         return 1;
     }
-    ssize_t ws = msgu_stream_write(out, &buf[begin], remain);
+    int ws = msgu_stream_write(out, &buf[begin], remain);
     if (ws > 0) {
         msgu_fragment_advance(f, ws);
     }
-    else {
-        return ws;
-    }
-
-    // check if write has completed
-    if (f->count == count) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    return msgu_fragment_complete(f, ws, count);
 }
 
 

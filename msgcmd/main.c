@@ -46,6 +46,6 @@ int main(int argc, char *argv[]) {
     run_command(&nstate, argv[1], argc - 2, &argv[2]);
 
     // cleanup
-    msg_free_proc(&nstate);
+    msg_disconnect(&nstate);
     return 0;
 }

@@ -132,7 +132,6 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     struct msg_connection *conn = msg_server_connection(serv, cid);
 
     // request table of known addresses
-    msg_req_peer_init(&conn->ch.stream, &serv->hosts.ptr[0]);
     return cid;
 }
 

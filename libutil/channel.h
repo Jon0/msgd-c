@@ -48,6 +48,7 @@ struct msgu_channel {
 void msgu_channel_init(struct msgu_channel *c, msgu_stream_id_t id, struct msgu_stream_fn *fn);
 int msgu_channel_is_local(struct msgu_channel *c);
 int msgu_channel_is_closed(struct msgu_channel *c);
+int msgu_channel_result(struct msgu_channel *c);
 
 
 /*
@@ -73,8 +74,8 @@ int msgu_channel_update_send(struct msgu_channel *c, int update_type, union msgu
 /*
  * read update, return type of update or 0 for incomplete read, and -1 for errors
  */
-int msgu_poll_update(struct msgu_stream *in, struct msgu_fragment *f, int data_type, union msgu_any_update *data, size_t data_size);
-int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, int data_type, union msgu_any_update *data, size_t data_size);
+int msgu_poll_update(struct msgu_stream *in, struct msgu_fragment *f, struct msgu_channel_header *h, union msgu_any_update *data);
+int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, struct msgu_channel_header *h, union msgu_any_update *data);
 
 
 #endif
