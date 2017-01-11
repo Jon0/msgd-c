@@ -127,12 +127,12 @@ int ep_tree_read(struct ep_tree *t, struct msgu_buffer *b, size_t offset) {
 
 void ep_tree_write(struct ep_tree *t, struct msgu_buffer *b) {
     // write count first
-    ep_buffer_insert(b, (char *) &t->count, sizeof(size_t));
+    msgu_buffer_write(b, (char *) &t->count, sizeof(size_t));
 
     // write each link
     for (int i = 0; i < t->count; ++i) {
-        ep_buffer_insert(b, (char *) &t->links[i], sizeof(struct ep_link));
-        ep_buffer_insert(b, &t->elems[i * t->elem_size], t->elem_size);
+        msgu_buffer_write(b, (char *) &t->links[i], sizeof(struct ep_link));
+        msgu_buffer_write(b, &t->elems[i * t->elem_size], t->elem_size);
     }
 }
 

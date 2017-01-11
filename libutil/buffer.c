@@ -19,6 +19,40 @@ void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count) {
 }
 
 
+ssize_t msgu_buffer_read(struct msgu_buffer *b, char *outbuf, size_t count) {
+    ssize_t s = ep_buffer_peek(b, outbuf, 0, count);
+    ep_buffer_release(b, s);
+    return s;
+}
+
+
+ssize_t msgu_buffer_write(struct msgu_buffer *b, const char *inbuf, size_t count) {
+    size_t end = b->begin + b->size;
+
+    // check if insert will exceed capacity
+    if (count > (b->avail - b->size)) {
+        count = b->avail - b->size;
+    }
+
+    if (end < b->avail) {
+        char *back = &b->ptr[end];
+        size_t cs = b->avail - end;
+        if (count > cs) {
+            memcpy(back, inbuf, cs);
+            memcpy(b->ptr, &inbuf[cs], count - cs);
+        }
+        else {
+            memcpy(back, inbuf, count);
+        }
+    }
+    else {
+        char *back = &b->ptr[end - b->avail];
+        memcpy(back, inbuf, count);
+    }
+    b->size += count;
+    return count;
+}
+
 void ep_buffer_wrap(struct msgu_buffer *b, char *buf, size_t count) {
     b->ptr = buf;
     b->avail = count;
@@ -75,34 +109,6 @@ size_t ep_buffer_copy(struct msgu_buffer *outbuf, struct msgu_buffer *inbuf, siz
 }
 
 
-size_t ep_buffer_insert(struct msgu_buffer *b, const char *inbuf, size_t count) {
-    size_t end = b->begin + b->size;
-
-    // check if insert will exceed capacity
-    if (count > (b->avail - b->size)) {
-        count = b->avail - b->size;
-    }
-
-    if (end < b->avail) {
-        char *back = &b->ptr[end];
-        size_t cs = b->avail - end;
-        if (count > cs) {
-            memcpy(back, inbuf, cs);
-            memcpy(b->ptr, &inbuf[cs], count - cs);
-        }
-        else {
-            memcpy(back, inbuf, count);
-        }
-    }
-    else {
-        char *back = &b->ptr[end - b->avail];
-        memcpy(back, inbuf, count);
-    }
-    b->size += count;
-    return count;
-}
-
-
 size_t ep_buffer_peek(struct msgu_buffer *b, char *outbuf, size_t offset, size_t count) {
     size_t begin = b->begin + offset;
     size_t end = b->begin + b->size;
@@ -131,13 +137,6 @@ size_t ep_buffer_peek(struct msgu_buffer *b, char *outbuf, size_t offset, size_t
         memcpy(outbuf, data, count);
     }
     return count;
-}
-
-
-size_t ep_buffer_erase(struct msgu_buffer *b, char *outbuf, size_t count) {
-    size_t s = ep_buffer_peek(b, outbuf, 0, count);
-    ep_buffer_release(b, s);
-    return s;
 }
 
 

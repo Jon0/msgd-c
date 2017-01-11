@@ -45,3 +45,23 @@ size_t msgu_queue_push(struct msgu_queue *q, void *e, size_t count) {
     q->size += set_count;
     return set_count;
 }
+
+
+int msgu_queue_frag_read(struct msgu_stream *src, struct msgu_fragment *f, void *q) {
+
+}
+
+
+int msgu_queue_frag_write(struct msgu_stream *dest, struct msgu_fragment *f, const void *q) {
+
+}
+
+
+hash_t msgu_queue_map_hash(const void *q) {
+
+}
+
+
+int msgu_queue_map_cmp(const void *a, const void *b) {
+    
+}

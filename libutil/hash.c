@@ -9,8 +9,8 @@ hash_t msgu_int_hash(const void *p) {
 
 
 int msgu_int_cmp(const void *a, const void *b) {
-    int *ia = a;
-    int *ib = b;
+    const int *ia = a;
+    const int *ib = b;
     return (*ia < *ib) ? -1 : (*ia > *ib);
 }
 
@@ -21,8 +21,8 @@ hash_t msgu_uint32_hash(const void *p) {
 
 
 int msgu_uint32_cmp(const void *a, const void *b) {
-    uint32_t *ia = a;
-    uint32_t *ib = b;
+    const uint32_t *ia = a;
+    const uint32_t *ib = b;
     return (*ia < *ib) ? -1 : (*ia > *ib);
 }
 

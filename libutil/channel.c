@@ -50,16 +50,10 @@ int msgu_channel_read(struct msgu_channel *c) {
         }
     }
 
-    if (c->read.stat[0].index == 2) {
-        return 1;
-    }
-    else if (result == -1) {
+    if (result == msgu_stream_remote_closed) {
         c->mode = 0;
-        return 0;
     }
-    else {
-        return 0;
-    }
+    return (result > -2);
 }
 
 
@@ -86,25 +80,18 @@ int msgu_channel_write(struct msgu_channel *c) {
     }
 
     // free update when completed
-    if (c->write.stat[0].index == 2) {
-        return 1;
-    }
-    else if (result == -1) {
+    if (result == msgu_stream_remote_closed) {
         c->mode = 0;
-        return 0;
     }
-    else {
-        return 0;
-    }
+    return (result > -2);
 }
 
 
 int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msgu_any_update *update) {
-    if (c->read.head.data_type > 0) {
+    if (c->read.stat[0].index == 2) {
         memcpy(update_type, &c->read.head.data_type, sizeof(int));
         memcpy(update, &c->read.data, sizeof(union msgu_any_update));
         msgu_fragment_reset(c->read.stat, MSGU_FRAGMENT_MAX);
-        c->read.head.data_type = 0;
         return 1;
     }
     else {
@@ -136,7 +123,7 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_fragment *f, struct msg
         break;
     default:
         printf("unknown update %d\n", h->data_type);
-        read = -3;
+        read = msgu_stream_format_error;
         break;
     }
     return msgu_fragment_complete(f, read, h->size);
@@ -157,7 +144,7 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, struct ms
         break;
     default:
         printf("unknown update %d\n", h->data_type);
-        written = -3;
+        written = msgu_stream_format_error;
         break;
     }
     return msgu_fragment_complete(f, written, h->size);

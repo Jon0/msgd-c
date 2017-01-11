@@ -39,7 +39,7 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     // open socket to server
     msgs_open_socket(&cs->server, addr);
     cs->server_id = msgs_poll_socket(&cs->tb, &cs->server);
-    msgu_stream_init(&cs->stream, cs->server.fd, &msgs_socket_fn);
+    msgu_stream_init(&cs->stream, (msgu_stream_id_t) cs->server.fd, &msgs_socket_fn);
     cs->connected = 1;
 
     // init host memory

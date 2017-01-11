@@ -87,10 +87,30 @@ size_t msgu_array_move(struct msgu_array *a, size_t dest, size_t src, size_t cou
 
 
 int msgu_array_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_array *array, size_t start, size_t count) {
-    return 0;
+    for (int i = f->index; i < count; ++i) {
+        size_t arr_index = (start + i) % array->allocated;
+        int result = array->fns->read(src, &f[1], &array->data[array->esize * arr_index]);
+        if (result > 0) {
+            msgu_fragment_inc(f);
+        }
+        else {
+            return result;
+        }
+    }
+    return 1;
 }
 
 
 int msgu_array_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_array *array, size_t start, size_t count) {
-    return 0;
+    for (int i = f->index; i < count; ++i) {
+        size_t arr_index = (start + i) % array->allocated;
+        int result = array->fns->write(dest, &f[1], &array->data[array->esize * arr_index]);
+        if (result > 0) {
+            msgu_fragment_inc(f);
+        }
+        else {
+            return result;
+        }
+    }
+    return 1;
 }

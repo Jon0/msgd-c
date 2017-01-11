@@ -7,7 +7,7 @@
 
 
 /*
- * a continuous sequence of elements
+ * a continuous sequence of bytes
  * forming either an array or queue
  * implemented using a ring buffer
  */
@@ -20,26 +20,23 @@ struct msgu_buffer {
 };
 
 
-typedef size_t (*ep_buffer_read_t)(struct msgu_buffer *, size_t, void *);
-typedef size_t (*ep_buffer_write_t)(struct msgu_buffer *, void *);
-
-
-/*
- * many blocks may refer to a single buffer
- */
-struct msgu_block {
-    char *first;
-    char *second;
-    size_t first_count;
-    size_t second_count;
-};
-
-
 /*
  * give the buffer some memory
  */
 void msgu_buffer_init_default(struct msgu_buffer *b);
 void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count);
+
+
+/*
+ * take bytes from the start of the buffer, and erase from buffer
+ */
+ssize_t msgu_buffer_read(struct msgu_buffer *b, char *outbuf, size_t count);
+
+
+/*
+ * push data into the buffer
+ */
+ssize_t msgu_buffer_write(struct msgu_buffer *b, const char *inbuf, size_t count);
 
 
 /*
@@ -71,22 +68,11 @@ void ep_buffer_clear(struct msgu_buffer *b);
  */
 size_t ep_buffer_copy(struct msgu_buffer *outbuf, struct msgu_buffer *inbuf, size_t start);
 
-/*
- * push data into the buffer
- */
-size_t ep_buffer_insert(struct msgu_buffer *b, const char *inbuf, size_t count);
-
 
 /*
  * take bytes from the start of the buffer, but do not erase
  */
 size_t ep_buffer_peek(struct msgu_buffer *b, char *outbuf, size_t offset, size_t count);
-
-
-/*
- * take bytes from the start of the buffer, and erase from buffer
- */
-size_t ep_buffer_erase(struct msgu_buffer *b, char *outbuf, size_t count);
 
 
 /*

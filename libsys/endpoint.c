@@ -12,21 +12,25 @@
 
 
 ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
-    ssize_t e = read(id, buf, count);
+    if (count == 0) {
+        printf("read: count = 0\n");
+        return 0;
+    }
+    ssize_t e = read(id.fd, buf, count);
     printf("read: %d\n", e);
     if (e == -1) {
         int err = errno;
         if ((err == EAGAIN) || (err == EWOULDBLOCK)) {
-            return 0;
+            return msgu_stream_waiting;
         }
         else {
             perror("read");
-            return -2;
+            return msgu_stream_operation_error;
         }
     }
     else if (e == 0) {
         printf("read: remote closed socket\n");
-        return -1;
+        return msgu_stream_remote_closed;
     }
     else {
         return e;
@@ -35,16 +39,20 @@ ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
 
 
 ssize_t msgs_socket_write_fn(msgu_stream_id_t id, const void *buf, size_t count) {
-    ssize_t e = write(id, buf, count);
+    if (count == 0) {
+        printf("write: count = 0\n");
+        return 0;
+    }
+    ssize_t e = write(id.fd, buf, count);
     printf("write: %d\n", e);
     if (e == -1) {
         int err = errno;
         if ((err == EAGAIN) || (err == EWOULDBLOCK)) {
-            return 0;
+            return msgu_stream_waiting;
         }
         else {
             perror("write");
-            return -2;
+            return msgu_stream_operation_error;
         }
     }
     else {

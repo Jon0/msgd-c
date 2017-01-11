@@ -11,14 +11,24 @@
  * types of read and write error
  */
 enum msgu_stream_error {
-    msgu_waiting = 0,
-    msgu_remote_closed = -1,
-    msgu_operation_error = -2,
-    msgu_format_error = -3,
+    msgu_stream_partial         = -1,
+    msgu_stream_waiting         = -2,
+    msgu_stream_remote_closed   = -3,
+    msgu_stream_operation_error = -4,
+    msgu_stream_format_error    = -5,
 };
 
 
-typedef int msgu_stream_id_t;
+/*
+ * used to distinguish streams
+ */
+union msgu_stream_id {
+    void *ptr;
+    int   fd;
+};
+
+
+typedef union msgu_stream_id msgu_stream_id_t;
 
 
 /*
@@ -37,6 +47,21 @@ struct msgu_stream_fn {
     msgu_read_t read;
     msgu_write_t write;
 };
+
+
+/*
+ * use buffer as a stream source
+ */
+ssize_t msgu_buffer_read_fn(msgu_stream_id_t id, void *buf, size_t count);
+ssize_t msgu_buffer_write_fn(msgu_stream_id_t id, const void *buf, size_t count);
+
+
+static struct msgu_stream_fn msgu_buffer_stream = {
+    .read  = msgu_buffer_read_fn,
+    .write = msgu_buffer_write_fn,
+};
+
+
 
 
 /*
@@ -102,6 +127,8 @@ int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count);
 
 /*
  * read and write fixed size types
+ * returns count for completed operations
+ * return negative for partial operations or errors
  */
 int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, size_t count);
 int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const void *obj, size_t count);

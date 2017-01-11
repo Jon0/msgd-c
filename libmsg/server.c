@@ -30,6 +30,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     if (conn) {
         delta.source_id = e->id;
         delta.source = conn;
+        printf("channel read\n");
         while (msgu_channel_read(&conn->ch)) {
             if (msgu_channel_update_move(&conn->ch, &delta.update_type, &delta.update)) {
                 msgu_update_print(delta.update_type, &delta.update);
@@ -67,7 +68,7 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     conn.socket = *socket;
-    msgu_channel_init(&conn.ch, socket->fd, &msgs_socket_fn);
+    msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
     int id = msgs_poll_socket(&s->tb, socket);
     msgu_map_insert(&s->connections, &id, &conn);
     return id;

@@ -1,4 +1,20 @@
+#include <stdio.h>
+
 #include "stream.h"
+
+
+ssize_t msgu_buffer_read_fn(msgu_stream_id_t id, void *buf, size_t count) {
+    ssize_t e = msgu_buffer_read(id.ptr, buf, count);
+    printf("buffer_read: %d\n", e);
+    return e;
+}
+
+
+ssize_t msgu_buffer_write_fn(msgu_stream_id_t id, const void *buf, size_t count) {
+    ssize_t e = msgu_buffer_write(id.ptr, buf, count);
+    printf("buffer_write: %d\n", e);
+    return e;
+}
 
 
 void msgu_stream_init(struct msgu_stream *s, msgu_stream_id_t id, struct msgu_stream_fn *fn) {
@@ -78,11 +94,11 @@ int msgu_fragment_check(struct msgu_fragment *f, int result) {
 int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count) {
     if (f->count >= count) {
         // message is completely read
-        return 1;
+        return count;
     }
     else if (result > 0) {
         // socket is still open but waiting
-        return 0;
+        return msgu_stream_partial;
     }
     else {
         return result;
@@ -95,7 +111,7 @@ int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, 
     size_t begin = msgu_fragment_progress(f);
     size_t remain = count - begin;
     if (remain == 0) {
-        return 1;
+        return count;
     }
     int read = msgu_stream_read(in, buf, remain);
     if (read > 0) {
