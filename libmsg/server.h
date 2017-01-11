@@ -7,6 +7,7 @@
 #include <libutil/network.h>
 #include <libutil/share.h>
 #include <libsys/file.h>
+#include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
 

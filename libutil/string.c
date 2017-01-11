@@ -3,38 +3,6 @@
 #include "string.h"
 
 
-void msgu_list_init(struct msgu_list *list, size_t elem_size) {
-    msgu_array_init(&list->data, elem_size);
-    list->count = 0;
-}
-
-
-void msgu_list_alloc(struct msgu_list *list, size_t max) {
-    msgu_array_alloc(&list->data, max);
-}
-
-
-void msgu_list_free(struct msgu_list *list) {
-    msgu_array_free(&list->data);
-    list->count = 0;
-}
-
-
-size_t msgu_list_size(struct msgu_list *list) {
-    return sizeof(list->count) + (list->count * list->data.esize);
-}
-
-
-int msgu_list_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_list *list) {
-    return 0;
-}
-
-
-int msgu_list_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_list *list) {
-    return 0;
-}
-
-
 void msgu_string_init(struct msgu_string *str) {
     str->buf = NULL;
     str->count = 0;
@@ -47,82 +15,83 @@ void msgu_string_alloc(struct msgu_string *str, size_t size) {
 }
 
 
-size_t msgu_string_size(struct msgu_string *str) {
+int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b) {
+    int min = (a->count < b->count) ? a->count : b->count;
+    int cmp = memcmp(a->buf, b->buf, min);
+    if (cmp) {
+        return cmp;
+    }
+    else {
+        return a->count - b->count;
+    }
+}
+
+
+size_t msgu_string_size(const struct msgu_string *str) {
     return sizeof(str->count) + str->count;
 }
 
 
 int msgu_string_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_string *str) {
-    ssize_t read_size = 0;
-
-    if (f->progress < sizeof(str->count)) {
-        size_t remain = sizeof(str->count) - f->progress;
+    int read_size = 0;
+    size_t progress = msgu_fragment_progress(f);
+    if (progress < sizeof(str->count)) {
+        size_t remain = sizeof(str->count) - progress;
         char *countbuf = (char *) &str->count;
-        read_size = msgu_stream_read(src, &countbuf[f->progress], remain);
+        read_size = msgu_stream_read(src, &countbuf[progress], remain);
         if (read_size < 0) {
             return read_size;
         }
         else if (read_size < remain) {
-            f->progress += read_size;
-            return read_size;
+            msgu_fragment_advance(f, read_size);
+            progress = msgu_fragment_progress(f);
+            return 0;
         }
         else {
             str->buf = malloc(str->count);
-            f->known_size = sizeof(str->count) + str->count;
-            f->progress += read_size;
+            msgu_fragment_advance(f, read_size);
+            progress = msgu_fragment_progress(f);
         }
     }
 
     // read remaining string data
-    size_t str_start = f->progress - sizeof(str->count);
-    ssize_t bsize = msgu_stream_read(src, &str->buf[str_start], str->count - str_start);
-    if (bsize < 0) {
-        return -1;
+    size_t str_start = progress - sizeof(str->count);
+    read_size = msgu_stream_read(src, &str->buf[str_start], str->count - str_start);
+    if (read_size > 0) {
+        msgu_fragment_advance(f, read_size);
     }
-    else {
-        f->progress += bsize;
-    }
-
-    if (f->progress == sizeof(str->count) + str->count) {
-        f->complete = 1;
-    }
-    return read_size + bsize;
+    return msgu_fragment_complete(f, read_size, sizeof(str->count) + str->count);
 }
 
 
 int msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_string *str) {
-    ssize_t write_size = 0;
-    f->known_size = sizeof(str->count) + str->count;
-    if (f->progress < sizeof(str->count)) {
-        size_t remain = sizeof(str->count) - f->progress;
+    int write_size = 0;
+    size_t progress = msgu_fragment_progress(f);
+    if (progress < sizeof(str->count)) {
+        size_t remain = sizeof(str->count) - progress;
         char *countbuf = (char *) &str->count;
-        write_size = msgu_stream_write(dest, &countbuf[f->progress], remain);
+        write_size = msgu_stream_write(dest, &countbuf[progress], remain);
         if (write_size < 0) {
             return write_size;
         }
         else if (write_size < remain) {
-            f->progress += write_size;
-            return write_size;
+            msgu_fragment_advance(f, write_size);
+            progress = msgu_fragment_progress(f);
+            return 0;
         }
         else {
-            f->progress += write_size;
+            msgu_fragment_advance(f, write_size);
+            progress = msgu_fragment_progress(f);
         }
     }
 
-    // read remaining string data
-    size_t str_start = f->progress - sizeof(str->count);
-    ssize_t bsize = msgu_stream_write(dest, &str->buf[str_start], str->count - str_start);
-    if (bsize < 0) {
-        return -1;
+    // write remaining string data
+    size_t str_start = progress - sizeof(str->count);
+    write_size = msgu_stream_write(dest, &str->buf[str_start], str->count - str_start);
+    if (write_size > 0) {
+        msgu_fragment_advance(f, write_size);
     }
-    else {
-        f->progress += bsize;
-    }
-
-    if (f->progress == sizeof(str->count) + str->count) {
-        f->complete = 1;
-    }
-    return write_size + bsize;
+    return msgu_fragment_complete(f, write_size, sizeof(str->count) + str->count);
 }
 
 
@@ -143,14 +112,5 @@ hash_t msgu_string_hash(const void *p) {
 
 
 int msgu_string_cmp(const void *a, const void *b) {
-    const struct msgu_string *str_a = a;
-    const struct msgu_string *str_b = b;
-    int min = (str_a->count < str_b->count) ? str_a->count : str_b->count;
-    int cmp = memcmp(str_a->buf, str_b->buf, min);
-    if (cmp) {
-        return cmp;
-    }
-    else {
-        return str_a->count - str_b->count;
-    }
+    return msgu_string_compare(a, b);
 }

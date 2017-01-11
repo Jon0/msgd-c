@@ -3,8 +3,8 @@
 #include "queue.h"
 
 
-void msgu_queue_init(struct msgu_queue *q, size_t elem_size) {
-    msgu_array_init(&q->arr, elem_size);
+void msgu_queue_init(struct msgu_queue *q, const struct msgu_element *fns, size_t elem_size) {
+    msgu_array_init(&q->arr, fns, elem_size);
     q->begin = 0;
     q->size = 0;
 }

@@ -1,7 +1,7 @@
 #include "file.h"
 
 
-void msgs_node_list_from_path(struct msgu_node_list *list, const char *path) {
+void msgs_node_list_from_path(struct msgu_queue *q, const char *path) {
     // todo
 }
 

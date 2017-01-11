@@ -65,8 +65,8 @@ int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *a
 }
 
 
-void ep_event_queue_init(struct ep_event_queue *q, size_t elem_size) {
-    msgu_queue_init(&q->data, elem_size);
+void ep_event_queue_init(struct ep_event_queue *q, struct msgu_element *fns, size_t elem_size) {
+    msgu_queue_init(&q->data, fns, elem_size);
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->empty, NULL);
 }

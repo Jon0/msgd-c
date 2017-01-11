@@ -4,6 +4,9 @@
 #include "array.h"
 
 
+/*
+ * a continuous sequence of elements
+ */
 struct msgu_queue {
     struct msgu_array arr;
     size_t begin;
@@ -11,7 +14,7 @@ struct msgu_queue {
 };
 
 
-void msgu_queue_init(struct msgu_queue *q, size_t elem_size);
+void msgu_queue_init(struct msgu_queue *q, const struct msgu_element *fns, size_t elem_size);
 void msgu_queue_alloc(struct msgu_queue *q, size_t max);
 
 

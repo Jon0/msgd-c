@@ -54,16 +54,16 @@ int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *a
 
 
 /*
- * threads handle the events
+ * a queue with locks preventing ensuring thread safety
  */
 struct ep_event_queue {
+    struct msgu_queue data;
     pthread_cond_t    empty;
     pthread_mutex_t   mutex;
-    struct msgu_queue data;
 };
 
 
-void ep_event_queue_init(struct ep_event_queue *q, size_t elem_size);
+void ep_event_queue_init(struct ep_event_queue *q, struct msgu_element *fns, size_t elem_size);
 void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue);
 
 

@@ -3,9 +3,10 @@
 #include "array.h"
 
 
-void msgu_array_init(struct msgu_array *a, size_t elem_size) {
-    a->data = NULL;
+void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_t elem_size) {
+    a->fns = fns;
     a->esize = elem_size;
+    a->data = NULL;
     a->allocated = 0;
 }
 
@@ -82,4 +83,14 @@ size_t msgu_array_move(struct msgu_array *a, size_t dest, size_t src, size_t cou
     }
     memmove(&a->data[a->esize * dest], &a->data[a->esize * src], a->esize * count);
     return count;
+}
+
+
+int msgu_array_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_array *array, size_t start, size_t count) {
+    return 0;
+}
+
+
+int msgu_array_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_array *array, size_t start, size_t count) {
+    return 0;
 }

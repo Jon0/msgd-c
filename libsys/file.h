@@ -2,13 +2,14 @@
 #define FILE_H
 
 #include <libutil/node.h>
+#include <libutil/queue.h>
 #include <libutil/tree.h>
 
 
 /*
- * fill using path
+ * fill a queue of nodes using specified path
  */
-void msgs_node_list_from_path(struct msgu_node_list *list, const char *path);
+void msgs_node_list_from_path(struct msgu_queue *q, const char *path);
 
 
 

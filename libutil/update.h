@@ -3,6 +3,7 @@
 
 #include "msgtype.h"
 #include "node.h"
+#include "queue.h"
 #include "stream.h"
 #include "string.h"
 
@@ -51,7 +52,7 @@ struct msgu_share_path_update {
  * a list of nodes
  */
 struct msgu_node_list_update {
-    struct msgu_node_list nodes;
+    struct msgu_queue nodes;
 };
 
 

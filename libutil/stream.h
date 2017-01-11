@@ -93,15 +93,11 @@ void msgu_fragment_inc(struct msgu_fragment *f);
  */
 int msgu_fragment_check(struct msgu_fragment *f, int result);
 
+
 /*
  * check at least count bytes have been transferred
  */
 int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count);
-
-
-
-
-int msgu_fragment_read_check(struct msgu_fragment *f, size_t count);
 
 
 /*
