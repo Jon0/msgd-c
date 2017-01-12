@@ -48,11 +48,12 @@ struct msg_status {
  * nodes should be removed when connection is ended
  */
 struct msg_server {
-    struct msgu_event_map emap;
+    struct msgs_event_map emap;
     struct msgs_table     tb;
 
-    int                  local_id;
+    int                  local_acc_id;
     struct msgs_acceptor local_acc;
+    int                  remote_acc_id;
     struct msgs_acceptor remote_acc;
 
     // type of socket

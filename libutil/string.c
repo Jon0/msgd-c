@@ -15,6 +15,12 @@ void msgu_string_alloc(struct msgu_string *str, size_t size) {
 }
 
 
+void msgu_string_from_static(struct msgu_string *str, const char *cstr) {
+    str->buf = cstr;
+    str->count = strlen(cstr);
+}
+
+
 int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b) {
     int min = (a->count < b->count) ? a->count : b->count;
     int cmp = memcmp(a->buf, b->buf, min);
@@ -95,8 +101,13 @@ int msgu_string_write(struct msgu_stream *dest, struct msgu_fragment *f, const s
 }
 
 
-int msgu_string_read_frag(struct msgu_stream *dest, struct msgu_fragment *f, void *str) {
-    return msgu_string_read(dest, f, str);
+size_t msgu_string_size_frag(const void *str) {
+    return msgu_string_size(str);
+}
+
+
+int msgu_string_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *str) {
+    return msgu_string_read(src, f, str);
 }
 
 

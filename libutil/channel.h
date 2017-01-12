@@ -13,6 +13,7 @@
  */
 struct msgu_channel_header {
     int32_t           data_type;
+    int32_t           arg_type;
     int32_t           size;
     int32_t           network_id;
     int32_t           host_id;
@@ -27,10 +28,11 @@ struct msgu_status {
     struct msgu_fragment       stat [MSGU_FRAGMENT_MAX];
     struct msgu_channel_header head;
     union msgu_any_update      data;
+    int                        ready;
 };
 
 
-void msgu_status_reset(struct msgu_status *stat);
+void msgu_status_reset(struct msgu_status *stat, int ready);
 
 
 /*

@@ -67,6 +67,8 @@ size_t msgu_fragment_progress(struct msgu_fragment *f) {
 
 
 size_t msgu_fragment_advance(struct msgu_fragment *f, size_t count) {
+    // advance moves byte tracker forward
+    // used when reading from non-fragment sources
     f->count += count;
     return f->count;
 }
@@ -92,15 +94,17 @@ int msgu_fragment_check(struct msgu_fragment *f, int result) {
 
 
 int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count) {
+    // check result when reading from non-fragment sources
     if (f->count >= count) {
         // message is completely read
-        return count;
+        return msgu_stream_complete;
     }
-    else if (result > 0) {
+    else if (result >= 0) {
         // socket is still open but waiting
         return msgu_stream_partial;
     }
     else {
+        // an error occured
         return result;
     }
 }
@@ -111,7 +115,7 @@ int msgu_read_fixed(struct msgu_stream *in, struct msgu_fragment *f, void *obj, 
     size_t begin = msgu_fragment_progress(f);
     size_t remain = count - begin;
     if (remain == 0) {
-        return count;
+        return msgu_stream_complete;
     }
     int read = msgu_stream_read(in, buf, remain);
     if (read > 0) {
@@ -126,7 +130,7 @@ int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const voi
     size_t begin = msgu_fragment_progress(f);
     size_t remain = count - begin;
     if (remain == 0) {
-        return 1;
+        return msgu_stream_complete;
     }
     int ws = msgu_stream_write(out, &buf[begin], remain);
     if (ws > 0) {
@@ -139,7 +143,7 @@ int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const voi
 int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_frag_read_t *fns, void **objs, size_t count) {
     for (int i = f->index; i < count; ++i) {
         int result = fns[i](in, &f[1], objs[i]);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(f);
         }
         else {
@@ -153,7 +157,7 @@ int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_frag_re
 int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_frag_write_t *fns, const void **objs, size_t count) {
     for (int i = f->index; i < count; ++i) {
         int result = fns[i](out, &f[1], objs[i]);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(f);
         }
         else {

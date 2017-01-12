@@ -86,6 +86,16 @@ size_t msgu_array_move(struct msgu_array *a, size_t dest, size_t src, size_t cou
 }
 
 
+size_t msgu_array_serial_size(const struct msgu_array *array, size_t start, size_t count) {
+    size_t arr_size = 0;
+    for (int i = 0; i < count; ++i) {
+        size_t index = (start + i) % array->allocated;
+        arr_size += array->fns->size(&array->data[array->esize * i]);
+    }
+    return arr_size;
+}
+
+
 int msgu_array_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_array *array, size_t start, size_t count) {
     for (int i = f->index; i < count; ++i) {
         size_t arr_index = (start + i) % array->allocated;

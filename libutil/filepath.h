@@ -5,7 +5,7 @@
 
 
 struct msgu_filepath {
-    struct msgu_string_array elems;
+    struct msgu_string path;
 };
 
 

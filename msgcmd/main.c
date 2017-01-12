@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     struct msg_client_state nstate;
     int err;
 
-    if (argc < 3) {
+    if (argc < 2) {
         print_usage();
         return 0;
     }

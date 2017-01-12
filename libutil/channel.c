@@ -4,17 +4,18 @@
 #include "channel.h"
 
 
-void msgu_status_reset(struct msgu_status *stat) {
+void msgu_status_reset(struct msgu_status *stat, int ready) {
     msgu_fragment_reset(stat->stat, MSGU_FRAGMENT_MAX);
     stat->head.data_type = 0;
     stat->head.size = 0;
+    stat->ready = ready;
 }
 
 
 void msgu_channel_init(struct msgu_channel *c, msgu_stream_id_t id, struct msgu_stream_fn *fn) {
     msgu_stream_init(&c->stream, id, fn);
-    msgu_status_reset(&c->read);
-    msgu_status_reset(&c->write);
+    msgu_status_reset(&c->read, 0);
+    msgu_status_reset(&c->write, 1);
     c->mode = 1;
 }
 
@@ -36,24 +37,34 @@ int msgu_channel_read(struct msgu_channel *c) {
         return 0;
     }
 
+    // check update is ready to be read
+    if (c->read.ready) {
+        return 1;
+    }
+
     if (c->read.stat[0].index == 0) {
         result = msgu_read_fixed(&c->stream, &c->read.stat[1], &c->read.head, sizeof(c->read.head));
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(&c->read.stat[0]);
         }
     }
 
     if (c->read.stat[0].index == 1) {
         result = msgu_poll_update(&c->stream, &c->read.stat[1], &c->read.head, &c->read.data);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(&c->read.stat[0]);
         }
     }
 
-    if (result == msgu_stream_remote_closed) {
+    if (c->read.stat[0].index == 2) {
+        msgu_fragment_reset(c->read.stat, MSGU_FRAGMENT_MAX);
+        c->read.ready = 1;
+    }
+
+    if (result <= msgu_stream_remote_closed) {
         c->mode = 0;
     }
-    return (result > -2);
+    return (result >= msgu_stream_partial);
 }
 
 
@@ -63,35 +74,45 @@ int msgu_channel_write(struct msgu_channel *c) {
         printf("writing closed socket\n");
         return 0;
     }
+
     // check update is ready to be written
+    if (c->write.ready) {
+        return 1;
+    }
+
 
     if (c->write.stat[0].index == 0) {
         result = msgu_write_fixed(&c->stream, &c->write.stat[1], &c->write.head, sizeof(c->write.head));
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(&c->write.stat[0]);
         }
     }
 
     if (c->write.stat[0].index == 1) {
         result = msgu_push_update(&c->stream, &c->write.stat[1], &c->write.head, &c->write.data);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(&c->write.stat[0]);
         }
     }
 
+    if (c->write.stat[0].index == 2) {
+        msgu_fragment_reset(c->write.stat, MSGU_FRAGMENT_MAX);
+        c->write.ready = 1;
+    }
+
     // free update when completed
-    if (result == msgu_stream_remote_closed) {
+    if (result <= msgu_stream_remote_closed) {
         c->mode = 0;
     }
-    return (result > -2);
+    return (result >= msgu_stream_partial);
 }
 
 
 int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msgu_any_update *update) {
-    if (c->read.stat[0].index == 2) {
+    if (c->read.ready) {
+        c->read.ready = 0;
         memcpy(update_type, &c->read.head.data_type, sizeof(int));
         memcpy(update, &c->read.data, sizeof(union msgu_any_update));
-        msgu_fragment_reset(c->read.stat, MSGU_FRAGMENT_MAX);
         return 1;
     }
     else {
@@ -101,11 +122,16 @@ int msgu_channel_update_move(struct msgu_channel *c, int *update_type, union msg
 
 
 int msgu_channel_update_send(struct msgu_channel *c, int update_type, union msgu_any_update *update) {
-    msgu_fragment_reset(c->write.stat, MSGU_FRAGMENT_MAX);
-    c->write.head.data_type = update_type;
-    c->write.head.size = msgu_update_size(update_type, update);
-    c->write.data = *update;
-    return 1;
+    if (c->write.ready) {
+        c->write.ready = 0;
+        c->write.head.data_type = update_type;
+        c->write.head.size = msgu_update_size(update_type, update);
+        c->write.data = *update;
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 
@@ -118,15 +144,21 @@ int msgu_poll_update(struct msgu_stream *in, struct msgu_fragment *f, struct msg
     case msgtype_init_remote:
         read = msgu_init_remote_read(in, f, &data->init_remote);
         break;
+    case msgtype_list_shares:
+        read = msgu_empty_read(in, f, &data->empty);
+        break;
     case msgtype_add_share_file:
         read = msgu_share_file_read(in, f, &data->share_file);
+        break;
+    case msgtype_return_share_list:
+        read = msgu_node_list_read(in, f, &data->node_list);
         break;
     default:
         printf("unknown update %d\n", h->data_type);
         read = msgu_stream_format_error;
         break;
     }
-    return msgu_fragment_complete(f, read, h->size);
+    return read;
 }
 
 
@@ -139,13 +171,19 @@ int msgu_push_update(struct msgu_stream *out, struct msgu_fragment *f, struct ms
     case msgtype_init_remote:
         written = msgu_init_remote_write(out, f, &data->init_remote);
         break;
+    case msgtype_list_shares:
+        written = msgu_empty_write(out, f, &data->empty);
+        break;
     case msgtype_add_share_file:
         written = msgu_share_file_write(out, f, &data->share_file);
+        break;
+    case msgtype_return_share_list:
+        written = msgu_node_list_write(out, f, &data->node_list);
         break;
     default:
         printf("unknown update %d\n", h->data_type);
         written = msgu_stream_format_error;
         break;
     }
-    return msgu_fragment_complete(f, written, h->size);
+    return written;
 }

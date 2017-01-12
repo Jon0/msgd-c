@@ -10,7 +10,7 @@ const char *msgu_msgtype_str(enum msgu_msgtype type) {
         return "mount";
     case msgtype_unmount:
         return "unmount";
-    case msgtype_list_shares :
+    case msgtype_list_shares:
         return "list_shares";
     case msgtype_add_share_proc:
         return "add_share_proc";

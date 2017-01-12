@@ -27,10 +27,10 @@ struct msg_client_update {
  * include queue of requests awaiting a response
  */
 struct msg_client_state {
-    struct msgu_event_map emap;
+    struct msgs_event_map emap;
     struct msgs_table     tb;
     struct msgs_socket    server;    // used to write messages to server
-    struct msgu_stream    stream;
+    struct msgu_channel   channel;
     int                   server_id;
     int                   hdlid;
     int                   connected;

@@ -8,14 +8,19 @@
 
 
 /*
- * types of read and write error
+ * Types of read and write errors.
+ *
+ * Direct read write sources include number of bytes
+ * instead of complete / partial codes.
+ * Fragment sources only return one of these.
  */
 enum msgu_stream_error {
-    msgu_stream_partial         = -1,
-    msgu_stream_waiting         = -2,
-    msgu_stream_remote_closed   = -3,
-    msgu_stream_operation_error = -4,
-    msgu_stream_format_error    = -5,
+    msgu_stream_complete        = 1,
+    msgu_stream_partial         = 0,
+    msgu_stream_waiting         = -1,
+    msgu_stream_remote_closed   = -2,
+    msgu_stream_operation_error = -3,
+    msgu_stream_format_error    = -4,
 };
 
 
@@ -33,7 +38,6 @@ typedef union msgu_stream_id msgu_stream_id_t;
 
 /*
  * functions for reading and writing to files / sockets
- * return 0 for no available input
  * return negative for errors and disconnections
  */
 typedef ssize_t (*msgu_read_t)(msgu_stream_id_t, void *, size_t);
@@ -100,6 +104,7 @@ struct msgu_fragment {
 /*
  * fragment stream functions
  */
+typedef size_t (*msgu_frag_size_t)(const void *);
 typedef int (*msgu_frag_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
 typedef int (*msgu_frag_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
 

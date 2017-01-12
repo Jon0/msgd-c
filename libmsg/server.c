@@ -9,7 +9,7 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msgs_socket newsocket;
 
     // which acceptor was updated?
-    if (e->id == serv->local_id) {
+    if (e->id == serv->local_acc_id) {
         while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
             printf("server accept: %d (local)\n", e->id);
             msg_server_init_connection(serv, &newsocket);
@@ -30,7 +30,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     if (conn) {
         delta.source_id = e->id;
         delta.source = conn;
-        printf("channel read\n");
+        printf("read channel %d\n", e->id);
         while (msgu_channel_read(&conn->ch)) {
             if (msgu_channel_update_move(&conn->ch, &delta.update_type, &delta.update)) {
                 msgu_update_print(delta.update_type, &delta.update);
@@ -69,8 +69,9 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
     struct msg_connection conn;
     conn.socket = *socket;
     msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
-    int id = msgs_poll_socket(&s->tb, socket);
+    int id = msgu_add_recv_handler(&s->emap);
     msgu_map_insert(&s->connections, &id, &conn);
+    msgs_poll_socket(&s->tb, socket, id);
     return id;
 }
 
@@ -87,7 +88,7 @@ struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
 
 void msg_server_print_state(struct msg_server *serv) {
     printf("server state:\n");
-    msg_host_list_debug(&serv->hosts);
+    msgu_share_debug(&serv->shares);
 }
 
 
@@ -110,13 +111,16 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     ep_unlink("msgd-ipc");
     ep_local(&local_addr, "msgd-ipc");
     msgs_open_acceptor(&s->local_acc, &local_addr);
-    s->local_id = msgs_poll_acceptor(&s->tb, &s->local_acc);
+    s->local_acc_id = msgu_add_connect_handler(&s->emap);
+    msgs_poll_acceptor(&s->tb, &s->local_acc, s->local_acc_id);
+
 
     // create a remote acceptor
     struct msgu_address raddr;
     ep_listen_remote(&raddr, 2204);
     msgs_open_acceptor(&s->remote_acc, &raddr);
-    msgs_poll_acceptor(&s->tb, &s->remote_acc);
+    s->remote_acc_id = msgu_add_connect_handler(&s->emap);
+    msgs_poll_acceptor(&s->tb, &s->remote_acc, s->remote_acc_id);
 }
 
 
@@ -200,7 +204,7 @@ int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, con
     case msgtype_list_shares:
         printf("reply: list shares\n");
         msgs_node_list_from_path(&update.node_list.nodes, ".");
-        msgu_channel_update_send(&delta->source->ch, msgtype_return_node_list, &update);
+        msgu_channel_update_send(&delta->source->ch, msgtype_return_share_list, &update);
         msgu_channel_write(&delta->source->ch);
         break;
     }

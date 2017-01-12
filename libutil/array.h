@@ -15,6 +15,7 @@ typedef int32_t array_id_t;
  * functions for elements in arrays
  */
 struct msgu_element {
+    msgu_frag_size_t  size;
     msgu_frag_read_t  read;
     msgu_frag_write_t write;
     msgu_map_hash_t   hash;
@@ -54,6 +55,7 @@ size_t msgu_array_set_wrap(struct msgu_array *a, size_t index, void *elem, size_
 size_t msgu_array_move(struct msgu_array *a, size_t dest, size_t src, size_t count);
 
 
+size_t msgu_array_serial_size(const struct msgu_array *array, size_t start, size_t count);
 int msgu_array_read(struct msgu_stream *src, struct msgu_fragment *f, struct msgu_array *array, size_t start, size_t count);
 int msgu_array_write(struct msgu_stream *dest, struct msgu_fragment *f, const struct msgu_array *array, size_t start, size_t count);
 

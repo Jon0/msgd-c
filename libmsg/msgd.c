@@ -11,11 +11,23 @@ void msg_client_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_client_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_client_state *cs = p;
-    struct msg_host *server = msg_client_host(cs);
-    int read_size;
+    union msgu_any_update data;
+    int data_type;
 
     // TODO queue events to be polled
     printf("client recv message!\n");
+    while (msgu_channel_read(&cs->channel)) {
+        if (msgu_channel_update_move(&cs->channel, &data_type, &data)) {
+            msgu_update_print(data_type, &data);
+            msgu_update_free(data_type, &data);
+        }
+        else {
+            printf("update: move failed\n");
+        }
+    }
+    if (msgu_channel_is_closed(&cs->channel)) {
+        printf("connection closed\n", e->id);
+    }
 }
 
 
@@ -37,10 +49,16 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msgs_table_init(&cs->tb, &cs->emap);
 
     // open socket to server
-    msgs_open_socket(&cs->server, addr);
-    cs->server_id = msgs_poll_socket(&cs->tb, &cs->server);
-    msgu_stream_init(&cs->stream, (msgu_stream_id_t) cs->server.fd, &msgs_socket_fn);
-    cs->connected = 1;
+    if (msgs_open_socket(&cs->server, addr)) {
+        cs->connected = 1;
+        cs->server_id = msgu_add_recv_handler(&cs->emap);
+        msgu_channel_init(&cs->channel, (msgu_stream_id_t) cs->server.fd, &msgs_socket_fn);
+        msgs_poll_socket(&cs->tb, &cs->server, cs->server_id);
+    }
+    else {
+        cs->connected = 0;
+    }
+
 
     // init host memory
     msg_host_list_init(&cs->hosts);
@@ -57,14 +75,10 @@ int msg_disconnect(struct msg_client_state *cs) {
 
 
 int msg_send_message(struct msg_client_state *cs, int type, union msgu_any_update *u) {
-    struct msgu_channel_header head;
-    struct msgu_fragment f[8];
     if (cs->connected) {
-        head.data_type = type;
-        head.size = msgu_update_size(type, u);
-        msgu_fragment_reset(f, 8);
         msgu_update_print(type, u);
-        return msgu_push_update(&cs->stream, f, &head, u);
+        msgu_channel_update_send(&cs->channel, type, u);
+        return msgu_channel_write(&cs->channel);
     }
     else {
         printf("no connection\n");
@@ -83,14 +97,17 @@ int msg_init_local(struct msg_client_state *cs) {
 
 int msg_list_shares(struct msg_client_state *cs) {
     struct msgu_empty_update listshare;
-    return msg_send_message(cs, msgtype_list_shares, (union msgu_any_update *) &listshare);
+    int result = msg_send_message(cs, msgtype_list_shares, (union msgu_any_update *) &listshare);
+    if (result > 0) {
+        msgs_table_poll_one(&cs->tb);
+    }
+    return result;
 }
 
 
 int msg_create_share(struct msg_client_state *cs, char *path) {
     struct msgu_share_file_update addshare;
-    addshare.share_name.count = strlen(path);
-    addshare.share_name.buf = path;
+    msgu_string_from_static(&addshare.share_name, path);
     return msg_send_message(cs, msgtype_add_share_file, (union msgu_any_update *) &addshare);
 }
 

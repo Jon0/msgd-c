@@ -110,38 +110,4 @@ struct msgu_handlers {
 };
 
 
-/*
- * contains a list of each type of event
- */
-struct msgu_event_map {
-    uint32_t               next_id;
-    struct msgu_map        data;
-    struct msgu_handlers   hdl;
-    void                  *arg;
-};
-
-
-/*
- * event map functions
- */
-void msgu_event_map_init(struct msgu_event_map *map, struct msgu_handlers *h, void *a);
-
-
-/*
- * copy event data before callback gets used
- * returns 1 for success
- */
-int msgu_event_copy(struct msgu_event_map *map, uint32_t id, union msgu_any_event *data);
-void msgu_event_notify(struct msgu_event_map *map, uint32_t type, union msgu_any_event *data);
-
-
-/*
- * returns the id of the new element
- */
-int msgu_add_conn(struct msgu_event_map *map, struct msgu_connect_event *ce);
-int msgu_add_recv(struct msgu_event_map *map, struct msgu_recv_event *re);
-int msgu_add_file(struct msgu_event_map *map, struct msgu_file_event *fe);
-int msgu_remove(struct msgu_event_map *map, uint32_t id);
-
-
 #endif

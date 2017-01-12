@@ -37,6 +37,7 @@ struct msgs_socket {
  * monitor changes to an existing file system
  */
 struct msgs_file {
+    int fd;
     int wd;
 };
 

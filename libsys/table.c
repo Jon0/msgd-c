@@ -14,12 +14,11 @@ void *msgs_table_thread(void *t) {
 }
 
 
-void msgs_table_init(struct msgs_table *t, struct msgu_event_map *map) {
-    t->epoll_fd = epoll_create1(0);
+void msgs_table_init(struct msgs_table *t, struct msgs_event_map *emap) {
+    t->epoll_fd   = epoll_create1(0);
     t->inotify_fd = inotify_init1(IN_NONBLOCK);
-    t->emap = map;
+    t->emap       = emap;
     pthread_mutex_init(&t->ctl_mutex, NULL);
-    pthread_mutex_init(&t->map_mutex, NULL);
     msgs_table_enable(t, t->inotify_fd, 4, 0);
 }
 
@@ -49,23 +48,26 @@ void msgs_table_poll(struct msgs_table *t) {
             for (int i = 0; i < p; ++i) {
                 uint32_t type = (uint32_t) (event[i].data.u64 >> 32);
                 uint32_t id = (uint32_t) event[i].data.u64;
-                msgs_table_recv(t, event[i].events, type, id);
+                msgs_event_recv(t->emap, event[i].events, type, id);
             }
         }
     }
 }
 
 
-void msgs_table_recv(struct msgs_table *t, uint32_t ev, uint32_t type, uint32_t id) {
-    union msgu_any_event data;
-    pthread_mutex_lock(&t->map_mutex);
-    int count = msgu_event_copy(t->emap, id, &data);
-    pthread_mutex_unlock(&t->map_mutex);
-    if (count) {
-        msgu_event_notify(t->emap, type, &data);
+void msgs_table_poll_one(struct msgs_table *t) {
+    struct epoll_event event [32];
+    int p = epoll_wait(t->epoll_fd, event, 32, -1);
+    if (p == -1) {
+        perror("epoll_wait");
+        return;
     }
     else {
-        printf("event %d, %d not found\n", type, id);
+        for (int i = 0; i < p; ++i) {
+            uint32_t type = (uint32_t) (event[i].data.u64 >> 32);
+            uint32_t id = (uint32_t) event[i].data.u64;
+            msgs_event_recv(t->emap, event[i].events, type, id);
+        }
     }
 }
 
@@ -91,28 +93,16 @@ void msgs_table_enable(struct msgs_table *t, int fd, uint32_t type, uint32_t id)
 }
 
 
-int msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc) {
-    struct msgu_connect_event ce;
-    pthread_mutex_lock(&t->map_mutex);
-    int id = msgu_add_conn(t->emap, &ce);
-    pthread_mutex_unlock(&t->map_mutex);
+void msgs_poll_acceptor(struct msgs_table *t, struct msgs_acceptor *acc, int id) {
     msgs_table_enable(t, acc->fd, msgu_connect_id, id);
-    return id;
 }
 
 
-int msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk) {
-
-    // fill event using socket
-    struct msgu_recv_event re;
-    pthread_mutex_lock(&t->map_mutex);
-    int id = msgu_add_recv(t->emap, &re);
-    pthread_mutex_unlock(&t->map_mutex);
+void msgs_poll_socket(struct msgs_table *t, struct msgs_socket *sk, int id) {
     msgs_table_enable(t, sk->fd, msgu_recv_id, id);
-    return id;
 }
 
 
-int msgs_poll_file(struct msgs_table *t, struct msgs_file *file) {
-    return 0;
+void msgs_poll_file(struct msgs_table *t, struct msgs_file *file, int id) {
+    msgs_table_enable(t, file->fd, msgu_recv_id, id);
 }

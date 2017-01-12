@@ -82,8 +82,6 @@ int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct 
 int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u);
 
 
-
-
 size_t msgu_init_local_size(struct msgu_init_local_update *u);
 int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
 int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
@@ -97,6 +95,11 @@ int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, 
 size_t msgu_share_file_size(struct msgu_share_file_update *u);
 int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
 int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
+
+
+size_t msgu_node_list_size(struct msgu_node_list_update *u);
+int msgu_node_list_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u);
+int msgu_node_list_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u);
 
 
 /*

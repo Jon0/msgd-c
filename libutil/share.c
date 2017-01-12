@@ -30,6 +30,12 @@ size_t ep_share_set_write(struct msgu_share_set *set, struct msgu_stream *s) {
 
 void msgu_share_debug(struct msgu_share_map *set) {
     printf("%lu procs, %lu files\n", set->proc_shares, set->file_shares);
+    for (int i = 0; i < set->proc_shares; ++i) {
+        printf("proc %d: %s\n", i, set->procs[i].meta.name.buf);
+    }
+    for (int i = 0; i < set->file_shares; ++i) {
+        printf("file %d: %s\n", i, set->files[i].meta.name.buf);
+    }
 }
 
 
@@ -38,6 +44,8 @@ int msgu_share_set_init(struct msgu_share_map *set) {
     msgu_map_alloc(&set->id_map, 32);
     set->procs = malloc(sizeof(struct msg_share_proc) * 32);
     set->files = malloc(sizeof(struct msg_share_file) * 32);
+    set->proc_shares = 0;
+    set->file_shares = 0;
 }
 
 

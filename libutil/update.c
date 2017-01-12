@@ -10,12 +10,12 @@ size_t msgu_empty_size(struct msgu_empty_update *u) {
 
 
 int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
 int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
@@ -25,12 +25,12 @@ size_t msgu_init_local_size(struct msgu_init_local_update *u) {
 
 
 int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
 int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
@@ -40,12 +40,12 @@ size_t msgu_init_remote_size(struct msgu_init_remote_update *u) {
 
 
 int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
 int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u) {
-    return 0;
+    return msgu_stream_complete;
 }
 
 
@@ -61,7 +61,7 @@ int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, st
     void *layout[] = {
         &u->share_name,
     };
-    msgu_read_many(stream, f, msgu_add_share_read_fns, layout, 1);
+    return msgu_read_many(stream, f, msgu_add_share_read_fns, layout, 1);
 }
 
 
@@ -72,7 +72,23 @@ int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, s
     const void *layout[] = {
         &u->share_name,
     };
-    msgu_write_many(stream, f, msgu_add_share_write_fns, layout, 1);
+    return msgu_write_many(stream, f, msgu_add_share_write_fns, layout, 1);
+}
+
+
+size_t msgu_node_list_size(struct msgu_node_list_update *u) {
+    return 0;
+}
+
+
+int msgu_node_list_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u) {
+    msgu_queue_init(&u->nodes, &msgu_node_element, sizeof(struct msgu_node));
+    return msgu_queue_frag_read(stream, f, &u->nodes);
+}
+
+
+int msgu_node_list_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u) {
+    return msgu_queue_frag_write(stream, f, &u->nodes);
 }
 
 

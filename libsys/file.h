@@ -9,7 +9,7 @@
 /*
  * fill a queue of nodes using specified path
  */
-void msgs_node_list_from_path(struct msgu_queue *q, const char *path);
+void msgs_node_list_from_path(struct msgu_queue *nodes, const char *path);
 
 
 
