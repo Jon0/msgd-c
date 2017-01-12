@@ -77,7 +77,7 @@ int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, s
 
 
 size_t msgu_node_list_size(struct msgu_node_list_update *u) {
-    return 0;
+    return msgu_queue_frag_size(&u->nodes);
 }
 
 
@@ -100,6 +100,8 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
         return msgu_init_remote_size(&u->init_remote);
     case msgtype_add_share_file:
         return msgu_share_file_size(&u->share_file);
+    case msgtype_return_share_list:
+        return msgu_node_list_size(&u->node_list);
     default:
         return 0;
     }
@@ -114,6 +116,9 @@ void msgu_update_print(int type, union msgu_any_update *u) {
         break;
     case msgtype_rm_share:
         printf("args: %s\n", u->share_file.share_name.buf);
+        break;
+    case msgtype_return_share_list:
+        printf("args: %d\n", u->node_list.nodes.size);
         break;
     }
 }

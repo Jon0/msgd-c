@@ -43,7 +43,7 @@ size_t msgu_queue_pop(struct msgu_queue *q, void *e, size_t count) {
 
 
 size_t msgu_queue_push(struct msgu_queue *q, void *e, size_t count) {
-    if (count > q->size) {
+    if (count > (q->arr.allocated - q->size)) {
         return 0;
     }
     size_t end = (q->begin + q->size) % q->arr.allocated;
@@ -66,7 +66,7 @@ int msgu_queue_frag_read(struct msgu_stream *src, struct msgu_fragment *f, void 
         result = msgu_read_fixed(src, &f[1], (void *) &queue->size, sizeof(queue->size));
         if (result == msgu_stream_complete) {
             queue->begin = 0;
-            msgu_queue_alloc(queue, queue->size * 2);    
+            msgu_queue_alloc(queue, queue->size * 2);
             msgu_fragment_inc(&f[0]);
         }
     }

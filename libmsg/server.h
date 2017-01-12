@@ -97,7 +97,5 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
 int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
 int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
 
-//void msg_server_print_debug(struct msg_server *serv);
-
 
 #endif

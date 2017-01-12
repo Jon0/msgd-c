@@ -4,9 +4,9 @@
 
 
 void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_t elem_size) {
-    a->fns = fns;
-    a->esize = elem_size;
-    a->data = NULL;
+    a->fns       = fns;
+    a->esize     = elem_size;
+    a->data      = NULL;
     a->allocated = 0;
 }
 
@@ -14,16 +14,18 @@ void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_
 void msgu_array_alloc(struct msgu_array *a, size_t max) {
     char *mem = malloc(a->esize * max);
     if (a->data) {
-        memmove(mem, a->data, a->allocated);
+        memmove(mem, a->data, a->esize * a->allocated);
         free(a->data);
     }
+    a->data      = mem;
     a->allocated = max;
 }
 
 
 void msgu_array_free(struct msgu_array *a) {
-    a->allocated = 0;
     free(a->data);
+    a->data      = NULL;
+    a->allocated = 0;
 }
 
 
@@ -100,14 +102,14 @@ int msgu_array_read(struct msgu_stream *src, struct msgu_fragment *f, struct msg
     for (int i = f->index; i < count; ++i) {
         size_t arr_index = (start + i) % array->allocated;
         int result = array->fns->read(src, &f[1], &array->data[array->esize * arr_index]);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(f);
         }
         else {
             return result;
         }
     }
-    return 1;
+    return msgu_stream_complete;
 }
 
 
@@ -115,12 +117,12 @@ int msgu_array_write(struct msgu_stream *dest, struct msgu_fragment *f, const st
     for (int i = f->index; i < count; ++i) {
         size_t arr_index = (start + i) % array->allocated;
         int result = array->fns->write(dest, &f[1], &array->data[array->esize * arr_index]);
-        if (result > 0) {
+        if (result == msgu_stream_complete) {
             msgu_fragment_inc(f);
         }
         else {
             return result;
         }
     }
-    return 1;
+    return msgu_stream_complete;
 }
