@@ -40,6 +40,7 @@ void msgs_table_poll(struct msgs_table *t) {
     struct epoll_event event [32];
     while (1) {
         int p = epoll_wait(t->epoll_fd, event, 32, -1);
+        printf("epoll recv %d events\n", p);
         if (p == -1) {
             perror("epoll_wait");
             return;

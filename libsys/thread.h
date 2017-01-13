@@ -49,8 +49,10 @@ typedef void (*msgs_mutex_callback_t)(void *);
 
 
 void msgs_mutex_init(msgs_mutex_t *mutex);
+void msgs_mutex_lock(msgs_mutex_t *mutex);
+void msgs_mutex_unlock(msgs_mutex_t *mutex);
+int msgs_mutex_try_lock(msgs_mutex_t *mutex);
 int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg);
-int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg);
 
 
 /*

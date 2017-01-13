@@ -40,6 +40,7 @@ enum msgu_msgtype {
     /*
      * operations on single files
      */
+    msgtype_file_open,
     msgtype_file_stream_read,
     msgtype_file_stream_write,
     msgtype_file_block_read,
@@ -49,6 +50,7 @@ enum msgu_msgtype {
      * operations on filesystems
      */
     msgtype_path_list,
+    msgtype_path_open,
     msgtype_path_stream_read,
     msgtype_path_stream_write,
     msgtype_path_block_read,

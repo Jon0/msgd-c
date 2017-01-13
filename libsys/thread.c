@@ -43,6 +43,21 @@ void msgs_mutex_init(msgs_mutex_t *mutex) {
 }
 
 
+void msgs_mutex_lock(msgs_mutex_t *mutex) {
+    pthread_mutex_lock(mutex);
+}
+
+
+void msgs_mutex_unlock(msgs_mutex_t *mutex) {
+    pthread_mutex_unlock(mutex);
+}
+
+
+int msgs_mutex_try_lock(msgs_mutex_t *mutex) {
+    return (pthread_mutex_trylock(mutex) == 0);
+}
+
+
 int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg) {
     // ensure only one thread enters the callback
     if (pthread_mutex_trylock(mutex)) {
@@ -54,14 +69,6 @@ int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *ar
         pthread_mutex_unlock(mutex);
         return 0;
     }
-}
-
-
-int msgs_mutex_lock(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *arg) {
-    pthread_mutex_lock(mutex);
-    callback(arg);
-    pthread_mutex_unlock(mutex);
-    return 0;
 }
 
 

@@ -61,7 +61,7 @@ int msg_send_message(struct msg_client_state *cs, int type, union msgu_any_updat
 int msg_init_local(struct msg_client_state *cs);
 int msg_list_shares(struct msg_client_state *cs);
 int msg_create_share(struct msg_client_state *cs, char *path);
-
+int msg_open_share(struct msg_client_state *cs, char *path);
 
 /*
  * poll new events from subscribed nodes

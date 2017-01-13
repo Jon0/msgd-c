@@ -111,6 +111,13 @@ int msg_create_share(struct msg_client_state *cs, char *path) {
 }
 
 
+int msg_open_share(struct msg_client_state *cs, char *path) {
+    struct msgu_share_file_update addshare;
+    msgu_string_from_static(&addshare.share_name, path);
+    return msg_send_message(cs, msgtype_add_share_file, (union msgu_any_update *) &addshare);
+}
+
+
 void msg_poll(struct msg_client_state *cs, struct msg_client_update *up) {
 
 }

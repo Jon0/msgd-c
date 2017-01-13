@@ -12,11 +12,14 @@ void print_usage() {
 
 
 void run_command(struct msg_client_state *nstate, char *cmd, int args, char *argv[]) {
-    if (strcmp(cmd, "share") == 0) {
+    if (strcmp(cmd, "list") == 0) {
+        msg_list_shares(nstate);
+    }
+    else if (strcmp(cmd, "share") == 0) {
         msg_create_share(nstate, argv[0]);
     }
-    else if (strcmp(cmd, "list") == 0) {
-        msg_list_shares(nstate);
+    else if (strcmp(cmd, "open") == 0) {
+        msg_open_share(nstate, argv[0]);
     }
 }
 

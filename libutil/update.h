@@ -120,4 +120,11 @@ void msgu_update_print(int type, union msgu_any_update *u);
 void msgu_update_free(int type, union msgu_any_update *u);
 
 
+/*
+ * read update, return type of update or 0 for incomplete read, and -1 for errors
+ */
+int msgu_any_update_read(struct msgu_stream *in, struct msgu_fragment *f, int data_type, union msgu_any_update *data);
+int msgu_any_update_write(struct msgu_stream *out, struct msgu_fragment *f, int data_type, union msgu_any_update *data);
+
+
 #endif

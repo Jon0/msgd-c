@@ -18,6 +18,8 @@ const char *msgu_msgtype_str(enum msgu_msgtype type) {
         return "add_share_file";
     case msgtype_rm_share:
         return "rm_share";
+    case msgtype_file_open:
+        return "file_open";
     case msgtype_file_stream_read:
         return "file_stream_read";
     case msgtype_file_stream_write:
@@ -28,6 +30,8 @@ const char *msgu_msgtype_str(enum msgu_msgtype type) {
         return "file_block_write";
     case msgtype_path_list:
         return "path_list";
+    case msgtype_path_open:
+        return "path_open";
     case msgtype_path_stream_read:
         return "path_stream_read";
     case msgtype_path_stream_write:

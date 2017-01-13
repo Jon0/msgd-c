@@ -27,25 +27,38 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     // find connection by id
     struct msg_connection *conn = msg_server_connection(serv, e->id);
     struct msg_delta delta;
+    int read_delta;
+
+    // TODO: connection can be deleted before locking
     if (conn) {
         delta.source_id = e->id;
         delta.source = conn;
-        printf("read channel %d\n", e->id);
-        while (msgu_channel_read(&conn->ch)) {
-            if (msgu_channel_update_move(&conn->ch, &delta.update_type, &delta.update)) {
+
+        // TODO if not locked, the message may go unread
+        // depending on the state of currently reading thread
+        while (msgs_mutex_try_lock(&conn->read_mutex)) {
+            printf("read channel %d\n", e->id);
+
+            // read from socket
+            read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
+            if (msgu_channel_is_closed(&conn->ch)) {
+                // socket was closed
+                printf("connection %d: closed\n", e->id);
+                msg_server_close_connection(serv, e->id);
+            }
+            msgs_mutex_unlock(&conn->read_mutex);
+
+            // apply update
+            if (read_delta) {
                 msgu_update_print(delta.update_type, &delta.update);
                 msg_server_apply(serv, &delta);
                 msgu_update_free(delta.update_type, &delta.update);
                 msg_server_print_state(serv);
             }
             else {
-                printf("update: move failed\n");
+                // no more messages
+                return;
             }
-        }
-        if (msgu_channel_is_closed(&conn->ch)) {
-            // socket was closed
-            printf("connection %d: closed\n", e->id);
-            msg_server_close_connection(serv, e->id);
         }
     }
     else {
@@ -68,6 +81,8 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     conn.socket = *socket;
+    msgs_mutex_init(&conn.read_mutex);
+    msgs_mutex_init(&conn.write_mutex);
     msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
     int id = msgu_add_recv_handler(&s->emap);
     msgu_map_insert(&s->connections, &id, &conn);
@@ -77,7 +92,13 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
 
 
 int msg_server_close_connection(struct msg_server *s, int id) {
-
+    struct msg_connection *conn = msg_server_connection(s, id);
+    if (conn) {
+        msgs_close_socket(&conn->socket);
+        msgu_channel_free(&conn->ch);
+    }
+    msgu_map_erase(&s->connections, &id);
+    return 1;
 }
 
 
