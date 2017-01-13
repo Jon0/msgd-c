@@ -56,11 +56,19 @@ int msgu_channel_read(struct msgu_channel *c) {
         }
     }
 
+    // check if message transfer completed
     if (c->read.stat[0].index == 2) {
+        size_t hsize = c->read.head.size;
+        size_t asize = c->read.stat[0].count - sizeof(c->read.head);
+        if (hsize == asize) {
+            c->read.ready = 1;
+        }
+        else {
+            printf("incorrect message, header: %d, actual: %d\n", hsize, asize);
+            c->mode = 0;
+        }
         msgu_fragment_reset(c->read.stat, MSGU_FRAGMENT_MAX);
-        c->read.ready = 1;
     }
-
     if (result <= msgu_stream_remote_closed) {
         c->mode = 0;
     }
@@ -95,12 +103,13 @@ int msgu_channel_write(struct msgu_channel *c) {
         }
     }
 
+    // check if message transfer completed
+    // TODO: free update when completed
     if (c->write.stat[0].index == 2) {
         msgu_fragment_reset(c->write.stat, MSGU_FRAGMENT_MAX);
         c->write.ready = 1;
     }
 
-    // free update when completed
     if (result <= msgu_stream_remote_closed) {
         c->mode = 0;
     }

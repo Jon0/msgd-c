@@ -199,13 +199,16 @@ int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, co
 
 
 int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
+    struct msgu_channel *out = &delta->source->ch;
     union msgu_any_update update;
+
+    printf("reply:\n");
     switch (delta->update_type) {
     case msgtype_list_shares:
-        printf("reply: list shares\n");
         msgs_node_list_from_path(&update.node_list.nodes, ".");
-        msgu_channel_update_send(&delta->source->ch, msgtype_return_share_list, &update);
-        msgu_channel_write(&delta->source->ch);
+        msgu_update_print(msgtype_return_share_list, &update);
+        msgu_channel_update_send(out, msgtype_return_share_list, &update);
+        msgu_channel_write(out);
         break;
     }
     return 1;

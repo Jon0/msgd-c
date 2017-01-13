@@ -76,7 +76,7 @@ size_t msgu_fragment_advance(struct msgu_fragment *f, size_t count) {
 
 void msgu_fragment_inc(struct msgu_fragment *f) {
     f[0].index += 1;
-    f[0].count += f[0].count;
+    f[0].count += f[1].count;
     f[1].index = 0;
     f[1].count = 0;
 }
@@ -150,7 +150,7 @@ int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_frag_re
             return result;
         }
     }
-    return count;
+    return msgu_stream_complete;
 }
 
 
@@ -164,7 +164,7 @@ int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_frag_
             return result;
         }
     }
-    return count;
+    return msgu_stream_complete;
 }
 
 

@@ -109,7 +109,7 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
 
 
 void msgu_update_print(int type, union msgu_any_update *u) {
-    printf("update: %s\n", msgu_msgtype_str(type));
+    printf("update: %s, size: %lu\n", msgu_msgtype_str(type), msgu_update_size(type, u));
     switch (type) {
     case msgtype_add_share_file:
         printf("args: %s\n", u->share_file.share_name.buf);

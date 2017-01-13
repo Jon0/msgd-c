@@ -15,7 +15,6 @@ void msg_client_recv_event(void *p, struct msgu_recv_event *e) {
     int data_type;
 
     // TODO queue events to be polled
-    printf("client recv message!\n");
     while (msgu_channel_read(&cs->channel)) {
         if (msgu_channel_update_move(&cs->channel, &data_type, &data)) {
             msgu_update_print(data_type, &data);
