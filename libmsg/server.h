@@ -18,6 +18,7 @@
 struct msg_connection {
     msgs_mutex_t         read_mutex;
     msgs_mutex_t         write_mutex;
+    int                  new_events;
     struct msgs_socket   socket;
     struct msgu_channel  ch;
 };
@@ -58,6 +59,7 @@ struct msg_server {
 
     // type of socket
     // epid -> struct msg_connection
+    msgs_mutex_t         conn_mutex;
     struct msgu_map      connections;
 
     // maps events to and from local shares
@@ -77,6 +79,8 @@ struct msg_host *msg_server_self(struct msg_server *s);
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
 int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
+int msg_server_connection_notify(struct msg_server *serv, int id);
+int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn);
 
 
 /*

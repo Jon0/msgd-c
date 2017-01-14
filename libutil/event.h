@@ -6,15 +6,17 @@
 #include "address.h"
 #include "buffer.h"
 #include "map.h"
+#include "update.h"
 
 
 /*
  * id for each event type
  */
 enum msgu_event_type {
-    msgu_connect_id = 16,
+    msgu_connect_id = 20,
     msgu_recv_id    = 40,
     msgu_send_id    = 41,
+    msgu_file_id    = 60,
 };
 
 

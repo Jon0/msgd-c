@@ -107,6 +107,70 @@ struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
 }
 
 
+int msg_server_connection_notify(struct msg_server *serv, int id) {
+    struct msg_connection *conn;
+
+    // make sure every path unlocks this
+    msgs_mutex_lock(&serv->conn_mutex);
+    conn = msg_server_connection(serv, id);
+    if (conn) {
+        conn->new_events = 1;
+
+        // TODO: connection can be deleted before locking
+        if (msgs_mutex_try_lock(&conn->read_mutex)) {
+            msgs_mutex_unlock(&serv->conn_mutex);
+            msg_server_connection_poll(serv, id, conn);
+            msgs_mutex_unlock(&conn->read_mutex);
+        }
+        else {
+            msgs_mutex_unlock(&serv->conn_mutex);
+        }
+    }
+    else {
+        printf("connection %d: not found\n", id);
+        msgs_mutex_unlock(&serv->conn_mutex);
+    }
+}
+
+
+int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn) {
+    struct msg_delta delta;
+    int read_delta;
+
+    delta.source_id = id;
+    delta.source    = conn;
+
+    // TODO if not locked, the message may go unread
+    // depending on the state of currently reading thread
+    while (msgs_mutex_try_lock(&conn->read_mutex)) {
+        printf("read channel %d\n", id);
+
+        // read from socket
+        read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
+        if (msgu_channel_is_closed(&conn->ch)) {
+            // socket was closed
+            printf("connection %d: closed\n", id);
+            msg_server_close_connection(serv, id);
+        }
+        msgs_mutex_unlock(&conn->read_mutex);
+
+        // apply update
+        if (read_delta) {
+            msgu_update_print(delta.update_type, &delta.update);
+            msg_server_apply(serv, &delta);
+            msgu_update_free(delta.update_type, &delta.update);
+            msg_server_print_state(serv);
+        }
+        else {
+            // no more messages
+            return 0;
+        }
+    }
+    return 0;
+}
+
+
+
 void msg_server_print_state(struct msg_server *serv) {
     printf("server state:\n");
     msgu_share_debug(&serv->shares);
@@ -115,6 +179,7 @@ void msg_server_print_state(struct msg_server *serv) {
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
+    msgs_mutex_init(&s->conn_mutex);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
     msgu_share_set_init(&s->shares);

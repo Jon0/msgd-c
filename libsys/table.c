@@ -19,7 +19,7 @@ void msgs_table_init(struct msgs_table *t, struct msgs_event_map *emap) {
     t->inotify_fd = inotify_init1(IN_NONBLOCK);
     t->emap       = emap;
     pthread_mutex_init(&t->ctl_mutex, NULL);
-    msgs_table_enable(t, t->inotify_fd, 4, 0);
+    msgs_table_enable(t, t->inotify_fd, msgu_file_id, 0);
 }
 
 
