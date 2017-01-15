@@ -114,6 +114,9 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
     msgs_mutex_lock(&serv->conn_mutex);
     conn = msg_server_connection(serv, id);
     if (conn) {
+
+        // TODO if not locked, the message may go unread
+        // depending on the state of currently reading thread
         conn->new_events = 1;
 
         // TODO: connection can be deleted before locking
@@ -140,31 +143,24 @@ int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_conne
     delta.source_id = id;
     delta.source    = conn;
 
-    // TODO if not locked, the message may go unread
-    // depending on the state of currently reading thread
-    while (msgs_mutex_try_lock(&conn->read_mutex)) {
-        printf("read channel %d\n", id);
+    // read from socket
+    printf("read channel %d\n", id);
+    read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
+    if (msgu_channel_is_closed(&conn->ch)) {
+        // socket was closed
+        printf("connection %d: closed\n", id);
+        msg_server_close_connection(serv, id);
+    }
+    // TODO should unlock read mutex here
+    // allow another thread to begin reading
 
-        // read from socket
-        read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
-        if (msgu_channel_is_closed(&conn->ch)) {
-            // socket was closed
-            printf("connection %d: closed\n", id);
-            msg_server_close_connection(serv, id);
-        }
-        msgs_mutex_unlock(&conn->read_mutex);
-
-        // apply update
-        if (read_delta) {
-            msgu_update_print(delta.update_type, &delta.update);
-            msg_server_apply(serv, &delta);
-            msgu_update_free(delta.update_type, &delta.update);
-            msg_server_print_state(serv);
-        }
-        else {
-            // no more messages
-            return 0;
-        }
+    // apply update using current thread
+    // another thread will handle additional reads
+    if (read_delta) {
+        msgu_update_print(delta.update_type, &delta.update);
+        msg_server_apply(serv, &delta);
+        msgu_update_free(delta.update_type, &delta.update);
+        msg_server_print_state(serv);
     }
     return 0;
 }
