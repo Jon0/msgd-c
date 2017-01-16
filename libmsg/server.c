@@ -84,20 +84,26 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
     msgs_mutex_init(&conn.read_mutex);
     msgs_mutex_init(&conn.write_mutex);
     msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
+
+    // lock and modify server state
+    msgs_mutex_lock(&s->conn_mutex);
     int id = msgu_add_recv_handler(&s->emap);
     msgu_map_insert(&s->connections, &id, &conn);
     msgs_poll_socket(&s->tb, socket, id);
+    msgs_mutex_unlock(&s->conn_mutex);
     return id;
 }
 
 
 int msg_server_close_connection(struct msg_server *s, int id) {
     struct msg_connection *conn = msg_server_connection(s, id);
+    msgs_mutex_lock(&s->conn_mutex);
     if (conn) {
         msgs_close_socket(&conn->socket);
         msgu_channel_free(&conn->ch);
     }
     msgu_map_erase(&s->connections, &id);
+    msgs_mutex_unlock(&s->conn_mutex);
     return 1;
 }
 
@@ -119,11 +125,15 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
         // depending on the state of currently reading thread
         conn->new_events = 1;
 
-        // TODO: connection can be deleted before locking
         if (msgs_mutex_try_lock(&conn->read_mutex)) {
             msgs_mutex_unlock(&serv->conn_mutex);
-            msg_server_connection_poll(serv, id, conn);
+            int result = msg_server_connection_poll(serv, id, conn);
             msgs_mutex_unlock(&conn->read_mutex);
+            if (result == -1) {
+                // socket was closed
+                printf("connection %d: closed\n", id);
+                msg_server_close_connection(serv, id);
+            }
         }
         else {
             msgs_mutex_unlock(&serv->conn_mutex);
@@ -143,25 +153,23 @@ int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_conne
     delta.source_id = id;
     delta.source    = conn;
 
-    // read from socket
+    // read available data from socket
     printf("read channel %d\n", id);
-    read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
-    if (msgu_channel_is_closed(&conn->ch)) {
-        // socket was closed
-        printf("connection %d: closed\n", id);
-        msg_server_close_connection(serv, id);
-    }
-    // TODO should unlock read mutex here
-    // allow another thread to begin reading
+    do {
+        read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
+        if (msgu_channel_is_closed(&conn->ch)) {
+            return -1;
+        }
 
-    // apply update using current thread
-    // another thread will handle additional reads
-    if (read_delta) {
-        msgu_update_print(delta.update_type, &delta.update);
-        msg_server_apply(serv, &delta);
-        msgu_update_free(delta.update_type, &delta.update);
-        msg_server_print_state(serv);
+        // apply update using current thread
+        if (read_delta) {
+            msgu_update_print(delta.update_type, &delta.update);
+            msg_server_apply(serv, &delta);
+            msgu_update_free(delta.update_type, &delta.update);
+            msg_server_print_state(serv);
+        }
     }
+    while(read_delta);
     return 0;
 }
 
