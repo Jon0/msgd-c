@@ -23,47 +23,7 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
-
-    // find connection by id
-    struct msg_connection *conn = msg_server_connection(serv, e->id);
-    struct msg_delta delta;
-    int read_delta;
-
-    // TODO: connection can be deleted before locking
-    if (conn) {
-        delta.source_id = e->id;
-        delta.source = conn;
-
-        // TODO if not locked, the message may go unread
-        // depending on the state of currently reading thread
-        while (msgs_mutex_try_lock(&conn->read_mutex)) {
-            printf("read channel %d\n", e->id);
-
-            // read from socket
-            read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
-            if (msgu_channel_is_closed(&conn->ch)) {
-                // socket was closed
-                printf("connection %d: closed\n", e->id);
-                msg_server_close_connection(serv, e->id);
-            }
-            msgs_mutex_unlock(&conn->read_mutex);
-
-            // apply update
-            if (read_delta) {
-                msgu_update_print(delta.update_type, &delta.update);
-                msg_server_apply(serv, &delta);
-                msgu_update_free(delta.update_type, &delta.update);
-                msg_server_print_state(serv);
-            }
-            else {
-                // no more messages
-                return;
-            }
-        }
-    }
-    else {
-        printf("connection %d: not found\n", e->id);
-    }
+    msg_server_connection_notify(serv, e->id);
 }
 
 
