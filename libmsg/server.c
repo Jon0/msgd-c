@@ -237,6 +237,9 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
         printf("updating: add share\n");
         msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
         break;
+    case msgtype_file_open:
+        printf("updating: open share %s\n",&delta->update.share_file.share_name.buf);
+        break;
     }
     return 1;
 }
@@ -259,6 +262,8 @@ int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, con
         msgu_update_print(msgtype_return_share_list, &update);
         msgu_channel_update_send(out, msgtype_return_share_list, &update);
         msgu_channel_write(out);
+        break;
+    case msgtype_file_open:
         break;
     }
     return 1;
