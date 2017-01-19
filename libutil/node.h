@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "string.h"
+#include "queue.h"
 
 
 /*
@@ -14,6 +15,10 @@ struct msgu_node {
     uint32_t            node_mode;
     struct msgu_string  node_name;
 };
+
+
+void msgu_node_print(struct msgu_node *n);
+void msgu_node_list_print(struct msgu_queue *q);
 
 
 /*

@@ -41,9 +41,14 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     conn.socket = *socket;
+    conn.new_events = 0;
+    conn.next_handle = 0;
     msgs_mutex_init(&conn.read_mutex);
     msgs_mutex_init(&conn.write_mutex);
     msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
+    msgu_map_init(&conn.handles, msgu_uint32_hash, msgu_uint32_cmp, sizeof(uint32_t), sizeof(struct msgu_string));
+    msgu_map_alloc(&conn.handles, 16);
+
 
     // lock and modify server state
     msgs_mutex_lock(&s->conn_mutex);
@@ -134,6 +139,15 @@ int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_conne
 }
 
 
+int msg_server_init_handle(struct msg_connection *conn, const struct msgu_string *share_name) {
+    uint32_t new_handle = conn->next_handle++;
+    struct msgu_string name;
+    msgu_string_copy(&name, share_name);
+    printf("opening %s as %d\n", share_name->buf, new_handle);
+    msgu_map_insert(&conn->handles, &new_handle, &name);
+    return new_handle;
+}
+
 
 void msg_server_print_state(struct msg_server *serv) {
     printf("server state:\n");
@@ -201,6 +215,8 @@ void msg_server_run(struct msg_server *serv) {
 
 int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
     struct msg_status status;
+    status.error = 0;
+    status.new_handle = 0;
     if (msg_server_validate(serv, delta)) {
         if (msg_server_modify(serv, delta, &status)) {
             msg_server_notify(serv, delta, &status);
@@ -238,7 +254,8 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
         msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
         break;
     case msgtype_file_open:
-        printf("updating: open share %s\n",&delta->update.share_file.share_name.buf);
+        printf("updating: open share\n");
+        status->new_handle = msg_server_init_handle(delta->source, &delta->update.share_file.share_name);
         break;
     }
     return 1;
@@ -253,18 +270,30 @@ int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, co
 
 int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
     struct msgu_channel *out = &delta->source->ch;
+    int have_update = 0;
+    int update_type;
     union msgu_any_update update;
 
-    printf("reply:\n");
+
     switch (delta->update_type) {
     case msgtype_list_shares:
-        msgs_node_list_from_path(&update.node_list.nodes, ".");
-        msgu_update_print(msgtype_return_share_list, &update);
-        msgu_channel_update_send(out, msgtype_return_share_list, &update);
-        msgu_channel_write(out);
+        have_update = 1;
+        update_type = msgtype_return_share_list;
+        msgs_node_list_of_shares(&serv->shares, &update.node_list.nodes);
         break;
     case msgtype_file_open:
+        have_update = 1;
+        update_type = msgtype_return_node_handle;
+        update.node_handle.node_handle = status->new_handle;
         break;
+    }
+
+
+    if (have_update) {
+        printf("reply:\n");
+        msgu_update_print(update_type, &update);
+        msgu_channel_update_send(out, update_type, &update);
+        msgu_channel_write(out);
     }
     return 1;
 }

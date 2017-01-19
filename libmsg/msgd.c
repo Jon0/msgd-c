@@ -96,11 +96,7 @@ int msg_init_local(struct msg_client_state *cs) {
 
 int msg_list_shares(struct msg_client_state *cs) {
     struct msgu_empty_update listshare;
-    int result = msg_send_message(cs, msgtype_list_shares, (union msgu_any_update *) &listshare);
-    if (result > 0) {
-        msgs_table_poll_one(&cs->tb);
-    }
-    return result;
+    return msg_send_message(cs, msgtype_list_shares, (union msgu_any_update *) &listshare);
 }
 
 
@@ -114,7 +110,23 @@ int msg_create_share(struct msg_client_state *cs, char *path) {
 int msg_open_share(struct msg_client_state *cs, char *path) {
     struct msgu_share_file_update addshare;
     msgu_string_from_static(&addshare.share_name, path);
-    return msg_send_message(cs, msgtype_add_share_file, (union msgu_any_update *) &addshare);
+    return msg_send_message(cs, msgtype_file_open, (union msgu_any_update *) &addshare);
+}
+
+
+int msg_read(struct msg_client_state *cs, int hdl, char *buf, size_t count) {
+
+}
+
+
+int msg_write(struct msg_client_state *cs, int hdl, const char *buf, size_t count) {
+
+}
+
+
+int msg_wait(struct msg_client_state *cs) {
+    msgs_table_poll_one(&cs->tb);
+    return 1;
 }
 
 

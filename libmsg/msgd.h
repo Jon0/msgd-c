@@ -62,6 +62,15 @@ int msg_init_local(struct msg_client_state *cs);
 int msg_list_shares(struct msg_client_state *cs);
 int msg_create_share(struct msg_client_state *cs, char *path);
 int msg_open_share(struct msg_client_state *cs, char *path);
+int msg_read(struct msg_client_state *cs, int hdl, char *buf, size_t count);
+int msg_write(struct msg_client_state *cs, int hdl, const char *buf, size_t count);
+
+
+/*
+ * wait for the next recieved message
+ */
+int msg_wait(struct msg_client_state *cs);
+
 
 /*
  * poll new events from subscribed nodes

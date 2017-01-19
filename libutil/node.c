@@ -1,4 +1,21 @@
+#include <stdio.h>
+
 #include "node.h"
+
+
+void msgu_node_print(struct msgu_node *n) {
+    printf("%s, (type: %d, mode %d)", n->node_name.buf, n->node_type, n->node_mode);
+}
+
+
+void msgu_node_list_print(struct msgu_queue *q) {
+    for (int i = 0; i < q->size; ++i) {
+        struct msgu_node *node = msgu_array_access(&q->arr, i);
+        printf("\t");
+        msgu_node_print(node);
+        printf("\n");
+    }
+}
 
 
 size_t msgu_node_size_frag(const void *n) {

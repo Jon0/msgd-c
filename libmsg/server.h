@@ -19,8 +19,10 @@ struct msg_connection {
     msgs_mutex_t         read_mutex;
     msgs_mutex_t         write_mutex;
     int                  new_events;
+    int                  next_handle;
     struct msgs_socket   socket;
     struct msgu_channel  ch;
+    struct msgu_map      handles;
 };
 
 
@@ -40,6 +42,7 @@ struct msg_delta {
  */
 struct msg_status {
     int error;
+    int new_handle;
 };
 
 
@@ -81,6 +84,11 @@ int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 int msg_server_connection_notify(struct msg_server *serv, int id);
 int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn);
+
+/*
+ * create a new handle to a shared resource
+ */
+int msg_server_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
 
 
 /*

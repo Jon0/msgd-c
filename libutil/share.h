@@ -4,6 +4,8 @@
 #include <stdlib.h>
 
 #include "map.h"
+#include "node.h"
+#include "queue.h"
 #include "stream.h"
 #include "string.h"
 
@@ -117,8 +119,19 @@ int msgu_share_proc(struct msgu_share_map *set, const struct msgu_string *name);
 int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *name);
 
 
+/*
+ * create a node list
+ */
+void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_queue *nodes);
+
+
+/*
+ * write share state to stream
+ */
 int msgu_share_list(struct msgu_share_map *set, struct msgu_stream *out);
 int msgu_share_list_dir(struct msgu_share_map *set, struct msgu_stream *out);
+
+
 
 
 #endif

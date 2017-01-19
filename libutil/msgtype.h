@@ -62,6 +62,7 @@ enum msgu_msgtype {
     msgtype_return_status,
     msgtype_return_share_list,
     msgtype_return_node_list,
+    msgtype_return_node_handle,
 };
 
 

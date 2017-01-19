@@ -34,6 +34,7 @@ struct msgu_array {
 void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_t elem_size);
 void msgu_array_alloc(struct msgu_array *a, size_t max);
 void msgu_array_free(struct msgu_array *a);
+void *msgu_array_access(struct msgu_array *a, size_t index);
 
 
 /*

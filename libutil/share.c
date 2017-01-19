@@ -66,10 +66,29 @@ int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *name) 
 
 
 int msgu_share_list(struct msgu_share_map *set, struct msgu_stream *out) {
-
+    return 0;
 }
 
 
 int msgu_share_list_dir(struct msgu_share_map *set, struct msgu_stream *out) {
+    return 0;
+}
 
+
+void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_queue *nodes) {
+    msgu_queue_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
+    msgu_queue_alloc(nodes, set->proc_shares + set->file_shares);
+    struct msgu_node node;
+    for (int i = 0; i < set->proc_shares; ++i) {
+        node.node_type = 1;
+        node.node_mode = 7;
+        node.node_name = set->procs[i].meta.name;
+        msgu_queue_push(nodes, &node, 1);
+    }
+    for (int i = 0; i < set->file_shares; ++i) {
+        node.node_type = 2;
+        node.node_mode = 7;
+        node.node_name = set->files[i].meta.name;
+        msgu_queue_push(nodes, &node, 1);
+    }
 }

@@ -21,6 +21,13 @@ void msgu_string_from_static(struct msgu_string *str, char *cstr) {
 }
 
 
+void msgu_string_copy(struct msgu_string *dest, const struct msgu_string *src) {
+    msgu_string_init(dest);
+    msgu_string_alloc(dest, src->count);
+    memcpy(dest->buf, src->buf, src->count);
+}
+
+
 int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b) {
     int min = (a->count < b->count) ? a->count : b->count;
     int cmp = memcmp(a->buf, b->buf, min);
