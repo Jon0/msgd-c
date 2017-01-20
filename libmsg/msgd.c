@@ -114,13 +114,19 @@ int msg_open_share(struct msg_client_state *cs, char *path) {
 }
 
 
-int msg_read(struct msg_client_state *cs, int hdl, char *buf, size_t count) {
-
+int msg_read(struct msg_client_state *cs, int hdl, size_t count) {
+    struct msgu_node_read_update handle;
+    handle.node_handle = hdl;
+    handle.count = count;
+    return msg_send_message(cs, msgtype_file_stream_read, (union msgu_any_update *) &handle);
 }
 
 
 int msg_write(struct msg_client_state *cs, int hdl, const char *buf, size_t count) {
-
+    struct msgu_node_write_update stream;
+    stream.node_handle = hdl;
+    msgu_string_from_buffer(&stream.data, buf, count);
+    return msg_send_message(cs, msgtype_file_stream_write, (union msgu_any_update *) &stream);
 }
 
 

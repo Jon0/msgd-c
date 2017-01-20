@@ -65,9 +65,18 @@ struct msgu_node_handle_update {
 
 
 /*
- * read and write data
+ * read data request
  */
-struct msgu_node_stream_update {
+struct msgu_node_read_update {
+    uint32_t node_handle;
+    uint32_t count;
+};
+
+
+/*
+ * write data request
+ */
+struct msgu_node_write_update {
     uint32_t node_handle;
     struct msgu_string data;
 };
@@ -89,7 +98,8 @@ union msgu_any_update {
     struct msgu_share_path_update  share_path;
     struct msgu_node_list_update   node_list;
     struct msgu_node_handle_update node_handle;
-    struct msgu_node_stream_update stream;
+    struct msgu_node_read_update   node_read;
+    struct msgu_node_write_update  node_write;
 };
 
 
@@ -126,9 +136,14 @@ int msgu_node_handle_read(struct msgu_stream *stream, struct msgu_fragment *f, s
 int msgu_node_handle_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_handle_update *u);
 
 
-size_t msgu_node_stream_size(struct msgu_node_stream_update *u);
-int msgu_node_stream_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_stream_update *u);
-int msgu_node_stream_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_stream_update *u);
+size_t msgu_node_read_size(struct msgu_node_read_update *u);
+int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u);
+int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u);
+
+
+size_t msgu_node_write_size(struct msgu_node_write_update *u);
+int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u);
+int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u);
 
 
 

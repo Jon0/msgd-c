@@ -15,16 +15,20 @@ void msgu_string_alloc(struct msgu_string *str, size_t size) {
 }
 
 
-void msgu_string_from_static(struct msgu_string *str, char *cstr) {
-    str->buf = cstr;
-    str->count = strlen(cstr);
+void msgu_string_from_static(struct msgu_string *str, const char *cstr) {
+    msgu_string_from_buffer(str, cstr, strlen(cstr));
+}
+
+
+void msgu_string_from_buffer(struct msgu_string *str, const char *cstr, size_t count) {
+    msgu_string_init(str);
+    msgu_string_alloc(str, count);
+    memcpy(str->buf, cstr, count);
 }
 
 
 void msgu_string_copy(struct msgu_string *dest, const struct msgu_string *src) {
-    msgu_string_init(dest);
-    msgu_string_alloc(dest, src->count);
-    memcpy(dest->buf, src->buf, src->count);
+    msgu_string_from_buffer(dest, src->buf, src->count);
 }
 
 

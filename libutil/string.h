@@ -19,7 +19,8 @@ struct msgu_string {
 
 void msgu_string_init(struct msgu_string *str);
 void msgu_string_alloc(struct msgu_string *str, size_t size);
-void msgu_string_from_static(struct msgu_string *str, char *cstr);
+void msgu_string_from_static(struct msgu_string *str, const char *cstr);
+void msgu_string_from_buffer(struct msgu_string *str, const char *cstr, size_t count);
 void msgu_string_copy(struct msgu_string *dest, const struct msgu_string *src);
 
 

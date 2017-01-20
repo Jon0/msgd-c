@@ -27,6 +27,13 @@ struct msg_connection {
 
 
 /*
+ * create a new handle to a shared resource
+ */
+int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
+int msg_connection_read_handle(struct msg_connection *conn, int node_handle);
+
+
+/*
  * modifications applied to server state
  */
 struct msg_delta {
@@ -84,11 +91,6 @@ int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 int msg_server_connection_notify(struct msg_server *serv, int id);
 int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn);
-
-/*
- * create a new handle to a shared resource
- */
-int msg_server_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
 
 
 /*

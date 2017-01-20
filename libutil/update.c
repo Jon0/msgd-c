@@ -107,13 +107,44 @@ int msgu_node_handle_write(struct msgu_stream *stream, struct msgu_fragment *f, 
 }
 
 
-size_t msgu_node_stream_size(struct msgu_node_stream_update *u) {
+size_t msgu_node_read_size(struct msgu_node_read_update *u) {
+    return sizeof(u->node_handle) + sizeof(u->count);
+}
+
+
+int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u) {
+    static msgu_frag_read_t msgu_node_read_read_fns[] = {
+        msgu_i32_read_frag,
+        msgu_i32_read_frag,
+    };
+    void *layout[] = {
+        &u->node_handle,
+        &u->count,
+    };
+    return msgu_read_many(stream, f, msgu_node_read_read_fns, layout, 2);
+}
+
+
+int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u) {
+    static msgu_frag_write_t msgu_node_read_write_fns[] = {
+        msgu_i32_write_frag,
+        msgu_i32_write_frag,
+    };
+    const void *layout[] = {
+        &u->node_handle,
+        &u->count,
+    };
+    return msgu_write_many(stream, f, msgu_node_read_write_fns, layout, 2);
+}
+
+
+size_t msgu_node_write_size(struct msgu_node_write_update *u) {
     return sizeof(u->node_handle) + msgu_string_size(&u->data);
 }
 
 
-int msgu_node_stream_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_stream_update *u) {
-    static msgu_frag_read_t msgu_node_stream_read_fns[] = {
+int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u) {
+    static msgu_frag_read_t msgu_node_write_read_fns[] = {
         msgu_i32_read_frag,
         msgu_string_read_frag,
     };
@@ -121,12 +152,12 @@ int msgu_node_stream_read(struct msgu_stream *stream, struct msgu_fragment *f, s
         &u->node_handle,
         &u->data,
     };
-    return msgu_read_many(stream, f, msgu_node_stream_read_fns, layout, 2);
+    return msgu_read_many(stream, f, msgu_node_write_read_fns, layout, 2);
 }
 
 
-int msgu_node_stream_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_stream_update *u) {
-    static msgu_frag_write_t msgu_node_stream_write_fns[] = {
+int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u) {
+    static msgu_frag_write_t msgu_node_write_write_fns[] = {
         msgu_i32_write_frag,
         msgu_string_write_frag,
     };
@@ -134,7 +165,7 @@ int msgu_node_stream_write(struct msgu_stream *stream, struct msgu_fragment *f, 
         &u->node_handle,
         &u->data,
     };
-    return msgu_write_many(stream, f, msgu_node_stream_write_fns, layout, 2);
+    return msgu_write_many(stream, f, msgu_node_write_write_fns, layout, 2);
 }
 
 
@@ -154,9 +185,9 @@ size_t msgu_update_size(int type, union msgu_any_update *u) {
     case msgtype_return_node_handle:
         return msgu_node_handle_size(&u->node_handle);
     case msgtype_file_stream_read:
-        return msgu_node_stream_size(&u->stream);
+        return msgu_node_read_size(&u->node_read);
     case msgtype_file_stream_write:
-        return msgu_node_stream_size(&u->stream);
+        return msgu_node_write_size(&u->node_write);
     default:
         return 0;
     }
@@ -175,12 +206,15 @@ void msgu_update_print(int type, union msgu_any_update *u) {
     case msgtype_return_share_list:
         printf("args: %d\n", u->node_list.nodes.size);
         msgu_node_list_print(&u->node_list.nodes);
+        break;
     case msgtype_return_node_handle:
         printf("args: %d\n", u->node_handle.node_handle);
+        break;
     case msgtype_file_stream_read:
-        printf("args: handle = %d, data = %s\n", u->stream.node_handle, u->stream.data.buf);
+        printf("args: handle = %d, count = %d\n", u->node_read.node_handle, u->node_read.count);
+        break;
     case msgtype_file_stream_write:
-        printf("args: handle = %d, data = %s\n", u->stream.node_handle, u->stream.data.buf);
+        printf("args: handle = %d, data = %s\n", u->node_write.node_handle, u->node_write.data.buf);
         break;
     }
 }
@@ -215,10 +249,10 @@ int msgu_any_update_read(struct msgu_stream *in, struct msgu_fragment *f, int da
         read = msgu_share_file_read(in, f, &data->share_file);
         break;
     case msgtype_file_stream_read:
-        read = msgu_node_stream_read(in, f, &data->stream);
+        read = msgu_node_read_read(in, f, &data->node_read);
         break;
     case msgtype_file_stream_write:
-        read = msgu_node_stream_read(in, f, &data->stream);
+        read = msgu_node_write_read(in, f, &data->node_write);
         break;
     case msgtype_file_block_read:
         read = msgu_empty_read(in, f, &data->empty);
@@ -260,10 +294,10 @@ int msgu_any_update_write(struct msgu_stream *out, struct msgu_fragment *f, int 
         written = msgu_share_file_write(out, f, &data->share_file);
         break;
     case msgtype_file_stream_read:
-        written = msgu_node_stream_write(out, f, &data->stream);
+        written = msgu_node_read_write(out, f, &data->node_read);
         break;
     case msgtype_file_stream_write:
-        written = msgu_node_stream_write(out, f, &data->stream);
+        written = msgu_node_write_write(out, f, &data->node_write);
         break;
     case msgtype_file_block_read:
         written = msgu_empty_write(out, f, &data->empty);

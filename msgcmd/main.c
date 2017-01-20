@@ -19,9 +19,18 @@ void run_command(struct msg_client_state *nstate, char *cmd, int args, char *arg
     else if (strcmp(cmd, "share") == 0) {
         msg_create_share(nstate, argv[0]);
     }
-    else if (strcmp(cmd, "open") == 0) {
+    else if (strcmp(cmd, "read") == 0) {
         msg_open_share(nstate, argv[0]);
         msg_wait(nstate);
+        msg_read(nstate, 0, 1024);
+    }
+    else if (strcmp(cmd, "write") == 0) {
+        msg_open_share(nstate, argv[0]);
+        msg_wait(nstate);
+        msg_write(nstate, 0, argv[1], strlen(argv[1]));
+    }
+    else {
+        printf("unknown command: %s\n", cmd);
     }
 }
 

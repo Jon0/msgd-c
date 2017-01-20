@@ -33,6 +33,25 @@ static struct msgu_handlers msg_server_handlers = {
 };
 
 
+int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name) {
+    uint32_t new_handle = conn->next_handle++;
+    struct msgu_string name;
+    msgu_string_copy(&name, share_name);
+    printf("opening %s as %d\n", share_name->buf, new_handle);
+    msgu_map_insert(&conn->handles, &new_handle, &name);
+    return new_handle;
+}
+
+
+int msg_connection_read_handle(struct msg_connection *conn, int node_handle) {
+    struct msgu_string *name = msgu_map_get(&conn->handles, &node_handle);
+    printf("read handle: %d, %s\n", node_handle, name->buf);
+
+
+}
+
+
+
 struct msg_host *msg_server_self(struct msg_server *s) {
     return &s->hosts.ptr[0];
 }
@@ -139,16 +158,6 @@ int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_conne
 }
 
 
-int msg_server_init_handle(struct msg_connection *conn, const struct msgu_string *share_name) {
-    uint32_t new_handle = conn->next_handle++;
-    struct msgu_string name;
-    msgu_string_copy(&name, share_name);
-    printf("opening %s as %d\n", share_name->buf, new_handle);
-    msgu_map_insert(&conn->handles, &new_handle, &name);
-    return new_handle;
-}
-
-
 void msg_server_print_state(struct msg_server *serv) {
     printf("server state:\n");
     msgu_share_debug(&serv->shares);
@@ -244,18 +253,17 @@ int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, st
     // lock mutex and apply state changes
     switch (delta->update_type) {
     case msgtype_init_local:
-        printf("updating: init local connection\n");
         break;
     case msgtype_init_remote:
-        printf("updating: init remote connection\n");
         break;
     case msgtype_add_share_file:
-        printf("updating: add share\n");
         msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
         break;
     case msgtype_file_open:
-        printf("updating: open share\n");
-        status->new_handle = msg_server_init_handle(delta->source, &delta->update.share_file.share_name);
+        status->new_handle = msg_connection_init_handle(delta->source, &delta->update.share_file.share_name);
+        break;
+    case msgtype_file_stream_read:
+        msg_connection_read_handle(delta->source, delta->update.node_read.node_handle);
         break;
     }
     return 1;
