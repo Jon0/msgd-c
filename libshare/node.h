@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#include "string.h"
-#include "queue.h"
+#include <libutil/queue.h>
+#include <libutil/string.h>
 
 
 /*

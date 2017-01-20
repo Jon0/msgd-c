@@ -1,7 +1,7 @@
 #ifndef LIBSYS_EVENTMAP_H
 #define LIBSYS_EVENTMAP_H
 
-#include <libutil/event.h>
+#include <libshare/event.h>
 
 #include "thread.h"
 

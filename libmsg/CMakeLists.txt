@@ -21,5 +21,6 @@ add_library(
 target_link_libraries(
 	${MSG_LIBRARY_NAME}
 	${UTIL_LIBRARY_NAME}
+	${SHARE_LIBRARY_NAME}
 	${SYS_LIBRARY_NAME}
 )

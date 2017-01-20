@@ -1,7 +1,7 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef LIBSYS_NETWORK_H
+#define LIBSYS_NETWORK_H
 
-#include <libutil/address.h>
+#include <libshare/address.h>
 
 void ep_host_init_self(struct ep_host *h);
 

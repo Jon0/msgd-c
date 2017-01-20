@@ -3,11 +3,13 @@
 
 #include <stdlib.h>
 
-#include "map.h"
+#include <libutil/map.h>
+#include <libutil/queue.h>
+#include <libutil/stream.h>
+#include <libutil/string.h>
+
 #include "node.h"
-#include "queue.h"
-#include "stream.h"
-#include "string.h"
+
 
 
 /*

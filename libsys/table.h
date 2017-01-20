@@ -2,7 +2,7 @@
 #define TABLE_H
 
 #include <libutil/map.h>
-#include <libutil/event.h>
+#include <libshare/event.h>
 
 #include "endpoint.h"
 #include "eventmap.h"

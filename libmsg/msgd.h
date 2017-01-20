@@ -2,8 +2,8 @@
 #define MSGD_H
 
 #include <libutil/buffer.h>
-#include <libutil/channel.h>
-#include <libutil/host.h>
+#include <libshare/channel.h>
+#include <libshare/host.h>
 #include <libsys/endpoint.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>

@@ -3,9 +3,9 @@
 
 #include <netinet/in.h>
 
-#include <libutil/address.h>
 #include <libutil/buffer.h>
 #include <libutil/stream.h>
+#include <libshare/address.h>
 
 
 ssize_t msgs_socket_read_fn(msgu_stream_id_t id, void *buf, size_t count);

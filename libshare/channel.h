@@ -1,8 +1,9 @@
 #ifndef LIBUTIL_CHANNEL_H
 #define LIBUTIL_CHANNEL_H
 
+#include <libutil/stream.h>
+
 #include "share.h"
-#include "stream.h"
 #include "update.h"
 
 #define MSGU_FRAGMENT_MAX 8

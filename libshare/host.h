@@ -1,8 +1,9 @@
 #ifndef LIBUTIL_HOST_H
 #define LIBUTIL_HOST_H
 
-#include "buffer.h"
-#include "map.h"
+#include <libutil/buffer.h>
+#include <libutil/map.h>
+
 #include "share.h"
 
 

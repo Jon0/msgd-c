@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "buffer.h"
+#include <libutil/buffer.h>
 
 
 struct msgu_ipc {

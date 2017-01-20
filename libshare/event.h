@@ -3,9 +3,10 @@
 
 #include <stdlib.h>
 
+#include <libutil/buffer.h>
+#include <libutil/map.h>
+
 #include "address.h"
-#include "buffer.h"
-#include "map.h"
 #include "update.h"
 
 

@@ -1,11 +1,11 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include <libutil/channel.h>
-#include <libutil/host.h>
 #include <libutil/map.h>
-#include <libutil/network.h>
-#include <libutil/share.h>
+#include <libshare/channel.h>
+#include <libshare/host.h>
+#include <libshare/network.h>
+#include <libshare/share.h>
 #include <libsys/file.h>
 #include <libsys/network.h>
 #include <libsys/table.h>

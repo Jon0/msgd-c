@@ -1,11 +1,12 @@
 #ifndef LIBUTIL_UPDATE_H
 #define LIBUTIL_UPDATE_H
 
+#include <libutil/queue.h>
+#include <libutil/stream.h>
+#include <libutil/string.h>
+
 #include "msgtype.h"
 #include "node.h"
-#include "queue.h"
-#include "stream.h"
-#include "string.h"
 
 
 /*
