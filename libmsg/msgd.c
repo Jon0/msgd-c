@@ -28,7 +28,7 @@ static struct msgu_handlers msg_client_handlers = {
 
 
 int msg_client_message_recv(struct msg_connection *conn, struct msgu_message *msg, void *cs) {
-    msgu_message_print(msg);
+    msg_connection_log(conn, msg, "recv");
     msgu_message_free(msg);
 }
 
@@ -52,46 +52,46 @@ int msg_disconnect(struct msg_client_state *cs) {
 
 
 int msg_init_local(struct msg_client_state *cs) {
-    struct msgu_init_local_update init;
+    struct msgu_init_local_msg init;
     init.version_maj = 0;
     init.version_min = 1;
-    return msg_connection_send_message(&cs->server, msgtype_init_local, (union msgu_any_update *) &init);
+    return msg_connection_send_message(&cs->server, msgtype_init_local, msgdata_init_local, (union msgu_any_msg *) &init);
 }
 
 
 int msg_list_shares(struct msg_client_state *cs) {
-    struct msgu_empty_update listshare;
-    return msg_connection_send_message(&cs->server, msgtype_list_shares, (union msgu_any_update *) &listshare);
+    struct msgu_empty_msg listshare;
+    return msg_connection_send_message(&cs->server, msgtype_list_shares, msgdata_empty, (union msgu_any_msg *) &listshare);
 }
 
 
 int msg_create_share(struct msg_client_state *cs, char *path) {
-    struct msgu_share_file_update addshare;
+    struct msgu_share_file_msg addshare;
     msgu_string_from_static(&addshare.share_name, path);
-    return msg_connection_send_message(&cs->server, msgtype_add_share_file, (union msgu_any_update *) &addshare);
+    return msg_connection_send_message(&cs->server, msgtype_add_share_file, msgdata_share_file, (union msgu_any_msg *) &addshare);
 }
 
 
 int msg_open_share(struct msg_client_state *cs, char *path) {
-    struct msgu_share_file_update addshare;
+    struct msgu_share_file_msg addshare;
     msgu_string_from_static(&addshare.share_name, path);
-    return msg_connection_send_message(&cs->server, msgtype_file_open, (union msgu_any_update *) &addshare);
+    return msg_connection_send_message(&cs->server, msgtype_file_open, msgdata_share_file, (union msgu_any_msg *) &addshare);
 }
 
 
 int msg_read(struct msg_client_state *cs, int hdl, size_t count) {
-    struct msgu_node_read_update handle;
+    struct msgu_node_read_msg handle;
     handle.node_handle = hdl;
     handle.count = count;
-    return msg_connection_send_message(&cs->server, msgtype_file_stream_read, (union msgu_any_update *) &handle);
+    return msg_connection_send_message(&cs->server, msgtype_file_stream_read, msgdata_node_read, (union msgu_any_msg *) &handle);
 }
 
 
 int msg_write(struct msg_client_state *cs, int hdl, const char *buf, size_t count) {
-    struct msgu_node_write_update stream;
+    struct msgu_node_write_msg stream;
     stream.node_handle = hdl;
     msgu_string_from_buffer(&stream.data, buf, count);
-    return msg_connection_send_message(&cs->server, msgtype_file_stream_write, (union msgu_any_update *) &stream);
+    return msg_connection_send_message(&cs->server, msgtype_file_stream_write, msgdata_node_write, (union msgu_any_msg *) &stream);
 }
 
 

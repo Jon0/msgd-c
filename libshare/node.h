@@ -17,8 +17,8 @@ struct msgu_node {
 };
 
 
-void msgu_node_print(struct msgu_node *n);
-void msgu_node_list_print(struct msgu_queue *q);
+int msgu_node_print(char *buf, const struct msgu_node *n);
+void msgu_node_list_print(char *buf, const struct msgu_queue *q);
 
 
 /*

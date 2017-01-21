@@ -56,14 +56,13 @@ struct msgu_transfer_fn {
 
 struct msgu_parser {
     struct msgu_transfer_fn *fns;
-    struct msgu_stream      *stream;
     struct msgu_fragment     read_state [MSGU_FRAGMENT_MAX];
     struct msgu_fragment     write_state [MSGU_FRAGMENT_MAX];
     size_t max_depth;
 };
 
 
-void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns, struct msgu_stream *s);
+void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns);
 
 
 /*
@@ -71,8 +70,8 @@ void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns, 
  * return 0 if waiting
  * return -1 if cannot continue parsing
  */
-int msgu_parser_read(struct msgu_parser *parser, void *obj);
-int msgu_parser_write(struct msgu_parser *parser, const void *obj);
+int msgu_parser_read(struct msgu_parser *parser, struct msgu_stream *stream, void *obj);
+int msgu_parser_write(struct msgu_parser *parser, struct msgu_stream *stream, const void *obj);
 
 
 #endif

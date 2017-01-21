@@ -10,22 +10,41 @@
 
 
 /*
+ * types of data used in messages
+ */
+enum msgu_data_type {
+    msgdata_empty,
+    msgdata_init_local,
+    msgdata_init_remote,
+    msgdata_share_file,
+    msgdata_share_path,
+    msgdata_node_list,
+    msgdata_node_handle,
+    msgdata_node_read,
+    msgdata_node_write,
+};
+
+
+const char *msgu_msgdata_str(const enum msgu_data_type type);
+
+
+/*
  * updates with no arguments
  */
-struct msgu_empty_update {};
+struct msgu_empty_msg {};
 
 
 /*
  * should be sent first to setup connection
  */
-struct msgu_init_local_update {
+struct msgu_init_local_msg {
      int32_t            version_maj;
      int32_t            version_min;
 };
 
 
 
-struct msgu_init_remote_update {
+struct msgu_init_remote_msg {
     int32_t            version_maj;
     int32_t            version_min;
     struct msgu_string host_name;
@@ -35,7 +54,7 @@ struct msgu_init_remote_update {
 /*
  * add, remove and list shares
  */
-struct msgu_share_file_update {
+struct msgu_share_file_msg {
     struct msgu_string share_name;
 };
 
@@ -43,7 +62,7 @@ struct msgu_share_file_update {
 /*
  * operations requiring a path
  */
-struct msgu_share_path_update {
+struct msgu_share_path_msg {
     struct msgu_string share_name;
     struct msgu_string file_name;
 };
@@ -52,7 +71,7 @@ struct msgu_share_path_update {
 /*
  * a list of nodes
  */
-struct msgu_node_list_update {
+struct msgu_node_list_msg {
     struct msgu_queue nodes;
 };
 
@@ -60,7 +79,7 @@ struct msgu_node_list_update {
 /*
  * sends id of a handle
  */
-struct msgu_node_handle_update {
+struct msgu_node_handle_msg {
     uint32_t node_handle;
 };
 
@@ -68,7 +87,7 @@ struct msgu_node_handle_update {
 /*
  * read data request
  */
-struct msgu_node_read_update {
+struct msgu_node_read_msg {
     uint32_t node_handle;
     uint32_t count;
 };
@@ -77,7 +96,7 @@ struct msgu_node_read_update {
 /*
  * write data request
  */
-struct msgu_node_write_update {
+struct msgu_node_write_msg {
     uint32_t node_handle;
     struct msgu_string data;
 };
@@ -86,90 +105,109 @@ struct msgu_node_write_update {
 /*
  * events sent to remotes of changes
  */
-struct msgu_broadcast_update {
+struct msgu_broadcast_msg {
 
 };
 
 
-union msgu_any_update {
-    struct msgu_empty_update       empty;
-    struct msgu_init_local_update  init_local;
-    struct msgu_init_remote_update init_remote;
-    struct msgu_share_file_update  share_file;
-    struct msgu_share_path_update  share_path;
-    struct msgu_node_list_update   node_list;
-    struct msgu_node_handle_update node_handle;
-    struct msgu_node_read_update   node_read;
-    struct msgu_node_write_update  node_write;
+union msgu_any_msg {
+    struct msgu_empty_msg       empty;
+    struct msgu_init_local_msg  init_local;
+    struct msgu_init_remote_msg init_remote;
+    struct msgu_share_file_msg  share_file;
+    struct msgu_share_path_msg  share_path;
+    struct msgu_node_list_msg   node_list;
+    struct msgu_node_handle_msg node_handle;
+    struct msgu_node_read_msg   node_read;
+    struct msgu_node_write_msg  node_write;
+};
+
+
+struct msgu_msgdata {
+    int32_t            data_type;
+    union msgu_any_msg data;
 };
 
 
 /*
  * functions for each update type
  */
-size_t msgu_empty_size(struct msgu_empty_update *u);
-int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u);
-int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_update *u);
+size_t msgu_empty_size(const struct msgu_empty_msg *u);
+int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_msg *u);
+int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_empty_msg *u);
 
 
-size_t msgu_init_local_size(struct msgu_init_local_update *u);
-int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
-int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_update *u);
+size_t msgu_init_local_size(const struct msgu_init_local_msg *u);
+int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_msg *u);
+int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_local_msg *u);
 
 
-size_t msgu_init_remote_size(struct msgu_init_remote_update *u);
-int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u);
-int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_update *u);
+size_t msgu_init_remote_size(const struct msgu_init_remote_msg *u);
+int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_msg *u);
+int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_remote_msg *u);
 
 
-size_t msgu_share_file_size(struct msgu_share_file_update *u);
-int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
-int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u);
+size_t msgu_share_file_size(const struct msgu_share_file_msg *u);
+int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_msg *u);
+int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_share_file_msg *u);
 
 
-size_t msgu_node_list_size(struct msgu_node_list_update *u);
-int msgu_node_list_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u);
-int msgu_node_list_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_update *u);
+size_t msgu_share_path_size(const struct msgu_share_path_msg *u);
+int msgu_share_path_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_path_msg *u);
+int msgu_share_path_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_share_path_msg *u);
 
 
-size_t msgu_node_handle_size(struct msgu_node_handle_update *u);
-int msgu_node_handle_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_handle_update *u);
-int msgu_node_handle_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_handle_update *u);
+size_t msgu_node_list_size(const struct msgu_node_list_msg *u);
+int msgu_node_list_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_msg *u);
+int msgu_node_list_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_list_msg *u);
 
 
-size_t msgu_node_read_size(struct msgu_node_read_update *u);
-int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u);
-int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u);
+size_t msgu_node_handle_size(const struct msgu_node_handle_msg *u);
+int msgu_node_handle_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_handle_msg *u);
+int msgu_node_handle_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_handle_msg *u);
 
 
-size_t msgu_node_write_size(struct msgu_node_write_update *u);
-int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u);
-int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u);
+size_t msgu_node_read_size(const struct msgu_node_read_msg *u);
+int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_msg *u);
+int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_read_msg *u);
+
+
+size_t msgu_node_write_size(const struct msgu_node_write_msg *u);
+int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_msg *u);
+int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_write_msg *u);
 
 
 /*
  * print type
  */
-void msgu_update_print(int type, union msgu_any_update *u);
+void msgu_msgdata_print(char *out, const struct msgu_msgdata *md);
 
 
 /*
  * free memory
  */
-void msgu_update_free(int type, union msgu_any_update *u);
+void msgu_msgdata_free(struct msgu_msgdata *md);
 
 
 /*
- * return message size
+ * size required to transfer update
  */
-size_t msgu_any_update_size(int data_type, union msgu_any_update *data);
+size_t msgu_msgdata_size(int data_type, const union msgu_any_msg *data);
 
 
 /*
  * read update, return type of update or 0 for incomplete read, and -1 for errors
  */
-int msgu_any_update_read(struct msgu_stream *in, struct msgu_fragment *f, int data_type, union msgu_any_update *data);
-int msgu_any_update_write(struct msgu_stream *out, struct msgu_fragment *f, int data_type, union msgu_any_update *data);
+size_t msgu_msgdata_size_frag(const void *md);
+int msgu_msgdata_read_frag(struct msgu_stream *in, struct msgu_fragment *f, void *md);
+int msgu_msgdata_write_frag(struct msgu_stream *out, struct msgu_fragment *f, const void *md);
+
+
+static struct msgu_transfer_fn msgu_msgdata_transfer_fn = {
+    .size  = msgu_msgdata_size_frag,
+    .read  = msgu_msgdata_read_frag,
+    .write = msgu_msgdata_write_frag,
+};
 
 
 #endif

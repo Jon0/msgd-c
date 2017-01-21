@@ -22,6 +22,7 @@ void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_
 void msgu_array_alloc(struct msgu_array *a, size_t max);
 void msgu_array_free(struct msgu_array *a);
 void *msgu_array_access(struct msgu_array *a, size_t index);
+const void *msgu_array_const(const struct msgu_array *a, size_t index);
 
 
 /*

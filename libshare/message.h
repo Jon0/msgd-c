@@ -10,17 +10,16 @@
  * message type used over sockets
  */
 struct msgu_message {
-    int32_t                size;
-    int32_t                event_type;
-    int32_t                event_id;
-    int32_t                data_type;
-    int32_t                data_hash;
-    union msgu_any_update  data;
+    int32_t                 event_type;
+    int32_t                 event_id;
+    int32_t                 data_size;
+    int32_t                 data_hash;
+    struct msgu_msgdata     buf;
 };
 
 
 void msgu_message_free(struct msgu_message *m);
-void msgu_message_print(const struct msgu_message *m);
+void msgu_message_print(char *buf, const struct msgu_message *m);
 
 
 /*

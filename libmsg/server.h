@@ -15,18 +15,7 @@
 
 
 /*
- * modifications applied to server state
- */
-struct msg_delta {
-    int                     source_id;
-    struct msg_connection  *source;
-    int                     update_type;
-    union msgu_any_update   update;
-};
-
-
-/*
- * result of applying delta
+ * result of applying message
  */
 struct msg_status {
     int error;

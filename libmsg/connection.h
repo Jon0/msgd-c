@@ -45,6 +45,13 @@ void msg_connection_close(struct msg_connection *conn);
 
 
 /*
+ * short label for logging
+ */
+void msg_connection_label(char *buf, const struct msg_connection *conn);
+void msg_connection_log(const struct msg_connection *conn, const struct msgu_message *msg, const char *extra);
+
+
+/*
  * create a new handle to a shared resource
  */
 int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
@@ -61,7 +68,7 @@ int msg_connection_poll(struct msg_connection *conn);
 /*
  * sends any update type
  */
-int msg_connection_send_message(struct msg_connection *conn, int type, union msgu_any_update *u);
+int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, union msgu_any_msg *data);
 
 
 #endif

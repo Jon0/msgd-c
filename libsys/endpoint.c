@@ -141,6 +141,23 @@ void ep_unlink(const char *address) {
 }
 
 
+void msgs_address_print(char *buf, const struct msgu_address *a) {
+    struct sockaddr *sa = (struct sockaddr *) &a->data;
+    if (sa->sa_family == AF_UNIX) {
+        struct sockaddr_un *su = (struct sockaddr_un *) &a->data;
+        strcpy(buf, su->sun_path);
+    }
+    else if (sa->sa_family == AF_INET) {
+        struct sockaddr_in *si = (struct sockaddr_in *) &a->data;
+        char *addr = (char *) &si->sin_addr;
+        sprintf(buf, "%u.%u.%u.%u", addr[0], addr[1], addr[2], addr[3]);
+    }
+    else {
+        sprintf(buf, "unknown");
+    }
+}
+
+
 void ep_local(struct msgu_address *a, const char *address) {
 
     // intialise address struct with address name
@@ -200,14 +217,18 @@ int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr) {
 
 
 int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s) {
-    s->addr.len = 32;
-    s->fd = accept(acc->fd, (struct sockaddr *) &s->addr.data, (socklen_t *) &s->addr.len);
+    struct sockaddr *sa = (struct sockaddr *) &s->addr.data;
+    s->addr.len = sizeof(s->addr.data);
+    s->fd = accept(acc->fd, sa, (socklen_t *) &s->addr.len);
     if (s->fd == -1) {
         if (errno != EAGAIN) {
             perror("accept");
         }
         return 0;
     }
+
+    s->addr.len = sizeof(s->addr.data);
+    getsockname(s->fd, sa, (socklen_t *) &s->addr.len);
     msgs_set_non_blocking(s->fd);
     return s->fd;
 }
@@ -254,11 +275,4 @@ int ep_notify_read(int infd) {
 
 void ep_notify_init(struct msgs_file *f, int infd, const char *path) {
     inotify_add_watch(f->wd, path, IN_OPEN | IN_CLOSE);
-}
-
-
-void ep_address_print(struct msgu_address *a) {
-    struct sockaddr_in *s = (struct sockaddr_in *) &a->data;
-    char *addr = (char *) &s->sin_addr;
-    printf("%u.%u.%u.%u\n", addr[0], addr[1], addr[2], addr[3]);
 }

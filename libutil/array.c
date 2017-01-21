@@ -34,6 +34,11 @@ void *msgu_array_access(struct msgu_array *a, size_t index) {
 }
 
 
+const void *msgu_array_const(const struct msgu_array *a, size_t index) {
+    return &a->data[a->esize * index];
+}
+
+
 size_t msgu_array_get(struct msgu_array *a, size_t index, void *elem, size_t count) {
     if ((index + count) > a->allocated) {
         count = a->allocated - index;

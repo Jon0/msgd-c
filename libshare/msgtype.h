@@ -66,6 +66,6 @@ enum msgu_msgtype {
 };
 
 
-const char *msgu_msgtype_str(enum msgu_msgtype type);
+const char *msgu_msgtype_str(const enum msgu_msgtype type);
 
 #endif

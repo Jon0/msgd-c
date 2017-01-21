@@ -60,23 +60,22 @@ int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count) {
 }
 
 
-void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns, struct msgu_stream *s) {
+void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns) {
     parser->fns = fns;
-    parser->stream = s;
     msgu_fragment_reset(parser->read_state, MSGU_FRAGMENT_MAX);
     msgu_fragment_reset(parser->write_state, MSGU_FRAGMENT_MAX);
 }
 
 
-int msgu_parser_read(struct msgu_parser *parser, void *obj) {
+int msgu_parser_read(struct msgu_parser *parser, struct msgu_stream *stream, void *obj) {
     int result;
-    if (msgu_stream_is_open(parser->stream) == 0) {
+    if (msgu_stream_is_open(stream) == 0) {
         printf("reading closed stream\n");
         return -1;
     }
 
     do {
-        result = parser->fns->read(parser->stream, parser->read_state, obj);
+        result = parser->fns->read(stream, parser->read_state, obj);
         if (result == msgu_stream_complete) {
             msgu_fragment_reset(parser->read_state, MSGU_FRAGMENT_MAX);
             return 1;
@@ -94,15 +93,15 @@ int msgu_parser_read(struct msgu_parser *parser, void *obj) {
 }
 
 
-int msgu_parser_write(struct msgu_parser *parser, const void *obj) {
+int msgu_parser_write(struct msgu_parser *parser, struct msgu_stream *stream, const void *obj) {
     int result;
-    if (msgu_stream_is_open(parser->stream) == 0) {
+    if (msgu_stream_is_open(stream) == 0) {
         printf("writing closed stream\n");
         return -1;
     }
 
     do {
-        result = parser->fns->write(parser->stream, parser->write_state, obj);
+        result = parser->fns->write(stream, parser->write_state, obj);
         if (result == msgu_stream_complete) {
             msgu_fragment_reset(parser->write_state, MSGU_FRAGMENT_MAX);
             return 1;

@@ -69,6 +69,12 @@ void ep_unlink(const char *address);
 
 
 /*
+ * print readable ip address
+ */
+void msgs_address_print(char *buf, const struct msgu_address *a);
+
+
+/*
  * set endpoint to listen for local connections
  */
 void ep_local(struct msgu_address *a, const char *address);
@@ -88,6 +94,5 @@ int msgs_close_socket(struct msgs_socket *s);
 int ep_notify_create();
 int ep_notify_read(int infd);
 void ep_notify_init(struct msgs_file *f, int infd, const char *path);
-void ep_address_print(struct msgu_address *a);
 
 #endif

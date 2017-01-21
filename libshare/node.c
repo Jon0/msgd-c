@@ -3,17 +3,19 @@
 #include "node.h"
 
 
-void msgu_node_print(struct msgu_node *n) {
-    printf("%s, (type: %d, mode %d)", n->node_name.buf, n->node_type, n->node_mode);
+int msgu_node_print(char *buf, const struct msgu_node *n) {
+    return sprintf(buf, "(%s, type: %d, mode %d)", n->node_name.buf, n->node_type, n->node_mode);
 }
 
 
-void msgu_node_list_print(struct msgu_queue *q) {
+void msgu_node_list_print(char *buf, const struct msgu_queue *q) {
+    int index = 0;
     for (int i = 0; i < q->size; ++i) {
-        struct msgu_node *node = msgu_array_access(&q->arr, i);
-        printf("\t");
-        msgu_node_print(node);
-        printf("\n");
+        const struct msgu_node *node = msgu_array_const(&q->arr, i);
+        if (i > 0) {
+            index += sprintf(&buf[index], ", ");
+        }
+        index += msgu_node_print(&buf[index], node);
     }
 }
 

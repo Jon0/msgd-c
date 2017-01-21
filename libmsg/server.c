@@ -7,16 +7,25 @@
 void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
     struct msg_server *serv = p;
     struct msgs_socket newsocket;
+    char sockname [128];
 
     // which acceptor was updated?
     if (e->id == serv->local_acc_id) {
         while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
-            printf("server accept: %d (local)\n", e->id);
+            msgs_address_print(sockname, &newsocket.addr);
+            printf("[server] accept: %s from %d (local)\n", sockname, e->id);
+            msg_server_init_connection(serv, &newsocket);
+        }
+    }
+    else if (e->id == serv->remote_acc_id) {
+        while (msgs_accept_socket(&serv->remote_acc, &newsocket)) {
+            msgs_address_print(sockname, &newsocket.addr);
+            printf("[server] accept: %s from %d (remote)\n", sockname, e->id);
             msg_server_init_connection(serv, &newsocket);
         }
     }
     else {
-        printf("server accept: %d (unknown)\n", e->id);
+        printf("[server] accept: %d (unknown)\n", e->id);
     }
 }
 
@@ -108,7 +117,7 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
 
 
 void msg_server_print_state(struct msg_server *serv) {
-    printf("server state:\n");
+    printf("[server state] ");
     msgu_share_debug(&serv->shares);
 }
 
@@ -172,7 +181,7 @@ void msg_server_run(struct msg_server *serv) {
 
 
 int msg_server_recv(struct msg_server *serv, struct msg_connection *conn, struct msgu_message *msg) {
-    msgu_message_print(msg);
+    msg_connection_log(conn, msg, "recv");
     msg_server_apply(serv, conn, msg);
     msgu_message_free(msg);
     msg_server_print_state(serv);
@@ -209,19 +218,19 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
     int i;
 
     // lock mutex and apply state changes
-    switch (msg->data_type) {
+    switch (msg->event_type) {
     case msgtype_init_local:
         break;
     case msgtype_init_remote:
         break;
     case msgtype_add_share_file:
-        msgu_share_file(&serv->shares, &msg->data.share_file.share_name);
+        msgu_share_file(&serv->shares, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_open:
-        status->new_handle = msg_connection_init_handle(conn, &msg->data.share_file.share_name);
+        status->new_handle = msg_connection_init_handle(conn, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_stream_read:
-        msg_connection_read_handle(conn, msg->data.node_read.node_handle);
+        msg_connection_read_handle(conn, msg->buf.data.node_read.node_handle);
         break;
     }
     return 1;
@@ -236,25 +245,28 @@ int msg_server_notify(struct msg_server *serv, struct msg_connection *conn, cons
 
 int msg_server_reply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status) {
     int have_update = 0;
-    int update_type;
-    union msgu_any_update update;
+    int event_type;
+    int data_type;
+    union msgu_any_msg data;
 
 
-    switch (msg->data_type) {
+    switch (msg->event_type) {
     case msgtype_list_shares:
         have_update = 1;
-        update_type = msgtype_return_share_list;
-        msgs_node_list_of_shares(&serv->shares, &update.node_list.nodes);
+        event_type = msgtype_return_share_list;
+        data_type = msgdata_node_list;
+        msgs_node_list_of_shares(&serv->shares, &data.node_list.nodes);
         break;
     case msgtype_file_open:
         have_update = 1;
-        update_type = msgtype_return_node_handle;
-        update.node_handle.node_handle = status->new_handle;
+        event_type = msgtype_return_node_handle;
+        data_type = msgdata_node_handle;
+        data.node_handle.node_handle = status->new_handle;
         break;
     }
 
     if (have_update) {
-        msg_connection_send_message(conn, update_type, &update);
+        msg_connection_send_message(conn, event_type, data_type, &data);
     }
     return 1;
 }

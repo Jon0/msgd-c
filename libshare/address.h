@@ -28,7 +28,7 @@ struct msgu_ipv6 {
  * any type of address
  */
 struct msgu_address {
-    char   data [32];
+    char   data [128];
     size_t len;
 };
 

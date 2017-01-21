@@ -1,6 +1,6 @@
 #include "msgtype.h"
 
-const char *msgu_msgtype_str(enum msgu_msgtype type) {
+const char *msgu_msgtype_str(const enum msgu_msgtype type) {
     switch (type) {
     case msgtype_init_local:
         return "init_local";
