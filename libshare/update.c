@@ -55,7 +55,7 @@ size_t msgu_share_file_size(struct msgu_share_file_update *u) {
 
 
 int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u) {
-    static msgu_frag_read_t msgu_add_share_read_fns[] = {
+    static msgu_transfer_read_t msgu_add_share_read_fns[] = {
         msgu_string_read_frag,
     };
     void *layout[] = {
@@ -66,7 +66,7 @@ int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_update *u) {
-    static msgu_frag_write_t msgu_add_share_write_fns[] = {
+    static msgu_transfer_write_t msgu_add_share_write_fns[] = {
         msgu_string_write_frag,
     };
     const void *layout[] = {
@@ -113,7 +113,7 @@ size_t msgu_node_read_size(struct msgu_node_read_update *u) {
 
 
 int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u) {
-    static msgu_frag_read_t msgu_node_read_read_fns[] = {
+    static msgu_transfer_read_t msgu_node_read_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
     };
@@ -126,7 +126,7 @@ int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, str
 
 
 int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_update *u) {
-    static msgu_frag_write_t msgu_node_read_write_fns[] = {
+    static msgu_transfer_write_t msgu_node_read_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
     };
@@ -144,7 +144,7 @@ size_t msgu_node_write_size(struct msgu_node_write_update *u) {
 
 
 int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u) {
-    static msgu_frag_read_t msgu_node_write_read_fns[] = {
+    static msgu_transfer_read_t msgu_node_write_read_fns[] = {
         msgu_i32_read_frag,
         msgu_string_read_frag,
     };
@@ -157,7 +157,7 @@ int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u) {
-    static msgu_frag_write_t msgu_node_write_write_fns[] = {
+    static msgu_transfer_write_t msgu_node_write_write_fns[] = {
         msgu_i32_write_frag,
         msgu_string_write_frag,
     };
@@ -169,33 +169,8 @@ int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, s
 }
 
 
-
-size_t msgu_update_size(int type, union msgu_any_update *u) {
-    switch (type) {
-    case msgtype_init_local:
-        return msgu_init_local_size(&u->init_local);
-    case msgtype_init_remote:
-        return msgu_init_remote_size(&u->init_remote);
-    case msgtype_add_share_file:
-        return msgu_share_file_size(&u->share_file);
-    case msgtype_file_open:
-        return msgu_share_file_size(&u->share_file);
-    case msgtype_return_share_list:
-        return msgu_node_list_size(&u->node_list);
-    case msgtype_return_node_handle:
-        return msgu_node_handle_size(&u->node_handle);
-    case msgtype_file_stream_read:
-        return msgu_node_read_size(&u->node_read);
-    case msgtype_file_stream_write:
-        return msgu_node_write_size(&u->node_write);
-    default:
-        return 0;
-    }
-}
-
-
 void msgu_update_print(int type, union msgu_any_update *u) {
-    printf("update: %s, size: %lu\n", msgu_msgtype_str(type), msgu_update_size(type, u));
+    printf("update: %s, size: %lu\n", msgu_msgtype_str(type), msgu_any_update_size(type, u));
     switch (type) {
     case msgtype_add_share_file:
         printf("args: %s\n", u->share_file.share_name.buf);
@@ -226,6 +201,30 @@ void msgu_update_free(int type, union msgu_any_update *u) {
         break;
     default:
         break;
+    }
+}
+
+
+size_t msgu_any_update_size(int data_type, union msgu_any_update *data) {
+    switch (data_type) {
+    case msgtype_init_local:
+        return msgu_init_local_size(&data->init_local);
+    case msgtype_init_remote:
+        return msgu_init_remote_size(&data->init_remote);
+    case msgtype_add_share_file:
+        return msgu_share_file_size(&data->share_file);
+    case msgtype_file_open:
+        return msgu_share_file_size(&data->share_file);
+    case msgtype_return_share_list:
+        return msgu_node_list_size(&data->node_list);
+    case msgtype_return_node_handle:
+        return msgu_node_handle_size(&data->node_handle);
+    case msgtype_file_stream_read:
+        return msgu_node_read_size(&data->node_read);
+    case msgtype_file_stream_write:
+        return msgu_node_write_size(&data->node_write);
+    default:
+        return 0;
     }
 }
 

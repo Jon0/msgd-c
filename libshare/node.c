@@ -26,7 +26,7 @@ size_t msgu_node_size_frag(const void *n) {
 
 int msgu_node_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *n) {
     struct msgu_node *node = n;
-    static msgu_frag_read_t msgu_node_read_fns[] = {
+    static msgu_transfer_read_t msgu_node_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
         msgu_string_read_frag,
@@ -42,7 +42,7 @@ int msgu_node_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *
 
 int msgu_node_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *n) {
     const struct msgu_node *node = n;
-    static msgu_frag_write_t msgu_node_write_fns[] = {
+    static msgu_transfer_write_t msgu_node_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
         msgu_string_write_frag,
@@ -63,5 +63,7 @@ hash_t msgu_node_hash(const void *n) {
 
 
 int msgu_node_cmp(const void *a, const void *b) {
-    return 0;
+    const struct msgu_node *node_a = a;
+    const struct msgu_node *node_b = b;
+    return msgu_string_compare(&node_a->node_name, &node_b->node_name);
 }

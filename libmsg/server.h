@@ -2,7 +2,7 @@
 #define CHANNEL_H
 
 #include <libutil/map.h>
-#include <libshare/channel.h>
+#include <libutil/parser.h>
 #include <libshare/host.h>
 #include <libshare/network.h>
 #include <libshare/share.h>
@@ -11,26 +11,7 @@
 #include <libsys/table.h>
 #include <libsys/thread.h>
 
-
-/*
- * either local-filesystems, local-processes or remote connections
- */
-struct msg_connection {
-    msgs_mutex_t         read_mutex;
-    msgs_mutex_t         write_mutex;
-    int                  new_events;
-    int                  next_handle;
-    struct msgs_socket   socket;
-    struct msgu_channel  ch;
-    struct msgu_map      handles;
-};
-
-
-/*
- * create a new handle to a shared resource
- */
-int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
-int msg_connection_read_handle(struct msg_connection *conn, int node_handle);
+#include "connection.h"
 
 
 /*
@@ -90,7 +71,6 @@ int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket)
 int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
 int msg_server_connection_notify(struct msg_server *serv, int id);
-int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn);
 
 
 /*
@@ -105,11 +85,12 @@ void msg_server_run(struct msg_server *serv);
 /*
  * server responding to events
  */
-int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta);
-int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta);
-int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status);
-int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
-int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status);
+int msg_server_recv(struct msg_server *serv, struct msg_connection *conn, struct msgu_message *msg);
+int msg_server_apply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg);
+int msg_server_validate(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg);
+int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, struct msg_status *status);
+int msg_server_notify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status);
+int msg_server_reply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status);
 
 
 #endif

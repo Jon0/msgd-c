@@ -4,23 +4,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "hash.h"
-#include "stream.h"
+#include "serial.h"
 
 
 typedef int32_t array_id_t;
-
-
-/*
- * functions for elements in arrays
- */
-struct msgu_element {
-    msgu_frag_size_t  size;
-    msgu_frag_read_t  read;
-    msgu_frag_write_t write;
-    msgu_map_hash_t   hash;
-    msgu_map_cmp_t    cmp;
-};
 
 
 struct msgu_array {

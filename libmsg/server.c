@@ -33,23 +33,9 @@ static struct msgu_handlers msg_server_handlers = {
 };
 
 
-int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name) {
-    uint32_t new_handle = conn->next_handle++;
-    struct msgu_string name;
-    msgu_string_copy(&name, share_name);
-    printf("opening %s as %d\n", share_name->buf, new_handle);
-    msgu_map_insert(&conn->handles, &new_handle, &name);
-    return new_handle;
+int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *msg, void *serv) {
+    return msg_server_recv(serv, conn, msg);
 }
-
-
-int msg_connection_read_handle(struct msg_connection *conn, int node_handle) {
-    struct msgu_string *name = msgu_map_get(&conn->handles, &node_handle);
-    printf("read handle: %d, %s\n", node_handle, name->buf);
-
-
-}
-
 
 
 struct msg_host *msg_server_self(struct msg_server *s) {
@@ -59,22 +45,16 @@ struct msg_host *msg_server_self(struct msg_server *s) {
 
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
-    conn.socket = *socket;
-    conn.new_events = 0;
-    conn.next_handle = 0;
-    msgs_mutex_init(&conn.read_mutex);
-    msgs_mutex_init(&conn.write_mutex);
-    msgu_channel_init(&conn.ch, (msgu_stream_id_t) socket->fd, &msgs_socket_fn);
-    msgu_map_init(&conn.handles, msgu_uint32_hash, msgu_uint32_cmp, sizeof(uint32_t), sizeof(struct msgu_string));
-    msgu_map_alloc(&conn.handles, 16);
-
+    msg_connection_init(&conn, socket, msg_server_message_recv, s);
+    int id = msgu_add_recv_handler(&s->emap);
 
     // lock and modify server state
     msgs_mutex_lock(&s->conn_mutex);
-    int id = msgu_add_recv_handler(&s->emap);
     msgu_map_insert(&s->connections, &id, &conn);
-    msgs_poll_socket(&s->tb, socket, id);
     msgs_mutex_unlock(&s->conn_mutex);
+
+    // start polling after adding to connection map
+    msgs_poll_socket(&s->tb, socket, id);
     return id;
 }
 
@@ -83,8 +63,7 @@ int msg_server_close_connection(struct msg_server *s, int id) {
     struct msg_connection *conn = msg_server_connection(s, id);
     msgs_mutex_lock(&s->conn_mutex);
     if (conn) {
-        msgs_close_socket(&conn->socket);
-        msgu_channel_free(&conn->ch);
+        msg_connection_close(conn);
     }
     msgu_map_erase(&s->connections, &id);
     msgs_mutex_unlock(&s->conn_mutex);
@@ -104,14 +83,12 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
     msgs_mutex_lock(&serv->conn_mutex);
     conn = msg_server_connection(serv, id);
     if (conn) {
+        msg_connection_notify(conn);
 
-        // TODO if not locked, the message may go unread
-        // depending on the state of currently reading thread
-        conn->new_events = 1;
-
+        // lock read mutex first
         if (msgs_mutex_try_lock(&conn->read_mutex)) {
             msgs_mutex_unlock(&serv->conn_mutex);
-            int result = msg_server_connection_poll(serv, id, conn);
+            int result = msg_connection_poll(conn);
             msgs_mutex_unlock(&conn->read_mutex);
             if (result == -1) {
                 // socket was closed
@@ -127,34 +104,6 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
         printf("connection %d: not found\n", id);
         msgs_mutex_unlock(&serv->conn_mutex);
     }
-}
-
-
-int msg_server_connection_poll(struct msg_server *serv, int id, struct msg_connection *conn) {
-    struct msg_delta delta;
-    int read_delta;
-
-    delta.source_id = id;
-    delta.source    = conn;
-
-    // read available data from socket
-    printf("read channel %d\n", id);
-    do {
-        read_delta = msgu_channel_try_read(&conn->ch, &delta.update_type, &delta.update);
-        if (msgu_channel_is_closed(&conn->ch)) {
-            return -1;
-        }
-
-        // apply update using current thread
-        if (read_delta) {
-            msgu_update_print(delta.update_type, &delta.update);
-            msg_server_apply(serv, &delta);
-            msgu_update_free(delta.update_type, &delta.update);
-            msg_server_print_state(serv);
-        }
-    }
-    while(read_delta);
-    return 0;
 }
 
 
@@ -222,14 +171,23 @@ void msg_server_run(struct msg_server *serv) {
 }
 
 
-int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
+int msg_server_recv(struct msg_server *serv, struct msg_connection *conn, struct msgu_message *msg) {
+    msgu_message_print(msg);
+    msg_server_apply(serv, conn, msg);
+    msgu_message_free(msg);
+    msg_server_print_state(serv);
+    return 0;
+}
+
+
+int msg_server_apply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg) {
     struct msg_status status;
     status.error = 0;
     status.new_handle = 0;
-    if (msg_server_validate(serv, delta)) {
-        if (msg_server_modify(serv, delta, &status)) {
-            msg_server_notify(serv, delta, &status);
-            msg_server_reply(serv, delta, &status);
+    if (msg_server_validate(serv, conn, msg)) {
+        if (msg_server_modify(serv, conn, msg, &status)) {
+            msg_server_notify(serv, conn, msg, &status);
+            msg_server_reply(serv, conn, msg, &status);
         }
         else {
             return -1;
@@ -239,51 +197,50 @@ int msg_server_apply(struct msg_server *serv, const struct msg_delta *delta) {
 }
 
 
-int msg_server_validate(struct msg_server *serv, const struct msg_delta *delta) {
+int msg_server_validate(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg) {
     // check update is valid
     return 1;
 }
 
 
-int msg_server_modify(struct msg_server *serv, const struct msg_delta *delta, struct msg_status *status) {
+int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, struct msg_status *status) {
     struct msgu_file_event fevent;
     char path [256];
     int i;
 
     // lock mutex and apply state changes
-    switch (delta->update_type) {
+    switch (msg->data_type) {
     case msgtype_init_local:
         break;
     case msgtype_init_remote:
         break;
     case msgtype_add_share_file:
-        msgu_share_file(&serv->shares, &delta->update.share_file.share_name);
+        msgu_share_file(&serv->shares, &msg->data.share_file.share_name);
         break;
     case msgtype_file_open:
-        status->new_handle = msg_connection_init_handle(delta->source, &delta->update.share_file.share_name);
+        status->new_handle = msg_connection_init_handle(conn, &msg->data.share_file.share_name);
         break;
     case msgtype_file_stream_read:
-        msg_connection_read_handle(delta->source, delta->update.node_read.node_handle);
+        msg_connection_read_handle(conn, msg->data.node_read.node_handle);
         break;
     }
     return 1;
 }
 
 
-int msg_server_notify(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
+int msg_server_notify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status) {
     // send notification to any update listeners
     return 1;
 }
 
 
-int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, const struct msg_status *status) {
-    struct msgu_channel *out = &delta->source->ch;
+int msg_server_reply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status) {
     int have_update = 0;
     int update_type;
     union msgu_any_update update;
 
 
-    switch (delta->update_type) {
+    switch (msg->data_type) {
     case msgtype_list_shares:
         have_update = 1;
         update_type = msgtype_return_share_list;
@@ -296,12 +253,8 @@ int msg_server_reply(struct msg_server *serv, const struct msg_delta *delta, con
         break;
     }
 
-
     if (have_update) {
-        printf("reply:\n");
-        msgu_update_print(update_type, &update);
-        msgu_channel_update_send(out, update_type, &update);
-        msgu_channel_write(out);
+        msg_connection_send_message(conn, update_type, &update);
     }
     return 1;
 }

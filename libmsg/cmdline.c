@@ -4,6 +4,11 @@
 #include "cmdline.h"
 
 
+void msg_log(const char *label, const char *msg) {
+    printf("[%-15s]", label, msg);
+}
+
+
 void msg_read_string(char *buf, size_t count) {
     fgets(buf, count, stdin);
     buf[strlen(buf) - 1] = 0;

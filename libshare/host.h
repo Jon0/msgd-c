@@ -4,6 +4,7 @@
 #include <libutil/buffer.h>
 #include <libutil/map.h>
 
+#include "msgtype.h"
 #include "share.h"
 
 
@@ -41,12 +42,5 @@ void msg_merge_peers(struct msg_host_list *h, struct msgu_stream *s);
 size_t msg_host_list_merge(struct msg_host_list *h, struct msgu_stream *s);
 struct msg_host *msg_host_match(struct msg_host_list *h, const char *hostname);
 
-
-
-/*
- * send and recieve hosts
- */
-void msg_send_host(struct msg_host *h, struct msgu_stream *s);
-void msg_send_host_list(struct msg_host_list *h, struct msgu_stream *s);
 
 #endif

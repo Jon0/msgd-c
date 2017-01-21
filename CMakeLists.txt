@@ -35,4 +35,3 @@ add_subdirectory(msgcmd)
 
 #build tests
 add_subdirectory(tests)
-add_subdirectory(testutil)

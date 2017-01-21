@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include <libutil/map.h>
 #include <libutil/tree.h>
 

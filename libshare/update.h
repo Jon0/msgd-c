@@ -147,13 +147,6 @@ int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_update *u);
 
 
-
-/*
- * return message size
- */
-size_t msgu_update_size(int type, union msgu_any_update *u);
-
-
 /*
  * print type
  */
@@ -164,6 +157,12 @@ void msgu_update_print(int type, union msgu_any_update *u);
  * free memory
  */
 void msgu_update_free(int type, union msgu_any_update *u);
+
+
+/*
+ * return message size
+ */
+size_t msgu_any_update_size(int data_type, union msgu_any_update *data);
 
 
 /*
