@@ -10,8 +10,9 @@ void msgu_string_init(struct msgu_string *str) {
 
 
 void msgu_string_alloc(struct msgu_string *str, size_t size) {
-    str->buf = malloc(size);
     str->count = size;
+    str->buf = malloc(size);
+    memset(str->buf, 0, size);
 }
 
 

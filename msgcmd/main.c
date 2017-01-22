@@ -8,6 +8,7 @@
 
 void print_usage() {
     printf("msgcmd <command> <path>\n");
+    printf("commands: connect, list, share, read, write\n");
 }
 
 
@@ -31,6 +32,7 @@ void run_command(struct msg_client_state *nstate, char *cmd, int args, char *arg
         msg_open_share(nstate, argv[0]);
         msg_wait(nstate);
         msg_write(nstate, 0, argv[1], strlen(argv[1]));
+        msg_wait(nstate);
     }
     else {
         printf("unknown command: %s\n", cmd);

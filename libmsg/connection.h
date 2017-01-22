@@ -57,7 +57,7 @@ void msg_connection_log(const struct msg_connection *conn, const struct msgu_mes
  * create a new handle to a shared resource
  */
 int msg_connection_init_handle(struct msg_connection *conn, struct msgs_file_cache *c, const struct msgu_string *name);
-int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int node_handle);
+int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int hdl, char *buf, size_t count);
 
 
 /*
@@ -70,7 +70,7 @@ int msg_connection_poll(struct msg_connection *conn);
 /*
  * sends any update type
  */
-int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, union msgu_any_msg *data);
+int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, const union msgu_any_msg *data);
 
 
 #endif

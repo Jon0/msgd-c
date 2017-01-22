@@ -14,5 +14,6 @@ int main(int argc, const char *argv[]) {
         }
     }
     msg_server_run(&cs);
+    printf("exiting\n");
     return 0;
 }

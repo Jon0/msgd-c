@@ -20,6 +20,8 @@
 struct msg_status {
     int error;
     int new_handle;
+    char buf [256];
+    int count;
 };
 
 

@@ -50,6 +50,8 @@ const char *msgu_msgtype_str(const enum msgu_msgtype type) {
         return "return_node_list";
     case msgtype_return_node_handle:
         return "return_node_handle";
+    case msgtype_return_node_content:
+        return "return_node_content";
     default:
         return "unknown";
     }

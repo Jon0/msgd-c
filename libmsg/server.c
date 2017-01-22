@@ -219,9 +219,7 @@ int msg_server_validate(struct msg_server *serv, struct msg_connection *conn, co
 
 
 int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, struct msg_status *status) {
-    struct msgu_file_event fevent;
-    char path [256];
-    int i;
+    int result;
 
     // lock mutex and apply state changes
     switch (msg->event_type) {
@@ -241,7 +239,14 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
         status->new_handle = msg_connection_init_handle(conn, &serv->cache, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_stream_read:
-        msg_connection_read_handle(conn, &serv->cache, msg->buf.data.node_read.node_handle);
+        status->new_handle = msg->buf.data.node_read.node_handle;
+        result = msg_connection_read_handle(conn, &serv->cache, msg->buf.data.node_read.node_handle, status->buf, sizeof(status->buf));
+        if (result > 0) {
+            status->count = result;
+        }
+        else {
+            status->count = 0;
+        }
         break;
     }
     return 1;
@@ -273,6 +278,13 @@ int msg_server_reply(struct msg_server *serv, struct msg_connection *conn, const
         event_type = msgtype_return_node_handle;
         data_type = msgdata_node_handle;
         data.node_handle.node_handle = status->new_handle;
+        break;
+    case msgtype_file_stream_read:
+        have_update = 1;
+        event_type = msgtype_return_node_content;
+        data_type = msgdata_node_write;
+        data.node_write.node_handle = status->new_handle;
+        msgu_string_from_buffer(&data.node_write.data, status->buf, status->count);
         break;
     }
 

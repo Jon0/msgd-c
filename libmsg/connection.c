@@ -56,17 +56,16 @@ int msg_connection_init_handle(struct msg_connection *conn, struct msgs_file_cac
     struct msgs_cache_key cache_key;
     cache_key.remote_name = conn->remote_name;
     cache_key.handle_id = conn->next_handle++;
-    msgs_file_open(c, &cache_key, name);
+    msgs_file_handle(c, &cache_key, name);
     return cache_key.handle_id;
 }
 
 
-int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int node_handle) {
+int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int hdl, char *buf, size_t count) {
     struct msgs_cache_key cache_key;
-    char buf [256];
     cache_key.remote_name = conn->remote_name;
-    cache_key.handle_id = node_handle;
-    msgs_file_read(c, &cache_key, buf, 256);
+    cache_key.handle_id = hdl;
+    return msgs_file_read(c, &cache_key, buf, count);
 }
 
 
@@ -92,7 +91,7 @@ int msg_connection_poll(struct msg_connection *conn) {
 }
 
 
-int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, union msgu_any_msg *data) {
+int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, const union msgu_any_msg *data) {
     struct msgu_message *to_send = &conn->write_part;
     if (msgu_stream_is_open(&conn->stream)) {
         to_send->event_type = event_type;

@@ -226,9 +226,10 @@ int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s) {
         }
         return 0;
     }
-
-    s->addr.len = sizeof(s->addr.data);
-    getsockname(s->fd, sa, (socklen_t *) &s->addr.len);
+    if (sa->sa_family == AF_UNIX) {
+        s->addr.len = sizeof(s->addr.data);
+        getsockname(s->fd, sa, (socklen_t *) &s->addr.len);
+    }
     msgs_set_non_blocking(s->fd);
     return s->fd;
 }

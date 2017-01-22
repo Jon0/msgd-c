@@ -75,6 +75,7 @@ struct msgu_share_net {
 /*
  * map share name strings to resources
  * for server side
+ * TODO: sort by hosts
  */
 struct msgu_share_map {
     struct msgu_map        id_map;
@@ -89,21 +90,13 @@ void msgu_share_debug(struct msgu_share_map *set);
 int msgu_share_set_init(struct msgu_share_map *set);
 int msgu_share_proc(struct msgu_share_map *set, const struct msgu_string *name);
 int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *name);
+int msgu_share_get_file(struct msgu_share_map *set, const struct msgu_string *name, struct msgu_share_file *fshare);
 
 
 /*
  * create a node list
  */
 void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_queue *nodes);
-
-
-/*
- * write share state to stream
- */
-int msgu_share_list(struct msgu_share_map *set, struct msgu_stream *out);
-int msgu_share_list_dir(struct msgu_share_map *set, struct msgu_stream *out);
-
-
 
 
 #endif
