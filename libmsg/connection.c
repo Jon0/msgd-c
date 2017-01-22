@@ -13,8 +13,6 @@ void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket
     msgs_mutex_init(&conn->write_mutex);
     msgu_stream_init(&conn->stream, &msgs_socket_fn, (msgu_stream_id_t) socket->fd);
     msgu_parser_init(&conn->parser, &msgu_message_transfer_fn);
-    msgu_map_init(&conn->handles, msgu_uint32_hash, msgu_uint32_cmp, sizeof(uint32_t), sizeof(struct msgu_string));
-    msgu_map_alloc(&conn->handles, 16);
 }
 
 
@@ -26,6 +24,11 @@ int msg_connection_connect(struct msg_connection *conn, struct msgu_address *add
     else {
         return 0;
     }
+}
+
+
+void msg_connection_set_name(struct msg_connection *conn, const struct msgu_string *name) {
+    conn->remote_name = *name;
 }
 
 
@@ -49,20 +52,21 @@ void msg_connection_log(const struct msg_connection *conn, const struct msgu_mes
 }
 
 
-int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name) {
-    uint32_t new_handle = conn->next_handle++;
-    struct msgu_string name;
-    msgu_string_copy(&name, share_name);
-    printf("opening %s as %d\n", share_name->buf, new_handle);
-    msgu_map_insert(&conn->handles, &new_handle, &name);
-    return new_handle;
+int msg_connection_init_handle(struct msg_connection *conn, struct msgs_file_cache *c, const struct msgu_string *name) {
+    struct msgs_cache_key cache_key;
+    cache_key.remote_name = conn->remote_name;
+    cache_key.handle_id = conn->next_handle++;
+    msgs_file_open(c, &cache_key, name);
+    return cache_key.handle_id;
 }
 
 
-int msg_connection_read_handle(struct msg_connection *conn, int node_handle) {
-    struct msgu_string *name = msgu_map_get(&conn->handles, &node_handle);
-    printf("read handle: %d, %s\n", node_handle, name->buf);
-
+int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int node_handle) {
+    struct msgs_cache_key cache_key;
+    char buf [256];
+    cache_key.remote_name = conn->remote_name;
+    cache_key.handle_id = node_handle;
+    msgs_file_read(c, &cache_key, buf, 256);
 }
 
 

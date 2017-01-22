@@ -5,6 +5,7 @@
 #include <libutil/stream.h>
 #include <libshare/message.h>
 #include <libsys/endpoint.h>
+#include <libsys/cache.h>
 #include <libsys/thread.h>
 
 
@@ -28,9 +29,9 @@ struct msg_connection {
     struct msgs_socket   socket;
     struct msgu_stream   stream;
     struct msgu_parser   parser;
-    struct msgu_map      handles;
     struct msgu_message  read_part;
     struct msgu_message  write_part;
+    struct msgu_string   remote_name;
     volatile int         new_events;
     int                  next_handle;
 };
@@ -41,6 +42,7 @@ struct msg_connection {
  */
 void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket, msg_message_recv_t fn, void *arg);
 int msg_connection_connect(struct msg_connection *conn, struct msgu_address *addr, msg_message_recv_t fn, void *arg);
+void msg_connection_set_name(struct msg_connection *conn, const struct msgu_string *name);
 void msg_connection_close(struct msg_connection *conn);
 
 
@@ -54,8 +56,8 @@ void msg_connection_log(const struct msg_connection *conn, const struct msgu_mes
 /*
  * create a new handle to a shared resource
  */
-int msg_connection_init_handle(struct msg_connection *conn, const struct msgu_string *share_name);
-int msg_connection_read_handle(struct msg_connection *conn, int node_handle);
+int msg_connection_init_handle(struct msg_connection *conn, struct msgs_file_cache *c, const struct msgu_string *name);
+int msg_connection_read_handle(struct msg_connection *conn, struct msgs_file_cache *c, int node_handle);
 
 
 /*

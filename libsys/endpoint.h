@@ -79,7 +79,7 @@ void msgs_address_print(char *buf, const struct msgu_address *a);
  */
 void ep_local(struct msgu_address *a, const char *address);
 void ep_listen_remote(struct msgu_address *a, short portnum);
-void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum);
+void msgu_init_remote_addr(struct msgu_address *a, const char *ip, short portnum);
 
 /*
  * adds source and dest to table

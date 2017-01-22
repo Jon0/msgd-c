@@ -178,7 +178,7 @@ void ep_listen_remote(struct msgu_address *a, short portnum) {
 }
 
 
-void ep_connect_remote(struct msgu_address *a, const char *ip, short portnum) {
+void msgu_init_remote_addr(struct msgu_address *a, const char *ip, short portnum) {
     struct sockaddr_in *addr = (struct sockaddr_in *) &a->data;
     bzero(addr, sizeof(struct sockaddr_in));
 

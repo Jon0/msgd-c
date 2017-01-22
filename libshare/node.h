@@ -8,7 +8,10 @@
 
 
 /*
- *
+ * objects shared on a host
+ * nodes can be block devices, sockets or directories
+ * nodes can contain attribute metadata
+ * to indicate uptime, availability
  */
 struct msgu_node {
     uint32_t            node_type;

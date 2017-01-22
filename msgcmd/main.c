@@ -12,7 +12,10 @@ void print_usage() {
 
 
 void run_command(struct msg_client_state *nstate, char *cmd, int args, char *argv[]) {
-    if (strcmp(cmd, "list") == 0) {
+    if (strcmp(cmd, "connect") == 0) {
+        msg_peer_connect(nstate, argv[0]);
+    }
+    else if (strcmp(cmd, "list") == 0) {
         msg_list_shares(nstate);
         msg_wait(nstate);
     }
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]) {
     }
 
     // init connection
-    msg_init_local(&nstate);
+    msg_init_local(&nstate, argv[0]);
 
     // send command
     run_command(&nstate, argv[1], argc - 2, &argv[2]);

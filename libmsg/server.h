@@ -31,6 +31,7 @@ struct msg_status {
 struct msg_server {
     struct msgs_event_map emap;
     struct msgs_table     tb;
+    struct msgu_host      self;
 
     int                  local_acc_id;
     struct msgs_acceptor local_acc;
@@ -44,13 +45,8 @@ struct msg_server {
 
     // maps events to and from local shares
     struct msgu_share_map shares;
-
-    // move into connections?
-    struct msg_host_list hosts;
+    struct msgs_file_cache cache;
 };
-
-
-struct msg_host *msg_server_self(struct msg_server *s);
 
 
 /*

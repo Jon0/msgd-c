@@ -6,6 +6,8 @@ const char *msgu_msgtype_str(const enum msgu_msgtype type) {
         return "init_local";
     case msgtype_init_remote:
         return "init_remote";
+    case msgtype_peer_connect:
+        return "peer_connect";
     case msgtype_mount:
         return "mount";
     case msgtype_unmount:

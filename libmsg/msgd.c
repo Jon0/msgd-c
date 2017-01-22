@@ -37,7 +37,6 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msgu_event_map_init(&cs->emap, &msg_client_handlers, cs);
     msgs_table_init(&cs->tb, &cs->emap);
 
-    // todo open conenction
     cs->server_id = msgu_add_recv_handler(&cs->emap);
     msg_connection_connect(&cs->server, addr, msg_client_message_recv, cs);
     msgs_poll_socket(&cs->tb, &cs->server.socket, cs->server_id);
@@ -51,11 +50,19 @@ int msg_disconnect(struct msg_client_state *cs) {
 }
 
 
-int msg_init_local(struct msg_client_state *cs) {
+int msg_init_local(struct msg_client_state *cs, const char *name) {
     struct msgu_init_local_msg init;
     init.version_maj = 0;
     init.version_min = 1;
+    msgu_string_from_static(&init.proc_name, name);
     return msg_connection_send_message(&cs->server, msgtype_init_local, msgdata_init_local, (union msgu_any_msg *) &init);
+}
+
+
+int msg_peer_connect(struct msg_client_state *cs, const char *addr) {
+    struct msgu_host_addr_msg haddr;
+    msgu_string_from_static(&haddr.address_str, addr);
+    return msg_connection_send_message(&cs->server, msgtype_peer_connect, msgdata_host_addr, (union msgu_any_msg *) &haddr);
 }
 
 

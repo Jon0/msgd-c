@@ -48,18 +48,4 @@ struct ep_network_interface {
 };
 
 
-/*
- * host may require multiple addresses
- * one for each interface
- */
-struct ep_host {
-    char addr [32];
-    char hostname [256];
-    int32_t flags;
-};
-
-
-int ep_read_host(struct ep_host *h, struct msgu_buffer *b, size_t offset);
-int ep_write_host(struct ep_host *h, struct msgu_buffer *b);
-
 #endif

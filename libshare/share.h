@@ -35,68 +35,38 @@ struct msgu_fs_operations {
 
 
 /*
- * objects shared on a host
- * shares can be block devices, sockets or filesystems
- * shares can contain attribute metadata
- * to indicate uptime, availability
- */
-struct msgu_share_meta {
-    struct msgu_string name;
-    int type;
-    int label;
-    int attributes;
-    void *data;
-    struct msgu_fs_operations ops;
-};
-
-
-/*
- * shares as seen by other hosts
- * does not distinguish types
- */
-struct msgu_share_set {
-    size_t share_count;
-};
-
-
-void ep_share_set_print(struct msgu_share_set *set);
-void ep_share_set_init(struct msgu_share_set *set);
-size_t ep_share_set_size(struct msgu_share_set *set);
-size_t ep_share_set_read(struct msgu_share_set *set, struct msgu_stream *s);
-size_t ep_share_set_write(struct msgu_share_set *set, struct msgu_stream *s);
-
-
-/*
- * only processes have epid
+ * stored in map to find share types
  */
 struct msgu_share_id {
-    int id;
-    int type;
+    char type;
     size_t index;
 };
 
 
-struct msg_share_proc {
-    struct msgu_share_meta meta;
-    int epid;
-    char *procname;
+/*
+ * only processes have connection id
+ */
+struct msgu_share_proc {
+    struct msgu_node   node;
+    struct msgu_string procname;
+    int                connection_id;
 };
 
 
 /*
  * requires listening for inotify events and incoming requests
  */
-struct msg_share_file {
-    struct msgu_share_meta meta;
-    struct msgu_string     share_path;
+struct msgu_share_file {
+    struct msgu_node   node;
+    struct msgu_string share_path;
 };
 
 
 /*
  * net shares are usually owned by another machine
  */
-struct msg_share_net {
-    struct msgu_share_meta meta;
+struct msgu_share_net {
+    struct msgu_node   node;
     int epid;
     int address;
 };
@@ -108,8 +78,8 @@ struct msg_share_net {
  */
 struct msgu_share_map {
     struct msgu_map        id_map;
-    struct msg_share_proc *procs;
-    struct msg_share_file *files;
+    struct msgu_share_proc *procs;
+    struct msgu_share_file *files;
     size_t proc_shares;
     size_t file_shares;
 };

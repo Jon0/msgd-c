@@ -46,7 +46,8 @@ int msg_disconnect(struct msg_client_state *cs);
 /*
  * requests to server process
  */
-int msg_init_local(struct msg_client_state *cs);
+int msg_init_local(struct msg_client_state *cs, const char *name);
+int msg_peer_connect(struct msg_client_state *cs, const char *addr);
 int msg_list_shares(struct msg_client_state *cs);
 int msg_create_share(struct msg_client_state *cs, char *path);
 int msg_open_share(struct msg_client_state *cs, char *path);

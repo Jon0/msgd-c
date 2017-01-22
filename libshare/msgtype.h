@@ -18,10 +18,8 @@ enum msgu_msgtype {
     /*
      * network controls
      */
-    msgtype_peer_init,
-    msgtype_peer_update,
-    msgtype_peer_all,
-    msgtype_peer_one,
+    msgtype_peer_connect,
+
 
     /*
      * mount controls

@@ -14,6 +14,7 @@
  */
 enum msgu_data_type {
     msgdata_empty,
+    msgdata_host_addr,
     msgdata_init_local,
     msgdata_init_remote,
     msgdata_share_file,
@@ -35,11 +36,20 @@ struct msgu_empty_msg {};
 
 
 /*
+ * send ip address
+ */
+struct msgu_host_addr_msg {
+     struct msgu_string address_str;
+};
+
+
+/*
  * should be sent first to setup connection
  */
 struct msgu_init_local_msg {
      int32_t            version_maj;
      int32_t            version_min;
+     struct msgu_string proc_name;
 };
 
 
@@ -112,6 +122,7 @@ struct msgu_broadcast_msg {
 
 union msgu_any_msg {
     struct msgu_empty_msg       empty;
+    struct msgu_host_addr_msg   host_addr;
     struct msgu_init_local_msg  init_local;
     struct msgu_init_remote_msg init_remote;
     struct msgu_share_file_msg  share_file;
@@ -135,6 +146,11 @@ struct msgu_msgdata {
 size_t msgu_empty_size(const struct msgu_empty_msg *u);
 int msgu_empty_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_empty_msg *u);
 int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_empty_msg *u);
+
+
+size_t msgu_host_addr_size(const struct msgu_host_addr_msg *u);
+int msgu_host_addr_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_host_addr_msg *u);
+int msgu_host_addr_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_host_addr_msg *u);
 
 
 size_t msgu_init_local_size(const struct msgu_init_local_msg *u);

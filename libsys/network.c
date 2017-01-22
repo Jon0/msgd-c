@@ -10,7 +10,7 @@
 #include "network.h"
 
 
-void ep_host_init_self(struct ep_host *h) {
+void msgs_host_init_self(struct msgu_host *h) {
     struct ifaddrs *addr, *ifa;
     int family, s, n;
     char host [32];
@@ -22,7 +22,7 @@ void ep_host_init_self(struct ep_host *h) {
         if (family == AF_INET || family == AF_INET6) {
             s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
             if (s == 0) {
-                strcpy(h->addr, host);
+                strcpy(h->addr.data, host);
             }
         }
     }

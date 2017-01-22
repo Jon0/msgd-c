@@ -8,6 +8,8 @@ const char *msgu_msgdata_str(const enum msgu_data_type type) {
     switch (type) {
     case msgdata_empty:
         return "empty";
+    case msgdata_host_addr:
+        return "host_addr";
     case msgdata_init_local:
         return "init_local";
     case msgdata_init_remote:
@@ -45,33 +47,88 @@ int msgu_empty_write(struct msgu_stream *stream, struct msgu_fragment *f, const 
 }
 
 
+size_t msgu_host_addr_size(const struct msgu_host_addr_msg *u) {
+    return msgu_string_size(&u->address_str);
+}
+
+
+int msgu_host_addr_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_host_addr_msg *u) {
+    return msgu_string_read_frag(stream, f, &u->address_str);
+}
+
+
+int msgu_host_addr_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_host_addr_msg *u) {
+    return msgu_string_write_frag(stream, f, &u->address_str);
+}
+
+
 size_t msgu_init_local_size(const struct msgu_init_local_msg *u) {
-    return 0;
+    return sizeof(u->version_maj) + sizeof(u->version_min) + msgu_string_size(&u->proc_name);
 }
 
 
 int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_msg *u) {
-    return msgu_stream_complete;
+    static msgu_transfer_read_t msgu_init_local_read_fns[] = {
+        msgu_i32_read_frag,
+        msgu_i32_read_frag,
+        msgu_string_read_frag,
+    };
+    void *layout[] = {
+        &u->version_maj,
+        &u->version_min,
+        &u->proc_name,
+    };
+    return msgu_read_many(stream, f, msgu_init_local_read_fns, layout, 3);
 }
 
 
 int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_local_msg *u) {
-    return msgu_stream_complete;
+    static msgu_transfer_write_t msgu_init_local_write_fns[] = {
+        msgu_i32_write_frag,
+        msgu_i32_write_frag,
+        msgu_string_write_frag,
+    };
+    const void *layout[] = {
+        &u->version_maj,
+        &u->version_min,
+        &u->proc_name,
+    };
+    return msgu_write_many(stream, f, msgu_init_local_write_fns, layout, 3);
 }
 
 
 size_t msgu_init_remote_size(const struct msgu_init_remote_msg *u) {
-    return 0;
+    return sizeof(u->version_maj) + sizeof(u->version_min) + msgu_string_size(&u->host_name);
 }
 
 
 int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_msg *u) {
-    return msgu_stream_complete;
+    static msgu_transfer_read_t msgu_init_remote_read_fns[] = {
+        msgu_i32_read_frag,
+        msgu_i32_read_frag,
+        msgu_string_read_frag,
+    };
+    void *layout[] = {
+        &u->version_maj,
+        &u->version_min,
+        &u->host_name,
+    };
+    return msgu_read_many(stream, f, msgu_init_remote_read_fns, layout, 3);
 }
 
 
 int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_remote_msg *u) {
-    return msgu_stream_complete;
+    static msgu_transfer_write_t msgu_init_remote_write_fns[] = {
+        msgu_i32_write_frag,
+        msgu_i32_write_frag,
+        msgu_string_write_frag,
+    };
+    const void *layout[] = {
+        &u->version_maj,
+        &u->version_min,
+        &u->host_name,
+    };
+    return msgu_write_many(stream, f, msgu_init_remote_write_fns, layout, 3);
 }
 
 
@@ -217,6 +274,9 @@ void msgu_msgdata_print(char *out, const struct msgu_msgdata *md) {
     case msgdata_empty:
         sprintf(arg_buffer, "");
         break;
+    case msgdata_host_addr:
+        sprintf(arg_buffer, "%s", md->data.host_addr.address_str.buf);
+        break;
     case msgdata_init_local:
         sprintf(arg_buffer, "");
         break;
@@ -253,6 +313,8 @@ void msgu_msgdata_free(struct msgu_msgdata *md) {
     switch (md->data_type) {
     case msgdata_empty:
         break;
+    case msgdata_host_addr:
+        break;
     case msgdata_init_local:
         break;
     case msgdata_init_remote:
@@ -279,6 +341,8 @@ size_t msgu_msgdata_size(int data_type, const union msgu_any_msg *data) {
         return msgu_empty_size(&data->empty);
     case msgdata_init_local:
         return msgu_init_local_size(&data->init_local);
+    case msgdata_host_addr:
+        return msgu_host_addr_size(&data->host_addr);
     case msgdata_init_remote:
         return msgu_init_remote_size(&data->init_remote);
     case msgdata_share_file:
@@ -318,6 +382,9 @@ int msgu_msgdata_read_frag(struct msgu_stream *in, struct msgu_fragment *f, void
         switch (msgdata->data_type) {
         case msgdata_empty:
             read = msgu_empty_read(in, &f[1], &msgdata->data.empty);
+            break;
+        case msgdata_host_addr:
+            read = msgu_host_addr_read(in, &f[1], &msgdata->data.host_addr);
             break;
         case msgdata_init_local:
             read = msgu_init_local_read(in, &f[1], &msgdata->data.init_local);
@@ -365,6 +432,9 @@ int msgu_msgdata_write_frag(struct msgu_stream *out, struct msgu_fragment *f, co
         switch (msgdata->data_type) {
         case msgdata_empty:
             written = msgu_empty_write(out, &f[1], &msgdata->data.empty);
+            break;
+        case msgdata_host_addr:
+            written = msgu_host_addr_write(out, &f[1], &msgdata->data.host_addr);
             break;
         case msgdata_init_local:
             written = msgu_init_local_write(out, &f[1], &msgdata->data.init_local);

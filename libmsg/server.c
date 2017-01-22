@@ -47,11 +47,6 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 }
 
 
-struct msg_host *msg_server_self(struct msg_server *s) {
-    return &s->hosts.ptr[0];
-}
-
-
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
     struct msg_connection conn;
     msg_connection_init(&conn, socket, msg_server_message_recv, s);
@@ -128,14 +123,10 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
     msgu_share_set_init(&s->shares);
+    msgs_file_cache_init(&s->cache, &s->shares);
     msgs_table_init(&s->tb, &s->emap);
+    msgs_host_init_self(&s->self);
 
-    // find own address and hostname
-    struct ep_host host;
-    ep_host_init_self(&host);
-    msg_host_list_init(&s->hosts);
-    msg_host_list_alloc(&s->hosts, 32);
-    msg_host_list_add(&s->hosts, host.addr, host.hostname);
 
     // create a local acceptor
     struct msgu_address local_addr;
@@ -158,16 +149,31 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
 int msg_server_connect(struct msg_server *serv, const char *addr) {
     struct msgu_address raddr;
     struct msgs_socket socket;
+    struct msgu_init_remote_msg init_msg;
+    init_msg.version_maj = 0;
+    init_msg.version_min = 1;
+    msgu_string_from_static(&init_msg.host_name, serv->self.hostname);
 
-    ep_connect_remote(&raddr, addr, 2204);
+    // try connecting
+    msgu_init_remote_addr(&raddr, addr, 2204);
     int fd = msgs_open_socket(&socket, &raddr);
     if (fd == -1) {
-        return fd;
+        return -1;
     }
     int cid = msg_server_init_connection(serv, &socket);
+    msgs_mutex_lock(&serv->conn_mutex);
     struct msg_connection *conn = msg_server_connection(serv, cid);
-
-    // request table of known addresses
+    if (conn) {
+        msgs_mutex_lock(&conn->read_mutex);
+        msgs_mutex_unlock(&serv->conn_mutex);
+        msg_connection_send_message(conn, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
+        msgs_mutex_unlock(&conn->read_mutex);
+    }
+    else {
+        printf("failed to add connection\n");
+        msgs_mutex_unlock(&serv->conn_mutex);
+        return -1;
+    }
     return cid;
 }
 
@@ -219,18 +225,23 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
 
     // lock mutex and apply state changes
     switch (msg->event_type) {
+    case msgtype_peer_connect:
+        status->error = msg_server_connect(serv, msg->buf.data.host_addr.address_str.buf);
+        break;
     case msgtype_init_local:
+        msg_connection_set_name(conn, &msg->buf.data.init_local.proc_name);
         break;
     case msgtype_init_remote:
+        msg_connection_set_name(conn, &msg->buf.data.init_remote.host_name);
         break;
     case msgtype_add_share_file:
         msgu_share_file(&serv->shares, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_open:
-        status->new_handle = msg_connection_init_handle(conn, &msg->buf.data.share_file.share_name);
+        status->new_handle = msg_connection_init_handle(conn, &serv->cache, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_stream_read:
-        msg_connection_read_handle(conn, msg->buf.data.node_read.node_handle);
+        msg_connection_read_handle(conn, &serv->cache, msg->buf.data.node_read.node_handle);
         break;
     }
     return 1;
