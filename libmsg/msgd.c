@@ -34,6 +34,7 @@ int msg_client_message_recv(struct msg_connection *conn, struct msgu_message *ms
 
 
 int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
+    msgs_set_signals();
     msgu_event_map_init(&cs->emap, &msg_client_handlers, cs);
     msgs_table_init(&cs->tb, &cs->emap);
 

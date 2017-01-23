@@ -27,6 +27,7 @@ void run_command(struct msg_client_state *nstate, char *cmd, int args, char *arg
         msg_open_share(nstate, argv[0]);
         msg_wait(nstate);
         msg_read(nstate, 0, 1024);
+        msg_wait(nstate);
     }
     else if (strcmp(cmd, "write") == 0) {
         msg_open_share(nstate, argv[0]);

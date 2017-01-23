@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -42,6 +43,7 @@ ssize_t msgs_socket_write_fn(msgu_stream_id_t id, const void *buf, size_t count)
         printf("write: count = 0\n");
         return 0;
     }
+    const char *cbuf = buf;
     ssize_t e = write(id.fd, buf, count);
     if (e == -1) {
         int err = errno;
@@ -138,6 +140,11 @@ int msgs_set_non_blocking(int fd) {
 
 void ep_unlink(const char *address) {
     unlink(address);
+}
+
+
+void msgs_set_signals() {
+    signal(SIGPIPE, SIG_IGN);
 }
 
 

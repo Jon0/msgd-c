@@ -69,6 +69,12 @@ void ep_unlink(const char *address);
 
 
 /*
+ * ignore sigpipe
+ */
+void msgs_set_signals();
+
+
+/*
  * print readable ip address
  */
 void msgs_address_print(char *buf, const struct msgu_address *a);

@@ -339,10 +339,10 @@ size_t msgu_msgdata_size(int data_type, const union msgu_any_msg *data) {
     switch (data_type) {
     case msgdata_empty:
         return msgu_empty_size(&data->empty);
-    case msgdata_init_local:
-        return msgu_init_local_size(&data->init_local);
     case msgdata_host_addr:
         return msgu_host_addr_size(&data->host_addr);
+    case msgdata_init_local:
+        return msgu_init_local_size(&data->init_local);
     case msgdata_init_remote:
         return msgu_init_remote_size(&data->init_remote);
     case msgdata_share_file:
