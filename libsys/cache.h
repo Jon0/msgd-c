@@ -21,7 +21,8 @@ struct msgs_cache_handle {
 
 
 /*
- * should only need to open resources once
+ * should only need to open resources once.
+ * could use mmap here
  */
 struct msgs_cache_resource {
     struct msgu_string share_name;

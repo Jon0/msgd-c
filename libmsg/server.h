@@ -29,6 +29,7 @@ struct msg_status {
  * complete server state
  * includes map from host input ids to tree node ids
  * nodes should be removed when connection is ended
+ * allow connection lookup by host name or id
  */
 struct msg_server {
     struct msgs_event_map emap;
