@@ -1,14 +1,14 @@
 #include "file.h"
 
 
-void msgs_node_list_from_path(struct msgu_queue *nodes, const char *path) {
-    msgu_queue_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
-    msgu_queue_alloc(nodes, 10);
+void msgs_node_list_from_path(struct msgu_vector *nodes, const char *path) {
+    msgu_vector_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
+    msgu_vector_alloc(nodes, 10);
     struct msgu_node node;
     node.node_type = 1;
     node.node_mode = 7;
     msgu_string_from_static(&node.node_name, "filename");
-    msgu_queue_push(nodes, &node, 1);
+    msgu_vector_push(nodes, &node, 1);
 }
 
 

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#include <libutil/queue.h>
 #include <libutil/string.h>
+#include <libutil/vector.h>
 
 
 /*
@@ -21,7 +21,7 @@ struct msgu_node {
 
 
 int msgu_node_print(char *buf, const struct msgu_node *n);
-void msgu_node_list_print(char *buf, const struct msgu_queue *q);
+void msgu_node_list_print(char *buf, const struct msgu_vector *q);
 
 
 /*

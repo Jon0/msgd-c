@@ -4,9 +4,9 @@
 #include <stdlib.h>
 
 #include <libutil/map.h>
-#include <libutil/queue.h>
 #include <libutil/stream.h>
 #include <libutil/string.h>
+#include <libutil/vector.h>
 
 #include "node.h"
 
@@ -96,7 +96,7 @@ int msgu_share_get_file(struct msgu_share_map *set, const struct msgu_string *na
 /*
  * create a node list
  */
-void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_queue *nodes);
+void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_vector *nodes);
 
 
 #endif

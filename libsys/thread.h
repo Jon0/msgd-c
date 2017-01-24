@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#include <libutil/queue.h>
+#include <libutil/vector.h>
 
 
 /*
@@ -59,7 +59,7 @@ int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *ar
  * a queue with locks preventing ensuring thread safety
  */
 struct ep_event_queue {
-    struct msgu_queue data;
+    struct msgu_vector data;
     pthread_cond_t    empty;
     pthread_mutex_t   mutex;
 };

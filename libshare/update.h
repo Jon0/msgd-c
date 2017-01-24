@@ -1,9 +1,9 @@
 #ifndef LIBUTIL_UPDATE_H
 #define LIBUTIL_UPDATE_H
 
-#include <libutil/queue.h>
 #include <libutil/stream.h>
 #include <libutil/string.h>
+#include <libutil/vector.h>
 
 #include "msgtype.h"
 #include "node.h"
@@ -82,7 +82,7 @@ struct msgu_share_path_msg {
  * a list of nodes
  */
 struct msgu_node_list_msg {
-    struct msgu_queue nodes;
+    struct msgu_vector nodes;
 };
 
 

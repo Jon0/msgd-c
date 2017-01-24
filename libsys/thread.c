@@ -73,30 +73,30 @@ int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *ar
 
 
 void ep_event_queue_init(struct ep_event_queue *q, struct msgu_element *fns, size_t elem_size) {
-    msgu_queue_init(&q->data, fns, elem_size);
+    msgu_vector_init(&q->data, fns, elem_size);
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->empty, NULL);
 }
 
 
 void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue) {
-    msgu_queue_alloc(&q->data, max_queue);
+    msgu_vector_alloc(&q->data, max_queue);
 }
 
 
 size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count) {
     pthread_mutex_lock(&q->mutex);
-    while (msgu_queue_size(&q->data) == 0) {
+    while (msgu_vector_size(&q->data) == 0) {
         pthread_cond_wait(&q->empty, &q->mutex);
     }
-    msgu_queue_pop(&q->data, e, count);
+    msgu_vector_pop(&q->data, e, count);
     pthread_mutex_unlock(&q->mutex);
 }
 
 
 size_t ep_event_queue_push(struct ep_event_queue *q, void *e, size_t count) {
     pthread_mutex_lock(&q->mutex);
-    msgu_queue_push(&q->data, e, count);
+    msgu_vector_push(&q->data, e, count);
     pthread_cond_broadcast(&q->empty);
     pthread_mutex_unlock(&q->mutex);
 }

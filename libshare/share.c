@@ -61,13 +61,13 @@ int msgu_share_get_file(struct msgu_share_map *set, const struct msgu_string *na
 }
 
 
-void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_queue *nodes) {
-    msgu_queue_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
-    msgu_queue_alloc(nodes, set->proc_shares + set->file_shares);
+void msgs_node_list_of_shares(struct msgu_share_map *set, struct msgu_vector *nodes) {
+    msgu_vector_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
+    msgu_vector_alloc(nodes, set->proc_shares + set->file_shares);
     for (int i = 0; i < set->proc_shares; ++i) {
-        msgu_queue_push(nodes, &set->procs[i].node, 1);
+        msgu_vector_push(nodes, &set->procs[i].node, 1);
     }
     for (int i = 0; i < set->file_shares; ++i) {
-        msgu_queue_push(nodes, &set->files[i].node, 1);
+        msgu_vector_push(nodes, &set->files[i].node, 1);
     }
 }

@@ -175,18 +175,18 @@ int msgu_share_path_write(struct msgu_stream *stream, struct msgu_fragment *f, c
 
 
 size_t msgu_node_list_size(const struct msgu_node_list_msg *u) {
-    return msgu_queue_frag_size(&u->nodes);
+    return msgu_vector_frag_size(&u->nodes);
 }
 
 
 int msgu_node_list_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_list_msg *u) {
-    msgu_queue_init(&u->nodes, &msgu_node_element, sizeof(struct msgu_node));
-    return msgu_queue_frag_read(stream, f, &u->nodes);
+    msgu_vector_init(&u->nodes, &msgu_node_element, sizeof(struct msgu_node));
+    return msgu_vector_frag_read(stream, f, &u->nodes);
 }
 
 
 int msgu_node_list_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_list_msg *u) {
-    return msgu_queue_frag_write(stream, f, &u->nodes);
+    return msgu_vector_frag_write(stream, f, &u->nodes);
 }
 
 
