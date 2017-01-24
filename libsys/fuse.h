@@ -1,15 +1,37 @@
 #ifndef FUSE_H
 #define FUSE_H
 
+#include <pthread.h>
+
+
+/*
+ * create functions to implement in the server
+ */
+typedef int (*msgs_fuse_file_read_t)(void *, char *, size_t);
+
+
+struct msgs_fuse_files_fn {
+    msgs_fuse_file_read_t read;
+};
+
+
 /*
  * set of hosts and mount nodes
  * contains default owner and permissions
  */
-struct ep_fuse_config {
-
+struct msgs_fuse_files {
+    struct msgs_fuse_files_fn fns;
+    char mountpoint [1024];
+    pthread_t fuse_thread;
+    struct fuse *fuse;
+    struct fuse_chan *ch;
 };
 
 
-int ep_fuse_init(struct ep_fuse_config *cfg);
+void msgs_fuse_set_dir(struct msgs_fuse_files *f, const char *subdir);
+int msgs_fuse_init(struct msgs_fuse_files *f);
+void msgs_fuse_free(struct msgs_fuse_files *f);
+void msgs_fuse_loop(struct msgs_fuse_files *f);
+
 
 #endif

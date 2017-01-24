@@ -7,6 +7,7 @@
 #include <libshare/network.h>
 #include <libshare/share.h>
 #include <libsys/file.h>
+#include <libsys/fuse.h>
 #include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
@@ -49,6 +50,7 @@ struct msg_server {
     // maps events to and from local shares
     struct msgu_share_map shares;
     struct msgs_file_cache cache;
+    struct msgs_fuse_files fuse;
 };
 
 

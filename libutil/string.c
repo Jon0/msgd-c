@@ -16,6 +16,15 @@ void msgu_string_alloc(struct msgu_string *str, size_t size) {
 }
 
 
+void msgu_string_free(struct msgu_string *str) {
+    if (str->buf) {
+        free(str->buf);
+        str->buf = NULL;
+    }
+    str->count = 0;
+}
+
+
 void msgu_string_from_static(struct msgu_string *str, const char *cstr) {
     msgu_string_from_buffer(str, cstr, strlen(cstr));
 }

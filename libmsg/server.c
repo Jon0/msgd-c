@@ -119,6 +119,9 @@ void msg_server_print_state(struct msg_server *serv) {
 
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_set_signals();
+    msgs_fuse_set_dir(&s->fuse, "fusemount");
+    msgs_fuse_init(&s->fuse);
+    msgs_fuse_loop(&s->fuse);
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
     msgs_mutex_init(&s->conn_mutex);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
