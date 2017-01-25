@@ -7,11 +7,19 @@
 /*
  * create functions to implement in the server
  */
-typedef int (*msgs_fuse_file_read_t)(void *, char *, size_t);
+typedef int (*msgs_fuse_file_read_t)(void *, int, char *, size_t);
 
 
 struct msgs_fuse_files_fn {
     msgs_fuse_file_read_t read;
+};
+
+
+/*
+ * map ids to opened fuse file
+ */
+struct msgs_fuse_opened {
+    int id;
 };
 
 
@@ -25,6 +33,7 @@ struct msgs_fuse_files {
     pthread_t fuse_thread;
     struct fuse *fuse;
     struct fuse_chan *ch;
+    struct msgu_map opened;
 };
 
 
