@@ -74,7 +74,7 @@ struct msgu_share_net {
 
 /*
  * map share name strings to resources
- * for server side
+ * for server side, to provide resource sources
  * TODO: sort by hosts
  */
 struct msgu_share_map {

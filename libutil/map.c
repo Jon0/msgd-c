@@ -39,6 +39,11 @@ void msgu_map_free(struct msgu_map *m) {
 }
 
 
+size_t msgu_map_size(struct msgu_map *m) {
+    return m->elem_count;
+}
+
+
 hash_t msgu_map_id(struct msgu_map *m, int index) {
     if (0 <= index && index < m->elem_count) {
         void *item = &m->array[index * m->elem_size];
@@ -116,6 +121,27 @@ void *msgu_map_get(struct msgu_map *m, const void *key) {
         }
     }
     return NULL;
+}
+
+
+void *msgu_map_get_key(struct msgu_map *m, size_t index) {
+    if (index < m->elem_count) {
+        return &m->array[index * m->elem_size];
+    }
+    else {
+        return NULL;
+    }
+}
+
+
+void *msgu_map_get_value(struct msgu_map *m, size_t index) {
+    if (index < m->elem_count) {
+        char *item = &m->array[index * m->elem_size];
+        return &item[m->key_size];
+    }
+    else {
+        return NULL;
+    }
 }
 
 

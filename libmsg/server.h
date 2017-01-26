@@ -4,6 +4,7 @@
 #include <libutil/map.h>
 #include <libutil/parser.h>
 #include <libshare/host.h>
+#include <libshare/mount.h>
 #include <libshare/network.h>
 #include <libshare/share.h>
 #include <libsys/file.h>
@@ -49,6 +50,7 @@ struct msg_server {
 
     // maps events to and from local shares
     struct msgu_share_map shares;
+    struct msgu_mount_map mounts;
     struct msgs_file_cache cache;
     struct msgs_fuse_files fuse;
 };

@@ -26,7 +26,7 @@ void msgu_string_free(struct msgu_string *str) {
 
 
 void msgu_string_from_static(struct msgu_string *str, const char *cstr) {
-    msgu_string_from_buffer(str, cstr, strlen(cstr));
+    msgu_string_from_buffer(str, cstr, strlen(cstr) + 1);
 }
 
 
@@ -39,6 +39,22 @@ void msgu_string_from_buffer(struct msgu_string *str, const char *cstr, size_t c
 
 void msgu_string_copy(struct msgu_string *dest, const struct msgu_string *src) {
     msgu_string_from_buffer(dest, src->buf, src->count);
+}
+
+
+size_t msgu_string_split(struct msgu_string *dest, size_t count, const char *src, const char *delim) {
+    char *dup = strdup(src);
+    char *string = dup;
+    char *token;
+    size_t index = 0;
+    while (((token = strsep(&string, delim)) != NULL) && (index < count)) {
+        if (strlen(token) > 0) {
+            msgu_string_from_static(&dest[index], token);
+            ++index;
+        }
+    }
+    free(dup);
+    return index;
 }
 
 

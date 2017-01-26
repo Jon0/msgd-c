@@ -11,6 +11,9 @@
 #include "fuse.h"
 
 
+static struct msgs_fuse_files static_fuse;
+
+
 void *msgs_fuse_thread(void *p) {
 	struct msgs_fuse_files *f = p;
 	printf("starting fuse loop\n");
@@ -21,28 +24,34 @@ void *msgs_fuse_thread(void *p) {
 
 
 int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
-		printf("fuse getattr: %s\n", path);
-        int res = 0;
-        memset(stbuf, 0, sizeof(struct stat));
-        if (strcmp(path, "/") == 0) {
-                stbuf->st_mode = S_IFDIR | 0755;
-                stbuf->st_nlink = 2;
-        }
-		else if (strcmp(path, "/test") == 0) {
-                stbuf->st_mode = S_IFREG | 0444;
-                stbuf->st_nlink = 1;
-                stbuf->st_size = strlen("test");
-        }
-		else {
-            res = -ENOENT;
-		}
-		return res;
-   }
+	struct msgu_string name;
+	int res = 0;
+	size_t len = msgu_string_split(&name, 1, path, "/");
 
+	printf("fuse getattr: %s\n", path);
+    memset(stbuf, 0, sizeof(struct stat));
+    if (len == 0) {
+        stbuf->st_mode = S_IFDIR | 0755;
+        stbuf->st_nlink = 2;
+    }
+	else {
+		struct msgu_node *nd = msgu_mount_node(static_fuse.map, &name);
+		if (nd) {
+			printf("\tstat: %s\n", nd->node_name.buf);
+			stbuf->st_mode = S_IFREG | 0666;
+			stbuf->st_nlink = 1;
+			stbuf->st_size = 4096;
+		}
+		else {
+			res = -ENOENT;
+		}
+    }
+	return res;
+}
 
 
 int msgs_fuse_access(const char *path, int mask) {
-	printf("fuse access: %s\n", path);
+	printf("fuse access: %s, %d\n", path, mask);
     return 0;
 }
 
@@ -56,14 +65,20 @@ int msgs_fuse_opendir(const char *path, struct fuse_file_info *fileInfo) {
 int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi) {
 	printf("fuse readdir: %s\n", path);
 
-
-	if (strcmp(path, "/") != 0)
+	// only sharing single files for now
+	if (strcmp(path, "/") != 0) {
 		return -ENOENT;
+	}
 
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
-	filler(buf, "test", NULL, 0);
 
+	size_t count = msgu_mount_map_size(static_fuse.map);
+	for (int i = 0; i < count; ++i) {
+		struct msgu_node *n = msgu_mount_index(static_fuse.map, i);
+		printf("\tfilling %s\n", n->node_name.buf);
+		filler(buf, n->node_name.buf, NULL, 0);
+	}
 	return 0;
 }
 
@@ -78,11 +93,10 @@ int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struc
 	printf("fuse read: %s, %lu\n", path, size);
 	const char *teststr = "12345\n";
 	size_t count = strlen(teststr);
-	if (strcmp(path, "/test") == 0) {
-		memcpy(buf, teststr, count);
-		return count;
-	}
-	return 0;
+
+	memcpy(buf, teststr, count);
+	printf("length = %lu\n", count);
+	return count;
 }
 
 
@@ -115,30 +129,40 @@ static struct fuse_operations msgs_fuse_ops = {
 };
 
 
-void msgs_fuse_set_dir(struct msgs_fuse_files *f, const char *subdir) {
+void msgs_fuse_static_start(struct msgs_fuse_files *f, struct msgu_mount_map *map, const char *subdir) {
+	if (msgs_fuse_init(&static_fuse, map, subdir) == 0) {
+		msgs_fuse_loop(&static_fuse);
+	}
+}
+
+
+int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, const char *subdir) {
+	char *argv[1];
+    argv[0] = "msgd";
+	struct fuse_args args = FUSE_ARGS_INIT(1, argv);
 	char cwd [1024];
 	if (getcwd(cwd, sizeof(cwd))) {
 		sprintf(f->mountpoint, "%s/%s", cwd, subdir);
 		printf("fuse mountpoint: %s\n", f->mountpoint);
 	}
-}
-
-
-int msgs_fuse_init(struct msgs_fuse_files *f) {
-	char *argv[1];
-    argv[0] = "msgd";
-	struct fuse_args args = FUSE_ARGS_INIT(1, argv);
+	else {
+		return -1;
+	}
 
 	// init state
 	f->ch = NULL;
 	f->fuse = NULL;
+	f->map = map;
 
 	fuse_unmount(f->mountpoint, f->ch);
 	f->ch = fuse_mount(f->mountpoint, &args);
 	f->fuse = fuse_new(f->ch, &args, &msgs_fuse_ops, sizeof(msgs_fuse_ops), f);
 	fuse_opt_free_args(&args);
-    return 1;
+    return 0;
 }
+
+
+
 
 
 void msgs_fuse_loop(struct msgs_fuse_files *f) {

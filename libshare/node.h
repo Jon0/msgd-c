@@ -16,6 +16,7 @@
 struct msgu_node {
     uint32_t            node_type;
     uint32_t            node_mode;
+    uint32_t            node_size;
     struct msgu_string  node_name;
 };
 

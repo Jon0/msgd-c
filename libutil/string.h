@@ -23,6 +23,7 @@ void msgu_string_free(struct msgu_string *str);
 void msgu_string_from_static(struct msgu_string *str, const char *cstr);
 void msgu_string_from_buffer(struct msgu_string *str, const char *cstr, size_t count);
 void msgu_string_copy(struct msgu_string *dest, const struct msgu_string *src);
+size_t msgu_string_split(struct msgu_string *dest, size_t count, const char *src, const char *delim);
 
 
 /*
