@@ -33,6 +33,12 @@ void msgu_event_notify(struct msgs_event_map *map, uint32_t type, union msgu_any
     case msgu_recv_id:
         map->hdl.recv_event(map->arg, &data->recv);
         break;
+    case msgu_mount_id:
+        map->hdl.mount_event(map->arg, &data->mount);
+        break;
+    default:
+        printf("unknown event type\n");
+        break;
     }
 }
 

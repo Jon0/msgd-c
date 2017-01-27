@@ -139,9 +139,12 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 
         // use array of available shares
         struct msgu_node nd;
-        msgu_string_from_static(&nd.node_name, "todo");
-        msgu_mount_add(&serv->mounts, 12, &nd, conn);
-
+        nd.node_type = 2;
+        nd.node_mode = 7;
+        nd.node_size = 4096;
+        msgu_string_copy(&nd.node_name, share);
+        int id = msgu_add_mount_handler(&serv->emap);
+        msgu_mount_add(&serv->mounts, id, &nd, conn);
     }
     else {
         printf("not found: %s\n", host->buf);
