@@ -9,16 +9,15 @@ void msgu_mount_map_init(struct msgu_mount_map *m) {
 }
 
 
-void msgu_mount_add(struct msgu_mount_map *m, const struct msgu_string *mount_name) {
+void msgu_mount_add(struct msgu_mount_map *m, int id, const struct msgu_node *node, void *arg) {
     struct msgu_string name;
     struct msgu_mount_point mp;
-    msgu_string_copy(&name, mount_name);
-    msgu_string_copy(&mp.node.node_name, mount_name);
-    mp.node.node_type = 2;
-    mp.node.node_mode = 7;
-    mp.node.node_size = 4096;
+    msgu_string_copy(&name, &node->node_name);
+    mp.id = id;
+    mp.arg = arg;
+    mp.node = *node;
     msgu_map_insert(&m->data, &name, &mp);
-    printf("mounting: %s\n", mount_name->buf);
+    printf("mounting: %s\n", node->node_name.buf);
 }
 
 

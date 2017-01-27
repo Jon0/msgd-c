@@ -43,7 +43,6 @@ struct msg_connection {
  */
 void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket, msg_message_recv_t fn, void *arg);
 int msg_connection_connect(struct msg_connection *conn, struct msgu_address *addr, msg_message_recv_t fn, void *arg);
-void msg_connection_local(struct msg_connection *conn, msg_message_recv_t fn, void *arg);
 void msg_connection_set_name(struct msg_connection *conn, const struct msgu_string *name);
 void msg_connection_close(struct msg_connection *conn);
 

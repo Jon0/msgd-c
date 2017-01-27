@@ -14,12 +14,12 @@ enum msgu_msgtype {
      */
     msgtype_init_local,
     msgtype_init_remote,
+    msgtype_init_remote_reply,
 
     /*
      * network controls
      */
     msgtype_peer_connect,
-
 
     /*
      * mount controls

@@ -23,6 +23,7 @@ struct msgu_mount_fn {
  */
 struct msgu_mount_point {
     int id;
+    void *arg;
     struct msgu_node node;
     struct msgu_vector requests;
 };
@@ -43,7 +44,7 @@ void msgu_mount_map_init(struct msgu_mount_map *m);
 /*
  *
  */
-void msgu_mount_add(struct msgu_mount_map *m, const struct msgu_string *mount_name);
+void msgu_mount_add(struct msgu_mount_map *m, int id, const struct msgu_node *node, void *arg);
 
 
 /*

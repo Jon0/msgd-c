@@ -13,6 +13,7 @@ void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket
     msgs_mutex_init(&conn->write_mutex);
     msgu_stream_init(&conn->stream, &msgs_socket_fn, (msgu_stream_id_t) socket->fd);
     msgu_parser_init(&conn->parser, &msgu_message_transfer_fn);
+    msgu_string_from_static(&conn->remote_name, "");
 }
 
 

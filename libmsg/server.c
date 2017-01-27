@@ -134,7 +134,18 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
     printf("mounting %s::%s\n", host->buf, share->buf);
 
     struct msg_connection *conn = msg_server_connection_name(serv, host);
-    struct msgu_resource res;
+    if (conn) {
+        printf("found: %s\n", host->buf);
+
+        // use array of available shares
+        struct msgu_node nd;
+        msgu_string_from_static(&nd.node_name, "todo");
+        msgu_mount_add(&serv->mounts, 12, &nd, conn);
+
+    }
+    else {
+        printf("not found: %s\n", host->buf);
+    }
 }
 
 
@@ -176,7 +187,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
 
 
     // create loopback connection
-    msg_server_connect(s, "127.0.0.1");
+    s->loopback_id = msg_server_connect(s, "127.0.0.1");
 }
 
 
@@ -264,6 +275,7 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
         msg_connection_set_name(conn, &msg->buf.data.init_local.proc_name);
         break;
     case msgtype_init_remote:
+    case msgtype_init_remote_reply:
         msg_connection_set_name(conn, &msg->buf.data.init_remote.host_name);
         break;
     case msgtype_mount:
@@ -304,6 +316,14 @@ int msg_server_reply(struct msg_server *serv, struct msg_connection *conn, const
 
 
     switch (msg->event_type) {
+    case msgtype_init_remote:
+        have_update = 1;
+        event_type = msgtype_init_remote_reply;
+        data_type = msgdata_init_remote;
+        data.init_remote.version_maj = 0;
+        data.init_remote.version_min = 1;
+        msgu_string_from_static(&data.init_remote.host_name, serv->self.hostname);
+        break;
     case msgtype_list_shares:
         have_update = 1;
         event_type = msgtype_return_share_list;

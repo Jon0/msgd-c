@@ -31,14 +31,16 @@ int msgu_node_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *
     static msgu_transfer_read_t msgu_node_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
+        msgu_i32_read_frag,
         msgu_string_read_frag,
     };
     void *layout[] = {
         &node->node_type,
         &node->node_mode,
+        &node->node_size,
         &node->node_name,
     };
-    return msgu_read_many(src, f, msgu_node_read_fns, layout, 3);
+    return msgu_read_many(src, f, msgu_node_read_fns, layout, 4);
 }
 
 
@@ -47,14 +49,16 @@ int msgu_node_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, cons
     static msgu_transfer_write_t msgu_node_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
+        msgu_i32_write_frag,
         msgu_string_write_frag,
     };
     const void *layout[] = {
         &node->node_type,
         &node->node_mode,
+        &node->node_size,
         &node->node_name,
     };
-    return msgu_write_many(dest, f, msgu_node_write_fns, layout, 3);
+    return msgu_write_many(dest, f, msgu_node_write_fns, layout, 4);
 }
 
 

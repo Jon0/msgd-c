@@ -17,6 +17,16 @@
 
 
 /*
+ *
+ */
+struct msg_server_host {
+    int                conn_id;
+    struct msgu_vector nodes;
+};
+
+
+
+/*
  * result of applying message
  */
 struct msg_status {
@@ -46,7 +56,9 @@ struct msg_server {
     // type of socket
     // epid -> struct msg_connection
     msgs_mutex_t         conn_mutex;
+    int                  loopback_id;
     struct msgu_map      connections;
+    struct msgu_map      hosts;
 
     // maps events to and from local shares
     struct msgu_share_map shares;
