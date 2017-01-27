@@ -18,8 +18,13 @@ struct msgu_mount_fn {
 };
 
 
+/*
+ * lists events which require handling
+ */
 struct msgu_mount_point {
+    int id;
     struct msgu_node node;
+    struct msgu_vector requests;
 };
 
 
@@ -51,8 +56,9 @@ struct msgu_node *msgu_mount_node(struct msgu_mount_map *m, const struct msgu_st
 
 /*
  * send request and wait for response
+ * returns id of mount
  */
-void msgu_mount_read(struct msgu_mount_map *m, struct msgu_string *mount_name);
-
+int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off);
+int msgu_mount_read_response(struct msgu_mount_map *m, struct msgu_string *mount_name);
 
 #endif

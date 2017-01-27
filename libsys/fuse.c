@@ -35,12 +35,12 @@ int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
         stbuf->st_nlink = 2;
     }
 	else {
-		struct msgu_node *nd = msgu_mount_node(static_fuse.map, &name);
+		struct msgu_node *nd = msgu_mount_node(static_fuse.mounts, &name);
 		if (nd) {
 			printf("\tstat: %s\n", nd->node_name.buf);
 			stbuf->st_mode = S_IFREG | 0666;
 			stbuf->st_nlink = 1;
-			stbuf->st_size = 4096;
+			stbuf->st_size = nd->node_size;
 		}
 		else {
 			res = -ENOENT;
@@ -73,11 +73,13 @@ int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
 
-	size_t count = msgu_mount_map_size(static_fuse.map);
+	size_t count = msgu_mount_map_size(static_fuse.mounts);
 	for (int i = 0; i < count; ++i) {
-		struct msgu_node *n = msgu_mount_index(static_fuse.map, i);
-		printf("\tfilling %s\n", n->node_name.buf);
-		filler(buf, n->node_name.buf, NULL, 0);
+		struct msgu_node *node = msgu_mount_index(static_fuse.mounts, i);
+		if (node) {
+			printf("\tfilling %s\n", node->node_name.buf);
+			filler(buf, node->node_name.buf, NULL, 0);
+		}
 	}
 	return 0;
 }
@@ -91,11 +93,17 @@ int msgs_fuse_open(const char* path, struct fuse_file_info* fi) {
 
 int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	printf("fuse read: %s, %lu\n", path, size);
+	int eid = msgu_mount_read_request(static_fuse.mounts, path, size, offset);
+	msgs_event_recv(static_fuse.emap, 0, msgu_mount_id, eid);
+
+
+
+
 	const char *teststr = "12345\n";
 	size_t count = strlen(teststr);
 
 	memcpy(buf, teststr, count);
-	printf("length = %lu\n", count);
+	printf("\tlength = %lu\n", count);
 	return count;
 }
 
@@ -129,14 +137,14 @@ static struct fuse_operations msgs_fuse_ops = {
 };
 
 
-void msgs_fuse_static_start(struct msgs_fuse_files *f, struct msgu_mount_map *map, const char *subdir) {
-	if (msgs_fuse_init(&static_fuse, map, subdir) == 0) {
+void msgs_fuse_static_start(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct msgs_event_map *em, const char *subdir) {
+	if (msgs_fuse_init(&static_fuse, map, em, subdir) == 0) {
 		msgs_fuse_loop(&static_fuse);
 	}
 }
 
 
-int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, const char *subdir) {
+int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct msgs_event_map *em, const char *subdir) {
 	char *argv[1];
     argv[0] = "msgd";
 	struct fuse_args args = FUSE_ARGS_INIT(1, argv);
@@ -152,7 +160,8 @@ int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, const 
 	// init state
 	f->ch = NULL;
 	f->fuse = NULL;
-	f->map = map;
+	f->mounts = map;
+	f->emap = em;
 
 	fuse_unmount(f->mountpoint, f->ch);
 	f->ch = fuse_mount(f->mountpoint, &args);

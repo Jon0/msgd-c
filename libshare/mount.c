@@ -16,7 +16,7 @@ void msgu_mount_add(struct msgu_mount_map *m, const struct msgu_string *mount_na
     msgu_string_copy(&mp.node.node_name, mount_name);
     mp.node.node_type = 2;
     mp.node.node_mode = 7;
-    ms.node.node_size = 4096;
+    mp.node.node_size = 4096;
     msgu_map_insert(&m->data, &name, &mp);
     printf("mounting: %s\n", mount_name->buf);
 }
@@ -34,10 +34,21 @@ struct msgu_node *msgu_mount_index(struct msgu_mount_map *m, size_t index) {
 
 
 struct msgu_node *msgu_mount_node(struct msgu_mount_map *m, const struct msgu_string *mount_name) {
-    return msgu_map_get(&m->data, mount_name);
+    struct msgu_mount_point *mp = msgu_map_get(&m->data, mount_name);
+    if (mp) {
+        return &mp->node;
+    }
+    else {
+        return NULL;
+    }
 }
 
 
-void msgu_mount_read(struct msgu_mount_map *m, struct msgu_string *mount_name) {
+int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off) {
+    return 0;
+}
 
+
+int msgu_mount_read_response(struct msgu_mount_map *m, struct msgu_string *mount_name) {
+    return 0;
 }

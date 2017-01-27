@@ -5,17 +5,18 @@
 #include "buffer.h"
 
 
-void msgu_buffer_init_default(struct msgu_buffer *b) {
-    msgu_buffer_init(b, malloc(EP_BUFFER_DEFAULT_SIZE), EP_BUFFER_DEFAULT_SIZE);
-}
-
-
-void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count) {
-    b->ptr = mem;
-    b->avail = count;
+void msgu_buffer_init(struct msgu_buffer *b) {
+    b->ptr = NULL;
+    b->avail = 0;
     b->begin = 0;
     b->size = 0;
     b->esize = 1;
+}
+
+
+void msgu_buffer_alloc(struct msgu_buffer *b, size_t bytes) {
+    b->ptr = malloc(bytes);
+    b->avail = bytes;
 }
 
 

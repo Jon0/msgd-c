@@ -80,6 +80,14 @@ int msg_create_share(struct msg_client_state *cs, char *path) {
 }
 
 
+int msg_create_mount(struct msg_client_state *cs, const char *host, const char *share) {
+    struct msgu_mount_node_msg mountnode;
+    msgu_string_from_static(&mountnode.host_name, host);
+    msgu_string_from_static(&mountnode.share_name, share);
+    return msg_connection_send_message(&cs->server, msgtype_mount, msgdata_mount_node, (union msgu_any_msg *) &mountnode);
+}
+
+
 int msg_open_share(struct msg_client_state *cs, char *path) {
     struct msgu_share_file_msg addshare;
     msgu_string_from_static(&addshare.share_name, path);

@@ -1,3 +1,7 @@
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "file.h"
 
 
@@ -17,4 +21,25 @@ int ep_mount_path(struct ep_tree *t, const char *path) {
     // subid and type labels
     // default to "mount/files"
     // only share files owned by the current user
+}
+
+
+int msgs_path_stat(struct msgu_node *n, const char *path, struct msgu_file_params *param) {
+    struct stat fstat;
+    int result = stat(path, &fstat);
+    if (result == -1) {
+        return 0;
+    }
+    else {
+        n->node_type = S_IFMT & fstat.st_mode;
+        n->node_mode = ~S_IFMT & fstat.st_mode;
+        n->node_size = fstat.st_size;
+        msgu_filename(&n->node_name, path);
+        return 1;
+    }
+}
+
+
+int msgs_path_open(struct msgu_resource *r, const char *path, struct msgu_file_params *param) {
+    return 0;
 }

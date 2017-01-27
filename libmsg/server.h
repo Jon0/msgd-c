@@ -62,7 +62,14 @@ struct msg_server {
 int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
 int msg_server_close_connection(struct msg_server *s, int id);
 struct msg_connection *msg_server_connection(struct msg_server *s, int id);
+struct msg_connection *msg_server_connection_name(struct msg_server *s, const struct msgu_string *hostname);
 int msg_server_connection_notify(struct msg_server *serv, int id);
+
+
+/*
+ * manage mounts
+ */
+void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
 
 
 /*

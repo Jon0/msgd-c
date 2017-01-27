@@ -18,6 +18,8 @@ const char *msgu_msgdata_str(const enum msgu_data_type type) {
         return "share_file";
     case msgdata_share_path:
         return "share_path";
+    case msgdata_mount_node:
+        return "mount_node";
     case msgdata_node_list:
         return "node_list";
     case msgdata_node_handle:
@@ -174,6 +176,37 @@ int msgu_share_path_write(struct msgu_stream *stream, struct msgu_fragment *f, c
 }
 
 
+size_t msgu_mount_node_size(const struct msgu_mount_node_msg *u) {
+    return msgu_string_size(&u->host_name) + msgu_string_size(&u->share_name);
+}
+
+
+int msgu_mount_node_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_mount_node_msg *u) {
+    static msgu_transfer_read_t msgu_mount_node_read_fns[] = {
+        msgu_string_read_frag,
+        msgu_string_read_frag,
+    };
+    void *layout[] = {
+        &u->host_name,
+        &u->share_name,
+    };
+    return msgu_read_many(stream, f, msgu_mount_node_read_fns, layout, 2);
+}
+
+
+int msgu_mount_node_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_mount_node_msg *u) {
+    static msgu_transfer_write_t msgu_mount_node_write_fns[] = {
+        msgu_string_write_frag,
+        msgu_string_write_frag,
+    };
+    const void *layout[] = {
+        &u->host_name,
+        &u->share_name,
+    };
+    return msgu_write_many(stream, f, msgu_mount_node_write_fns, layout, 2);
+}
+
+
 size_t msgu_node_list_size(const struct msgu_node_list_msg *u) {
     return msgu_vector_frag_size(&u->nodes);
 }
@@ -281,13 +314,16 @@ void msgu_msgdata_print(char *out, const struct msgu_msgdata *md) {
         sprintf(arg_buffer, "");
         break;
     case msgdata_init_remote:
-        sprintf(arg_buffer, "");
+        sprintf(arg_buffer, "%s", md->data.init_remote.host_name.buf);
         break;
     case msgdata_share_file:
         sprintf(arg_buffer, "%s", md->data.share_file.share_name.buf);
         break;
     case msgdata_share_path:
         sprintf(arg_buffer, "");
+        break;
+    case msgdata_mount_node:
+        sprintf(arg_buffer, "%s, %s", md->data.mount_node.host_name.buf, md->data.mount_node.share_name.buf);
         break;
     case msgdata_node_list:
         msgu_node_list_print(arg_buffer, &md->data.node_list.nodes);
@@ -349,6 +385,8 @@ size_t msgu_msgdata_size(int data_type, const union msgu_any_msg *data) {
         return msgu_share_file_size(&data->share_file);
     case msgdata_share_path:
         return msgu_share_path_size(&data->share_path);
+    case msgdata_mount_node:
+        return msgu_mount_node_size(&data->mount_node);
     case msgdata_node_list:
         return msgu_node_list_size(&data->node_list);
     case msgdata_node_handle:
@@ -397,6 +435,9 @@ int msgu_msgdata_read_frag(struct msgu_stream *in, struct msgu_fragment *f, void
             break;
         case msgdata_share_path:
             read = msgu_share_path_read(in, &f[1], &msgdata->data.share_path);
+            break;
+        case msgdata_mount_node:
+            read = msgu_mount_node_read(in, &f[1], &msgdata->data.mount_node);
             break;
         case msgdata_node_list:
             read = msgu_node_list_read(in, &f[1], &msgdata->data.node_list);
@@ -447,6 +488,9 @@ int msgu_msgdata_write_frag(struct msgu_stream *out, struct msgu_fragment *f, co
             break;
         case msgdata_share_path:
             written = msgu_share_path_write(out, &f[1], &msgdata->data.share_path);
+            break;
+        case msgdata_mount_node:
+            written = msgu_mount_node_write(out, &f[1], &msgdata->data.mount_node);
             break;
         case msgdata_node_list:
             written = msgu_node_list_write(out, &f[1], &msgdata->data.node_list);

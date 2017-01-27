@@ -7,6 +7,14 @@
 #include <libutil/vector.h>
 
 
+enum msgu_node_type {
+    msgnode_stream = 1,
+    msgnode_file   = 2,
+    msgnode_dir    = 3,
+};
+
+
+
 /*
  * objects shared on a host
  * nodes can be block devices, sockets or directories

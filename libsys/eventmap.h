@@ -43,7 +43,8 @@ void msgs_event_recv(struct msgs_event_map *map, uint32_t ev, uint32_t type, uin
  */
 int msgu_add_connect_handler(struct msgs_event_map *map);
 int msgu_add_recv_handler(struct msgs_event_map *map);
-int msgu_add_file_handler(struct msgs_event_map *map);
+int msgu_add_share_handler(struct msgs_event_map *map);
+int msgu_add_mount_handler(struct msgs_event_map *map);
 int msgu_remove_handler(struct msgs_event_map *map, uint32_t id);
 
 #endif

@@ -8,30 +8,8 @@
 #include <libutil/string.h>
 #include <libutil/vector.h>
 
+#include "filepath.h"
 #include "node.h"
-
-
-
-/*
- * functions on nodes
- * will cover most of the fuse functions
- */
-typedef size_t (*msgu_node_open_t)(void *);
-typedef size_t (*msgu_node_close_t)(void *);
-typedef size_t (*msgu_node_read_t)(void *, char *, size_t);
-typedef size_t (*msgu_node_write_t)(void *, const char *, size_t);
-typedef size_t (*msgu_node_list_t)(void *, const char *);
-
-
-/*
- * shared file system functions
- */
-struct msgu_fs_operations {
-    msgu_node_open_t open;
-    msgu_node_close_t close;
-    msgu_node_read_t read;
-    msgu_node_write_t write;
-};
 
 
 /*
@@ -78,7 +56,9 @@ struct msgu_share_net {
  * TODO: sort by hosts
  */
 struct msgu_share_map {
-    struct msgu_map        id_map;
+    struct msgu_file_ops   *file_fn;
+    struct msgu_file_params params;
+    struct msgu_map         id_map;
     struct msgu_share_proc *procs;
     struct msgu_share_file *files;
     size_t proc_shares;
@@ -87,7 +67,7 @@ struct msgu_share_map {
 
 
 void msgu_share_debug(struct msgu_share_map *set);
-int msgu_share_set_init(struct msgu_share_map *set);
+int msgu_share_set_init(struct msgu_share_map *set, struct msgu_file_ops *fns);
 int msgu_share_proc(struct msgu_share_map *set, const struct msgu_string *name);
 int msgu_share_file(struct msgu_share_map *set, const struct msgu_string *name);
 int msgu_share_get_file(struct msgu_share_map *set, const struct msgu_string *name, struct msgu_share_file *fshare);

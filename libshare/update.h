@@ -19,6 +19,7 @@ enum msgu_data_type {
     msgdata_init_remote,
     msgdata_share_file,
     msgdata_share_path,
+    msgdata_mount_node,
     msgdata_node_list,
     msgdata_node_handle,
     msgdata_node_read,
@@ -79,6 +80,15 @@ struct msgu_share_path_msg {
 
 
 /*
+ * add, remove and list mounts
+ */
+struct msgu_mount_node_msg {
+    struct msgu_string host_name;
+    struct msgu_string share_name;
+};
+
+
+/*
  * a list of nodes
  */
 struct msgu_node_list_msg {
@@ -127,6 +137,7 @@ union msgu_any_msg {
     struct msgu_init_remote_msg init_remote;
     struct msgu_share_file_msg  share_file;
     struct msgu_share_path_msg  share_path;
+    struct msgu_mount_node_msg  mount_node;
     struct msgu_node_list_msg   node_list;
     struct msgu_node_handle_msg node_handle;
     struct msgu_node_read_msg   node_read;
@@ -171,6 +182,11 @@ int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, c
 size_t msgu_share_path_size(const struct msgu_share_path_msg *u);
 int msgu_share_path_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_path_msg *u);
 int msgu_share_path_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_share_path_msg *u);
+
+
+size_t msgu_mount_node_size(const struct msgu_mount_node_msg *u);
+int msgu_mount_node_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_mount_node_msg *u);
+int msgu_mount_node_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_mount_node_msg *u);
 
 
 size_t msgu_node_list_size(const struct msgu_node_list_msg *u);

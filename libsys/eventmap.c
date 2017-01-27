@@ -77,12 +77,23 @@ int msgu_add_recv_handler(struct msgs_event_map *map) {
 }
 
 
-int msgu_add_file_handler(struct msgs_event_map *map) {
-    struct msgu_file_event fe;
+int msgu_add_share_handler(struct msgs_event_map *map) {
+    struct msgu_share_event fe;
     pthread_mutex_lock(&map->map_mutex);
     uint32_t id = map->next_id++;
     fe.id = id;
     msgu_map_insert(&map->data, &id, &fe);
+    pthread_mutex_unlock(&map->map_mutex);
+    return id;
+}
+
+
+int msgu_add_mount_handler(struct msgs_event_map *map) {
+    struct msgu_mount_event me;
+    pthread_mutex_lock(&map->map_mutex);
+    uint32_t id = map->next_id++;
+    me.id = id;
+    msgu_map_insert(&map->data, &id, &me);
     pthread_mutex_unlock(&map->map_mutex);
     return id;
 }

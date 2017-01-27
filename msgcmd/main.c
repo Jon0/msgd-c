@@ -23,6 +23,9 @@ void run_command(struct msg_client_state *nstate, char *cmd, int args, char *arg
     else if (strcmp(cmd, "share") == 0) {
         msg_create_share(nstate, argv[0]);
     }
+    else if (strcmp(cmd, "mount") == 0) {
+        msg_create_mount(nstate, argv[0], argv[1]);
+    }
     else if (strcmp(cmd, "read") == 0) {
         msg_open_share(nstate, argv[0]);
         msg_wait(nstate);

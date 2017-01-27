@@ -50,6 +50,7 @@ int msg_init_local(struct msg_client_state *cs, const char *name);
 int msg_peer_connect(struct msg_client_state *cs, const char *addr);
 int msg_list_shares(struct msg_client_state *cs);
 int msg_create_share(struct msg_client_state *cs, char *path);
+int msg_create_mount(struct msg_client_state *cs, const char *host, const char *share);
 int msg_open_share(struct msg_client_state *cs, char *path);
 int msg_read(struct msg_client_state *cs, int hdl, size_t count);
 int msg_write(struct msg_client_state *cs, int hdl, const char *buf, size_t count);

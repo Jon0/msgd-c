@@ -17,7 +17,8 @@ enum msgu_event_type {
     msgu_connect_id = 20,
     msgu_recv_id    = 40,
     msgu_send_id    = 41,
-    msgu_file_id    = 60,
+    msgu_share_id   = 60,
+    msgu_mount_id   = 80,
 };
 
 
@@ -55,7 +56,6 @@ struct msgu_connect_event {
  */
 struct msgu_recv_event {
     int                 id;
-    struct msgu_buffer *buf;
 };
 
 
@@ -67,9 +67,18 @@ struct msgu_send_event {
 /*
  * inotify
  */
-struct msgu_file_event {
+struct msgu_share_event {
     int id;
 };
+
+
+/*
+ * fuse
+ */
+struct msgu_mount_event {
+    int id;
+};
+
 
 
 /*
@@ -88,7 +97,8 @@ union msgu_any_event {
     struct msgu_connect_event conn;
     struct msgu_recv_event recv;
     struct msgu_send_event send;
-    struct msgu_file_event file;
+    struct msgu_share_event share;
+    struct msgu_mount_event mount;
 };
 
 
@@ -110,6 +120,7 @@ size_t msgu_recv_event_callback(struct msgu_recv_event *re, struct msgu_buffer *
 struct msgu_handlers {
     void (*connect_event)(void *, struct msgu_connect_event *);
     void (*recv_event)(void *, struct msgu_recv_event *);
+    void (*mount_event)(void *, struct msgu_mount_event *);
 };
 
 

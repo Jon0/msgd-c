@@ -36,9 +36,16 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
 }
 
 
+void msg_server_mount_event(void *p, struct msgu_mount_event *e) {
+    struct msg_server *serv = p;
+    printf("recv mount event\n");
+}
+
+
 static struct msgu_handlers msg_server_handlers = {
     .connect_event    = msg_server_connect_event,
     .recv_event       = msg_server_recv_event,
+    .mount_event      = msg_server_mount_event,
 };
 
 
@@ -80,6 +87,18 @@ struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
 }
 
 
+struct msg_connection *msg_server_connection_name(struct msg_server *s, const struct msgu_string *hostname) {
+    size_t count = msgu_map_size(&s->connections);
+    for (int i = 0; i < count; ++i) {
+        struct msg_connection *conn = msgu_map_get_value(&s->connections, i);
+        if (conn && (msgu_string_compare(&conn->remote_name, hostname) == 0)) {
+            return conn;
+        }
+    }
+    return NULL;
+}
+
+
 int msg_server_connection_notify(struct msg_server *serv, int id) {
     struct msg_connection *conn;
 
@@ -111,6 +130,14 @@ int msg_server_connection_notify(struct msg_server *serv, int id) {
 }
 
 
+void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share) {
+    printf("mounting %s::%s\n", host->buf, share->buf);
+
+    struct msg_connection *conn = msg_server_connection_name(serv, host);
+    struct msgu_resource res;
+}
+
+
 void msg_server_print_state(struct msg_server *serv) {
     printf("[server state] ");
     msgu_share_debug(&serv->shares);
@@ -123,10 +150,10 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_mutex_init(&s->conn_mutex);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
-    msgu_share_set_init(&s->shares);
+    msgu_share_set_init(&s->shares, &file_ops);
     msgu_mount_map_init(&s->mounts);
     msgs_file_cache_init(&s->cache, &s->shares);
-    msgs_fuse_static_start(&s->fuse, &s->mounts, "fusemount");
+    msgs_fuse_static_start(&s->fuse, &s->mounts, &s->emap, "fusemount");
     msgs_table_init(&s->tb, &s->emap);
     msgs_host_init_self(&s->self);
 
@@ -146,6 +173,10 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_open_acceptor(&s->remote_acc, &raddr);
     s->remote_acc_id = msgu_add_connect_handler(&s->emap);
     msgs_poll_acceptor(&s->tb, &s->remote_acc, s->remote_acc_id);
+
+
+    // create loopback connection
+    msg_server_connect(s, "127.0.0.1");
 }
 
 
@@ -235,9 +266,11 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
     case msgtype_init_remote:
         msg_connection_set_name(conn, &msg->buf.data.init_remote.host_name);
         break;
+    case msgtype_mount:
+        msg_server_init_mount(serv, &msg->buf.data.mount_node.host_name, &msg->buf.data.mount_node.share_name);
+        break;
     case msgtype_add_share_file:
         msgu_share_file(&serv->shares, &msg->buf.data.share_file.share_name);
-        msgu_mount_add(&serv->mounts, &msg->buf.data.share_file.share_name);
         break;
     case msgtype_file_open:
         status->new_handle = msg_connection_init_handle(conn, &serv->cache, &msg->buf.data.share_file.share_name);

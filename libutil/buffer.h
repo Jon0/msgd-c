@@ -3,8 +3,6 @@
 
 #include <stdlib.h>
 
-#define EP_BUFFER_DEFAULT_SIZE 4096
-
 
 /*
  * a continuous sequence of bytes
@@ -23,8 +21,8 @@ struct msgu_buffer {
 /*
  * give the buffer some memory
  */
-void msgu_buffer_init_default(struct msgu_buffer *b);
-void msgu_buffer_init(struct msgu_buffer *b, void *mem, size_t count);
+void msgu_buffer_init(struct msgu_buffer *b);
+void msgu_buffer_alloc(struct msgu_buffer *b, size_t bytes);
 
 
 /*
