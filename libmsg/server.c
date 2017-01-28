@@ -137,7 +137,7 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
     if (conn) {
         printf("found: %s\n", host->buf);
 
-        // use array of available shares
+        // TODO use array of available shares
         struct msgu_node nd;
         nd.node_type = 2;
         nd.node_mode = 7;
