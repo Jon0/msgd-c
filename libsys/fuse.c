@@ -87,6 +87,8 @@ int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
 
 int msgs_fuse_open(const char* path, struct fuse_file_info* fi) {
 	printf("fuse open: %s\n", path);
+	int eid = msgu_mount_open_request(static_fuse.mounts, path);
+	msgs_event_recv(static_fuse.emap, 0, msgu_mount_id, eid);
 	return 0;
 }
 

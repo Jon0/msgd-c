@@ -53,12 +53,15 @@ void msgu_mount_add(struct msgu_mount_map *m, int id, const struct msgu_node *no
 size_t msgu_mount_map_size(struct msgu_mount_map *m);
 struct msgu_node *msgu_mount_index(struct msgu_mount_map *m, size_t index);
 struct msgu_node *msgu_mount_node(struct msgu_mount_map *m, const struct msgu_string *mount_name);
+struct msgu_mount_point *msgu_mount_get(struct msgu_mount_map *m, const struct msgu_string *mount_name);
 
 
 /*
  * send request and wait for response
  * returns id of mount
  */
+int msgu_mount_open_request(struct msgu_mount_map *m, const char *path);
+int msgu_mount_open_response(struct msgu_mount_map *m, struct msgu_string *mount_name);
 int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off);
 int msgu_mount_read_response(struct msgu_mount_map *m, struct msgu_string *mount_name);
 

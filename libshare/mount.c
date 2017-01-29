@@ -43,6 +43,34 @@ struct msgu_node *msgu_mount_node(struct msgu_mount_map *m, const struct msgu_st
 }
 
 
+struct msgu_mount_point *msgu_mount_get(struct msgu_mount_map *m, const struct msgu_string *mount_name) {
+    return msgu_map_get(&m->data, mount_name);
+}
+
+
+int msgu_mount_open_request(struct msgu_mount_map *m, const char *path) {
+    struct msgu_string mount_name;
+    size_t len = msgu_string_split(&mount_name, 1, path, "/");
+    if (len) {
+        struct msgu_mount_point *mp = msgu_map_get(&m->data, &mount_name);
+        if (mp) {
+            return mp->id;
+        }
+        else {
+            return -1;
+        }
+    }
+    else {
+        return -1;
+    }
+}
+
+
+int msgu_mount_open_response(struct msgu_mount_map *m, struct msgu_string *mount_name) {
+
+}
+
+
 int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off) {
     struct msgu_string mount_name;
     size_t len = msgu_string_split(&mount_name, 1, path, "/");

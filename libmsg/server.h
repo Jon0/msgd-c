@@ -82,6 +82,7 @@ int msg_server_connection_notify(struct msg_server *serv, int id);
  * manage mounts
  */
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
+void msg_server_notify_mount(struct msg_server *serv, int id);
 
 
 /*

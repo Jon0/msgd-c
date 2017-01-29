@@ -38,7 +38,9 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
 
 void msg_server_mount_event(void *p, struct msgu_mount_event *e) {
     struct msg_server *serv = p;
-    printf("recv mount event\n");
+    printf("recv mount event: %d\n", e->id);
+
+    msg_server_notify_mount(serv, e->id);
 }
 
 
@@ -149,6 +151,14 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
     else {
         printf("not found: %s\n", host->buf);
     }
+}
+
+
+void msg_server_notify_mount(struct msg_server *serv, int id) {
+    struct msgu_string mount_name;
+
+    // TODO find name
+    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &mount_name);
 }
 
 
