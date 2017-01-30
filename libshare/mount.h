@@ -13,6 +13,9 @@
 typedef int (*msgu_mount_read_t)(void *, int, char *, size_t);
 
 
+/*
+ * set of required functions
+ */
 struct msgu_mount_fn {
     msgu_mount_read_t read;
 };
@@ -20,6 +23,7 @@ struct msgu_mount_fn {
 
 /*
  * lists events which require handling
+ * TODO should be sorted by name, not id
  */
 struct msgu_mount_point {
     int id;
