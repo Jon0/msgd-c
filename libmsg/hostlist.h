@@ -1,6 +1,8 @@
 #ifndef LIBMSG_HOSTLIST_H
 #define LIBMSG_HOSTLIST_H
 
+#include <libutil/datatable.h>
+
 #include "connection.h"
 
 
@@ -13,9 +15,16 @@ struct msg_host_link {
 };
 
 
+/*
+ * use table type, to index by many keys
+ */
 struct msg_host_list {
-    struct msg_host_link *links;
+    msgs_mutex_t          list_mutex;
+    struct msgu_datatable data;
 };
+
+
+void msgu_host_list_init(struct msg_host_list *l);
 
 
 #endif

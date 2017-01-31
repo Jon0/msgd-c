@@ -3,7 +3,6 @@
 
 #include <libutil/map.h>
 #include <libutil/parser.h>
-#include <libshare/host.h>
 #include <libshare/mount.h>
 #include <libshare/network.h>
 #include <libshare/share.h>
@@ -14,16 +13,7 @@
 #include <libsys/thread.h>
 
 #include "connection.h"
-
-
-/*
- *
- */
-struct msg_server_host {
-    int                conn_id;
-    struct msgu_vector nodes;
-};
-
+#include "hostlist.h"
 
 
 /*
@@ -59,6 +49,10 @@ struct msg_server {
     int                  loopback_id;
     struct msgu_map      connections;
     struct msgu_map      hosts;
+
+    // TODO replace above with list:
+    struct msg_host_list hostlist;
+
 
     // maps events to and from local shares
     struct msgu_share_map shares;

@@ -3,7 +3,6 @@
 
 #include <libutil/buffer.h>
 #include <libutil/parser.h>
-#include <libshare/host.h>
 #include <libsys/endpoint.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
