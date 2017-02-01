@@ -6,6 +6,9 @@
 #include "connection.h"
 
 
+/*
+ *
+ */
 struct msg_host_link {
     int active;
     int status;

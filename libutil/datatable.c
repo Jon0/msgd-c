@@ -18,3 +18,8 @@ void msgu_datatable_alloc(struct msgu_datatable *t, size_t max) {
     t->data = malloc(t->rowsize * max);
     t->allocated = max;
 }
+
+
+int msgu_datatable_emplace(struct msgu_datatable *t, void **table, size_t count) {
+    return 0;
+}
