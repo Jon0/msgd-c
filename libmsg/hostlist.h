@@ -24,6 +24,8 @@ struct msg_host_link {
 struct msg_host_list {
     msgs_mutex_t          list_mutex;
     struct msgu_datatable data;
+    struct msgu_datamap   name_map;
+    struct msgu_datamap   id_map;
 };
 
 
