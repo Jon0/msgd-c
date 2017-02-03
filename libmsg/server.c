@@ -174,7 +174,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_mutex_init(&s->conn_mutex);
     msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
     msgu_map_alloc(&s->connections, 1024);
-    msgu_host_list_init(&s->hostlist);
+    msgu_host_list_init(&s->hostlist, 32);
     msgu_share_set_init(&s->shares, &file_ops);
     msgu_mount_map_init(&s->mounts);
     msgs_file_cache_init(&s->cache, &s->shares);
