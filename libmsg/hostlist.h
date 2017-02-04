@@ -2,6 +2,7 @@
 #define LIBMSG_HOSTLIST_H
 
 #include <libutil/datatable.h>
+#include <libsys/eventmap.h>
 
 #include "connection.h"
 
@@ -24,9 +25,12 @@ struct msg_host_link {
 /*
  * table containing id, address, name and link
  * use table type, to index by many keys
+ * manages sockets but doesn't open them
  */
 struct msg_host_list {
     msgs_mutex_t          list_mutex;
+    msg_message_recv_t    recv_fn;
+    void                 *recv_arg;
     struct msgu_datatable data;
     struct msgu_datamap   id_map;
     struct msgu_datamap   addr_map;
@@ -34,7 +38,23 @@ struct msg_host_list {
 };
 
 
-void msgu_host_list_init(struct msg_host_list *l, size_t size);
+void msgu_host_list_init(struct msg_host_list *list, size_t size, msg_message_recv_t rf, void *arg);
+
+
+/*
+ * manage connections
+ */
+int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_map *emap, struct msgs_socket *socket);
+int msg_hostlist_close_connection(struct msg_host_list *list, int id);
+struct msg_host_link *msg_hostlist_connection_id(struct msg_host_list *list, int id);
+struct msg_host_link *msg_hostlist_connection_name(struct msg_host_list *list, const struct msgu_string *hostname);
+int msg_hostlist_connection_notify(struct msg_host_list *list, int id);
+
+
+/*
+ * provides a locked mutex, to be unlocked when operations are completed
+ */
+struct msg_connection *msg_hostlist_use_id(struct msg_host_list *list, msgs_mutex_t **lock, int id);
 
 
 #endif

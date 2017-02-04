@@ -28,7 +28,7 @@ int msgu_datatable_get(struct msgu_datatable *t, void **table, size_t index) {
         table[i] = &t->data[char_index];
         char_index += t->sizes[i];
     }
-    return 0;
+    return index;
 }
 
 
@@ -36,6 +36,11 @@ int msgu_datatable_emplace(struct msgu_datatable *t, void **table) {
     size_t index = t->row_count++;
     msgu_datatable_get(t, table, index);
     return index;
+}
+
+
+int msgu_datatable_erase(struct msgu_datatable *t, size_t index) {
+    return -1;
 }
 
 

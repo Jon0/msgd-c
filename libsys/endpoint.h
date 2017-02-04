@@ -94,7 +94,7 @@ int msgs_open_acceptor(struct msgs_acceptor *acc, struct msgu_address *addr);
 int msgs_accept_socket(struct msgs_acceptor *acc, struct msgs_socket *s);
 int msgs_open_socket(struct msgs_socket *s, struct msgu_address *a);
 int msgs_close_socket(struct msgs_socket *s);
-
+int msgs_get_address(struct msgs_socket *s, struct msgu_address *a);
 
 
 int ep_notify_create();

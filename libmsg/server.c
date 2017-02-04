@@ -14,14 +14,16 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
         while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
             msgs_address_print(sockname, &newsocket.addr);
             printf("[server] accept: %s from %d (local)\n", sockname, e->id);
-            msg_server_init_connection(serv, &newsocket);
+            int newid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &newsocket);
+            msgs_poll_socket(&serv->tb, &newsocket, newid);
         }
     }
     else if (e->id == serv->remote_acc_id) {
         while (msgs_accept_socket(&serv->remote_acc, &newsocket)) {
             msgs_address_print(sockname, &newsocket.addr);
             printf("[server] accept: %s from %d (remote)\n", sockname, e->id);
-            msg_server_init_connection(serv, &newsocket);
+            int newid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &newsocket);
+            msgs_poll_socket(&serv->tb, &newsocket, newid);
         }
     }
     else {
@@ -32,7 +34,7 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
 
 void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
     struct msg_server *serv = p;
-    msg_server_connection_notify(serv, e->id);
+    msg_hostlist_connection_notify(&serv->hostlist, e->id);
 }
 
 
@@ -56,87 +58,11 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 }
 
 
-int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket) {
-    struct msg_connection conn;
-    msg_connection_init(&conn, socket, msg_server_message_recv, s);
-    int id = msgu_add_recv_handler(&s->emap);
-
-    // lock and modify server state
-    msgs_mutex_lock(&s->conn_mutex);
-    msgu_map_insert(&s->connections, &id, &conn);
-    msgs_mutex_unlock(&s->conn_mutex);
-
-    // start polling after adding to connection map
-    msgs_poll_socket(&s->tb, socket, id);
-    return id;
-}
-
-
-int msg_server_close_connection(struct msg_server *s, int id) {
-    struct msg_connection *conn = msg_server_connection(s, id);
-    msgs_mutex_lock(&s->conn_mutex);
-    if (conn) {
-        msg_connection_close(conn);
-    }
-    msgu_map_erase(&s->connections, &id);
-    msgs_mutex_unlock(&s->conn_mutex);
-    return 1;
-}
-
-
-struct msg_connection *msg_server_connection(struct msg_server *s, int id) {
-    return msgu_map_get(&s->connections, &id);
-}
-
-
-struct msg_connection *msg_server_connection_name(struct msg_server *s, const struct msgu_string *hostname) {
-    size_t count = msgu_map_size(&s->connections);
-    for (int i = 0; i < count; ++i) {
-        struct msg_connection *conn = msgu_map_get_value(&s->connections, i);
-        if (conn && (msgu_string_compare(&conn->remote_name, hostname) == 0)) {
-            return conn;
-        }
-    }
-    return NULL;
-}
-
-
-int msg_server_connection_notify(struct msg_server *serv, int id) {
-    struct msg_connection *conn;
-
-    // make sure every path unlocks this
-    msgs_mutex_lock(&serv->conn_mutex);
-    conn = msg_server_connection(serv, id);
-    if (conn) {
-        msg_connection_notify(conn);
-
-        // lock read mutex first
-        if (msgs_mutex_try_lock(&conn->read_mutex)) {
-            msgs_mutex_unlock(&serv->conn_mutex);
-            int result = msg_connection_poll(conn);
-            msgs_mutex_unlock(&conn->read_mutex);
-            if (result == -1) {
-                // socket was closed
-                printf("connection %d: closed\n", id);
-                msg_server_close_connection(serv, id);
-            }
-        }
-        else {
-            msgs_mutex_unlock(&serv->conn_mutex);
-        }
-    }
-    else {
-        printf("connection %d: not found\n", id);
-        msgs_mutex_unlock(&serv->conn_mutex);
-    }
-}
-
-
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share) {
     printf("mounting %s::%s\n", host->buf, share->buf);
 
-    struct msg_connection *conn = msg_server_connection_name(serv, host);
-    if (conn) {
+    struct msg_host_link *link = msg_hostlist_connection_name(&serv->hostlist, host);
+    if (link) {
         printf("found: %s\n", host->buf);
 
         // TODO use array of available shares
@@ -146,7 +72,11 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
         nd.node_size = 4096;
         msgu_string_copy(&nd.node_name, share);
         int id = msgu_add_mount_handler(&serv->emap);
-        msgu_mount_add(&serv->mounts, id, &nd, conn);
+
+        // check connection is active
+        if (link->status_bits & msg_host_active) {
+            msgu_mount_add(&serv->mounts, id, &nd, &link->conn);
+        }
     }
     else {
         printf("not found: %s\n", host->buf);
@@ -171,10 +101,7 @@ void msg_server_print_state(struct msg_server *serv) {
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_set_signals();
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
-    msgs_mutex_init(&s->conn_mutex);
-    msgu_map_init(&s->connections, msgu_int_hash, msgu_int_cmp, sizeof(int), sizeof(struct msg_connection));
-    msgu_map_alloc(&s->connections, 1024);
-    msgu_host_list_init(&s->hostlist, 32);
+    msgu_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
     msgu_share_set_init(&s->shares, &file_ops);
     msgu_mount_map_init(&s->mounts);
     msgs_file_cache_init(&s->cache, &s->shares);
@@ -201,11 +128,12 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
 
 
     // create loopback connection
-    s->loopback_id = msg_server_connect(s, "127.0.0.1");
+    msg_server_connect(s, "127.0.0.1");
 }
 
 
 int msg_server_connect(struct msg_server *serv, const char *addr) {
+    msgs_mutex_t *lock;
     struct msgu_address raddr;
     struct msgs_socket socket;
     struct msgu_init_remote_msg init_msg;
@@ -219,18 +147,15 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     if (fd == -1) {
         return -1;
     }
-    int cid = msg_server_init_connection(serv, &socket);
-    msgs_mutex_lock(&serv->conn_mutex);
-    struct msg_connection *conn = msg_server_connection(serv, cid);
+    int cid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &socket);
+    struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
     if (conn) {
-        msgs_mutex_lock(&conn->read_mutex);
-        msgs_mutex_unlock(&serv->conn_mutex);
         msg_connection_send_message(conn, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
-        msgs_mutex_unlock(&conn->read_mutex);
+        msgs_mutex_unlock(lock);
+        msgs_poll_socket(&serv->tb, &socket, cid);
     }
     else {
         printf("failed to add connection\n");
-        msgs_mutex_unlock(&serv->conn_mutex);
         return -1;
     }
     return cid;

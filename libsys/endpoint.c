@@ -268,6 +268,12 @@ int msgs_close_socket(struct msgs_socket *s) {
 }
 
 
+int msgs_get_address(struct msgs_socket *s, struct msgu_address *a) {
+    *a = s->addr;
+    return 0;
+}
+
+
 int ep_notify_read(int infd) {
     struct inotify_event event;
     ssize_t len = read(infd, (char *) &event, sizeof(event));

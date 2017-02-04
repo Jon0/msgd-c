@@ -28,6 +28,7 @@ int msgu_datatable_get(struct msgu_datatable *t, void **table, size_t index);
  * creates space for new rows
  */
 int msgu_datatable_emplace(struct msgu_datatable *t, void **table);
+int msgu_datatable_erase(struct msgu_datatable *t, size_t index);
 
 
 /*

@@ -42,15 +42,6 @@ struct msg_server {
     struct msgs_acceptor local_acc;
     int                  remote_acc_id;
     struct msgs_acceptor remote_acc;
-
-    // type of socket
-    // epid -> struct msg_connection
-    msgs_mutex_t         conn_mutex;
-    int                  loopback_id;
-    struct msgu_map      connections;
-    struct msgu_map      hosts;
-
-    // TODO replace above with list:
     struct msg_host_list hostlist;
 
 
@@ -60,16 +51,6 @@ struct msg_server {
     struct msgs_file_cache cache;
     struct msgs_fuse_files fuse;
 };
-
-
-/*
- * manage connections
- */
-int msg_server_init_connection(struct msg_server *s, struct msgs_socket *socket);
-int msg_server_close_connection(struct msg_server *s, int id);
-struct msg_connection *msg_server_connection(struct msg_server *s, int id);
-struct msg_connection *msg_server_connection_name(struct msg_server *s, const struct msgu_string *hostname);
-int msg_server_connection_notify(struct msg_server *serv, int id);
 
 
 /*
