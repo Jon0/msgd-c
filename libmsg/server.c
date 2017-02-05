@@ -94,6 +94,7 @@ void msg_server_notify_mount(struct msg_server *serv, int id) {
 
 void msg_server_print_state(struct msg_server *serv) {
     printf("[server state] ");
+    msg_hostlist_print(&serv->hostlist);
     msgu_share_debug(&serv->shares);
 }
 

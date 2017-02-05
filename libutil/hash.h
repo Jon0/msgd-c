@@ -34,4 +34,8 @@ int msgu_uint32_cmp(const void *a, const void *b);
 
 hash_t msgu_fast_hash(const void *data, size_t count);
 
+
+int msgu_binary_cmp(const char *a, const char *b, size_t a_len, size_t b_len);
+
+
 #endif

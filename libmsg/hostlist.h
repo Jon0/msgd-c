@@ -46,6 +46,13 @@ void msgu_host_list_init(struct msg_host_list *list, size_t size, msg_message_re
  */
 int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_map *emap, struct msgs_socket *socket);
 int msg_hostlist_close_connection(struct msg_host_list *list, int id);
+int msg_hostlist_name_connection(struct msg_host_list *list, int id, struct msgu_string *name);
+void msg_hostlist_print(struct msg_host_list *list);
+
+
+/*
+ * find connections, return NULL when not found
+ */
 struct msg_host_link *msg_hostlist_connection_id(struct msg_host_list *list, int id);
 struct msg_host_link *msg_hostlist_connection_name(struct msg_host_list *list, const struct msgu_string *hostname);
 int msg_hostlist_connection_notify(struct msg_host_list *list, int id);

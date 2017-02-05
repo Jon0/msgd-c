@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <libutil/buffer.h>
+#include <libutil/hash.h>
 
 
 struct msgu_ipc {
@@ -31,6 +32,10 @@ struct msgu_address {
     char   data [128];
     size_t len;
 };
+
+
+hash_t msgu_address_hash(const void *p);
+int msgu_address_cmp(const void *a, const void *b);
 
 
 enum ep_host_flags {

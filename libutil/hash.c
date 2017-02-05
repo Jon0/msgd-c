@@ -37,3 +37,15 @@ hash_t msgu_fast_hash(const void *data, size_t count) {
     }
     return hash;
 }
+
+
+int msgu_binary_cmp(const char *a, const char *b, size_t a_len, size_t b_len) {
+    int min = (a_len < b_len) ? a_len : b_len;
+    int cmp = memcmp(a, b, min);
+    if (cmp) {
+        return cmp;
+    }
+    else {
+        return a_len - b_len;
+    }
+}

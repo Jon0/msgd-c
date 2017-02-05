@@ -59,14 +59,7 @@ size_t msgu_string_split(struct msgu_string *dest, size_t count, const char *src
 
 
 int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b) {
-    int min = (a->count < b->count) ? a->count : b->count;
-    int cmp = memcmp(a->buf, b->buf, min);
-    if (cmp) {
-        return cmp;
-    }
-    else {
-        return a->count - b->count;
-    }
+    return msgu_binary_cmp(a->buf, b->buf, a->count, b->count);
 }
 
 
