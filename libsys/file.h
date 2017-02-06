@@ -13,15 +13,6 @@
 void msgs_node_list_from_path(struct msgu_vector *nodes, const char *path);
 
 
-
-/*
- * add files or directories to tree
- * return node id
- */
-int ep_mount_path(struct ep_tree *t, const char *path);
-
-
-
 /*
  * basic filesystem functions
  */

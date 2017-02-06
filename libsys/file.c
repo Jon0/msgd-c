@@ -16,14 +16,6 @@ void msgs_node_list_from_path(struct msgu_vector *nodes, const char *path) {
 }
 
 
-int ep_mount_path(struct ep_tree *t, const char *path) {
-    // require extra parameters for msgd node_to_sub
-    // subid and type labels
-    // default to "mount/files"
-    // only share files owned by the current user
-}
-
-
 int msgs_path_stat(struct msgu_node *n, const char *path, struct msgu_file_params *param) {
     struct stat fstat;
     int result = stat(path, &fstat);
