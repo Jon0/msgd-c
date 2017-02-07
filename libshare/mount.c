@@ -55,6 +55,7 @@ int msgu_mount_open_request(struct msgu_mount_map *m, const char *path) {
         struct msgu_mount_point *mp = msgu_map_get(&m->data, &mount_name);
         if (mp) {
             // send read request
+            // needs to wait for reply
             return mp->id;
         }
         else {
