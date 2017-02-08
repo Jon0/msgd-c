@@ -49,15 +49,15 @@ struct msgu_datamap_key {
 struct msgu_datamap {
     struct msgu_datatable   *table;
     size_t                   item;
-    msgu_map_hash_t          hash;
-    msgu_map_cmp_t           cmp;
+    msgu_obj_hash_t          hash;
+    msgu_obj_cmp_t           cmp;
     size_t                   alloc;
     size_t                   chain;
     struct msgu_datamap_key *data;
 };
 
 
-void msgu_datamap_init(struct msgu_datamap *m, struct msgu_datatable *t, size_t item, msgu_map_hash_t hash, msgu_map_cmp_t cmp);
+void msgu_datamap_init(struct msgu_datamap *m, struct msgu_datatable *t, size_t item, msgu_obj_hash_t hash, msgu_obj_cmp_t cmp);
 void msgu_datamap_alloc(struct msgu_datamap *m, size_t max);
 
 

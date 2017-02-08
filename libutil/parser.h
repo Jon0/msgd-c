@@ -1,6 +1,7 @@
 #ifndef LIBUTIL_PARSER_H
 #define LIBUTIL_PARSER_H
 
+#include "serial.h"
 #include "stream.h"
 
 #define MSGU_FRAGMENT_MAX 8
@@ -36,33 +37,15 @@ int msgu_fragment_check(struct msgu_fragment *f, int result);
 int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count);
 
 
-/*
- * transfer stream functions
- */
-typedef size_t (*msgu_transfer_size_t)(const void *);
-typedef int (*msgu_transfer_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
-typedef int (*msgu_transfer_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
-
-
-/*
- * set of functions for serialising
- */
-struct msgu_transfer_fn {
-    msgu_transfer_size_t   size;
-    msgu_transfer_read_t   read;
-    msgu_transfer_write_t  write;
-};
-
-
 struct msgu_parser {
-    struct msgu_transfer_fn *fns;
+    struct msgu_type        *fns;
     struct msgu_fragment     read_state [MSGU_FRAGMENT_MAX];
     struct msgu_fragment     write_state [MSGU_FRAGMENT_MAX];
     size_t max_depth;
 };
 
 
-void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns);
+void msgu_parser_init(struct msgu_parser *parser, struct msgu_type *fns);
 
 
 /*

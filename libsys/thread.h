@@ -65,7 +65,7 @@ struct ep_event_queue {
 };
 
 
-void ep_event_queue_init(struct ep_event_queue *q, struct msgu_element *fns, size_t elem_size);
+void ep_event_queue_init(struct ep_event_queue *q, struct msgu_type *fns, size_t elem_size);
 void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue);
 
 

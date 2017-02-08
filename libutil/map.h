@@ -29,8 +29,8 @@ struct msgu_key_pair {
 struct msgu_map {
     struct msgu_key_pair *pair;
     char                 *array;
-    msgu_map_hash_t       hash;
-    msgu_map_cmp_t        cmp;
+    msgu_obj_hash_t       hash;
+    msgu_obj_cmp_t        cmp;
     size_t                key_size;
     size_t                data_size;
     size_t                elem_size;
@@ -66,7 +66,7 @@ struct msgu_multimap {
 /*
  * map functions
  */
-void msgu_map_init(struct msgu_map *m, msgu_map_hash_t hash, msgu_map_cmp_t cmp, size_t ksize, size_t vsize);
+void msgu_map_init(struct msgu_map *m, msgu_obj_hash_t hash, msgu_obj_cmp_t cmp, size_t ksize, size_t vsize);
 void msgu_map_alloc(struct msgu_map *m, size_t count);
 void msgu_map_free(struct msgu_map *m);
 size_t msgu_map_size(struct msgu_map *m);

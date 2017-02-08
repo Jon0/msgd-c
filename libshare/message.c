@@ -29,7 +29,7 @@ size_t msgu_message_size_frag(const void *m) {
 
 int msgu_message_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *m) {
     struct msgu_message *msg = m;
-    static msgu_transfer_read_t msgu_message_read_fns[] = {
+    static msgu_obj_read_t msgu_message_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
         msgu_i32_read_frag,
@@ -49,7 +49,7 @@ int msgu_message_read_frag(struct msgu_stream *src, struct msgu_fragment *f, voi
 
 int msgu_message_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *m) {
     const struct msgu_message *msg = m;
-    static msgu_transfer_write_t msgu_message_write_fns[] = {
+    static msgu_obj_write_t msgu_message_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
         msgu_i32_write_frag,

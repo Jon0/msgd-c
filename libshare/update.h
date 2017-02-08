@@ -1,6 +1,7 @@
 #ifndef LIBUTIL_UPDATE_H
 #define LIBUTIL_UPDATE_H
 
+#include <libutil/parser.h>
 #include <libutil/stream.h>
 #include <libutil/string.h>
 #include <libutil/vector.h>
@@ -235,8 +236,9 @@ int msgu_msgdata_read_frag(struct msgu_stream *in, struct msgu_fragment *f, void
 int msgu_msgdata_write_frag(struct msgu_stream *out, struct msgu_fragment *f, const void *md);
 
 
-static struct msgu_transfer_fn msgu_msgdata_transfer_fn = {
-    .size  = msgu_msgdata_size_frag,
+static struct msgu_type msgu_msgdata_transfer_fn = {
+    .memory_size  = sizeof(struct msgu_msgdata),
+    .serial_size  = msgu_msgdata_size_frag,
     .read  = msgu_msgdata_read_frag,
     .write = msgu_msgdata_write_frag,
 };

@@ -28,7 +28,7 @@ size_t msgu_node_size_frag(const void *n) {
 
 int msgu_node_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *n) {
     struct msgu_node *node = n;
-    static msgu_transfer_read_t msgu_node_read_fns[] = {
+    static msgu_obj_read_t msgu_node_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
         msgu_i32_read_frag,
@@ -46,7 +46,7 @@ int msgu_node_read_frag(struct msgu_stream *src, struct msgu_fragment *f, void *
 
 int msgu_node_write_frag(struct msgu_stream *dest, struct msgu_fragment *f, const void *n) {
     const struct msgu_node *node = n;
-    static msgu_transfer_write_t msgu_node_write_fns[] = {
+    static msgu_obj_write_t msgu_node_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
         msgu_i32_write_frag,

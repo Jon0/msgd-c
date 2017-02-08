@@ -32,8 +32,9 @@ hash_t msgu_message_hash(const void *m);
 int msgu_message_cmp(const void *a, const void *b);
 
 
-static struct msgu_transfer_fn msgu_message_transfer_fn = {
-    .size  = msgu_message_size_frag,
+static struct msgu_type msgu_message_transfer_fn = {
+    .memory_size  = sizeof(struct msgu_message),
+    .serial_size  = msgu_message_size_frag,
     .read  = msgu_message_read_frag,
     .write = msgu_message_write_frag,
 };

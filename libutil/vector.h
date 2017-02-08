@@ -14,7 +14,7 @@ struct msgu_vector {
 };
 
 
-void msgu_vector_init(struct msgu_vector *q, const struct msgu_element *fns, size_t elem_size);
+void msgu_vector_init(struct msgu_vector *q, const struct msgu_type *fns, size_t elem_size);
 void msgu_vector_alloc(struct msgu_vector *q, size_t max);
 
 
@@ -35,8 +35,9 @@ hash_t msgu_vector_map_hash(const void *q);
 int msgu_vector_map_cmp(const void *a, const void *b);
 
 
-static struct msgu_element msgu_vector_element = {
-    .size  = msgu_vector_frag_size,
+static struct msgu_type msgu_vector_element = {
+    .memory_size  = sizeof(struct msgu_vector),
+    .serial_size  = msgu_vector_frag_size,
     .read  = msgu_vector_frag_read,
     .write = msgu_vector_frag_write,
     .hash  = msgu_vector_map_hash,

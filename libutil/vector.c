@@ -1,9 +1,10 @@
 #include <string.h>
 
+#include "parser.h"
 #include "vector.h"
 
 
-void msgu_vector_init(struct msgu_vector *q, const struct msgu_element *fns, size_t elem_size) {
+void msgu_vector_init(struct msgu_vector *q, const struct msgu_type *fns, size_t elem_size) {
     msgu_array_init(&q->arr, fns, elem_size);
     q->begin = 0;
     q->size = 0;
@@ -27,7 +28,7 @@ size_t msgu_vector_element_size(const struct msgu_vector *q) {
 
 size_t msgu_vector_element_serial_size(const struct msgu_vector *q, size_t index) {
     size_t arr_index = (q->begin + index) % q->arr.allocated;
-    return q->arr.fns->size(&q->arr.data[q->arr.esize * arr_index]);
+    return q->arr.fns->serial_size(&q->arr.data[q->arr.esize * arr_index]);
 }
 
 

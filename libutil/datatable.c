@@ -53,7 +53,7 @@ int msgu_datatable_erase(struct msgu_datatable *t, size_t index) {
 }
 
 
-void msgu_datamap_init(struct msgu_datamap *m, struct msgu_datatable *t, size_t item, msgu_map_hash_t hash, msgu_map_cmp_t cmp) {
+void msgu_datamap_init(struct msgu_datamap *m, struct msgu_datatable *t, size_t item, msgu_obj_hash_t hash, msgu_obj_cmp_t cmp) {
     m->table = t;
     m->item  = item;
     m->hash  = hash;

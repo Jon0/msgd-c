@@ -60,7 +60,7 @@ int msgu_fragment_complete(struct msgu_fragment *f, int result, size_t count) {
 }
 
 
-void msgu_parser_init(struct msgu_parser *parser, struct msgu_transfer_fn *fns) {
+void msgu_parser_init(struct msgu_parser *parser, struct msgu_type *fns) {
     parser->fns = fns;
     msgu_fragment_reset(parser->read_state, MSGU_FRAGMENT_MAX);
     msgu_fragment_reset(parser->write_state, MSGU_FRAGMENT_MAX);

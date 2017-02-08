@@ -3,7 +3,7 @@
 #include "map.h"
 
 
-void msgu_map_init(struct msgu_map *m, msgu_map_hash_t hash, msgu_map_cmp_t cmp, size_t ksize, size_t vsize) {
+void msgu_map_init(struct msgu_map *m, msgu_obj_hash_t hash, msgu_obj_cmp_t cmp, size_t ksize, size_t vsize) {
     m->elem_count = 0;
     m->array_max = 0;
     m->chain_max = 8;

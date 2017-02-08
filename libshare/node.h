@@ -43,8 +43,9 @@ hash_t msgu_node_hash(const void *ns);
 int msgu_node_cmp(const void *a, const void *b);
 
 
-static struct msgu_element msgu_node_element = {
-    .size  = msgu_node_size_frag,
+static struct msgu_type msgu_node_element = {
+    .memory_size  = sizeof(struct msgu_node),
+    .serial_size  = msgu_node_size_frag,
     .read  = msgu_node_read_frag,
     .write = msgu_node_write_frag,
     .hash  = msgu_node_hash,

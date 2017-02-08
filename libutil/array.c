@@ -1,9 +1,10 @@
 #include <string.h>
 
 #include "array.h"
+#include "parser.h"
 
 
-void msgu_array_init(struct msgu_array *a, const struct msgu_element *fns, size_t elem_size) {
+void msgu_array_init(struct msgu_array *a, const struct msgu_type *fns, size_t elem_size) {
     a->fns       = fns;
     a->esize     = elem_size;
     a->data      = NULL;
@@ -102,7 +103,7 @@ size_t msgu_array_serial_size(const struct msgu_array *array, size_t start, size
     size_t arr_size = 0;
     for (int i = 0; i < count; ++i) {
         size_t index = (start + i) % array->allocated;
-        arr_size += array->fns->size(&array->data[array->esize * i]);
+        arr_size += array->fns->serial_size(&array->data[array->esize * i]);
     }
     return arr_size;
 }

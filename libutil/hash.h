@@ -10,12 +10,12 @@ typedef unsigned long hash_t;
 /*
  * returns a hash for elements
  */
-typedef hash_t (*msgu_map_hash_t)(const void *);
+typedef hash_t (*msgu_obj_hash_t)(const void *);
 
 /*
  * returns 0 for equal elements
  */
-typedef int (*msgu_map_cmp_t)(const void *, const void *);
+typedef int (*msgu_obj_cmp_t)(const void *, const void *);
 
 
 /*

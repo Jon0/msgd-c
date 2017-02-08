@@ -50,8 +50,9 @@ hash_t msgu_string_hash(const void *p);
 int msgu_string_cmp(const void *a, const void *b);
 
 
-static struct msgu_element msgu_string_element = {
-    .size  = msgu_string_size_frag,
+static struct msgu_type msgu_string_element = {
+    .memory_size  = sizeof(struct msgu_string),
+    .serial_size  = msgu_string_size_frag,
     .read  = msgu_string_read_frag,
     .write = msgu_string_write_frag,
     .hash  = msgu_string_hash,

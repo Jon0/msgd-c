@@ -70,7 +70,7 @@ size_t msgu_init_local_size(const struct msgu_init_local_msg *u) {
 
 
 int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_local_msg *u) {
-    static msgu_transfer_read_t msgu_init_local_read_fns[] = {
+    static msgu_obj_read_t msgu_init_local_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
         msgu_string_read_frag,
@@ -85,7 +85,7 @@ int msgu_init_local_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_init_local_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_local_msg *u) {
-    static msgu_transfer_write_t msgu_init_local_write_fns[] = {
+    static msgu_obj_write_t msgu_init_local_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
         msgu_string_write_frag,
@@ -105,7 +105,7 @@ size_t msgu_init_remote_size(const struct msgu_init_remote_msg *u) {
 
 
 int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_init_remote_msg *u) {
-    static msgu_transfer_read_t msgu_init_remote_read_fns[] = {
+    static msgu_obj_read_t msgu_init_remote_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
         msgu_string_read_frag,
@@ -120,7 +120,7 @@ int msgu_init_remote_read(struct msgu_stream *stream, struct msgu_fragment *f, s
 
 
 int msgu_init_remote_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_init_remote_msg *u) {
-    static msgu_transfer_write_t msgu_init_remote_write_fns[] = {
+    static msgu_obj_write_t msgu_init_remote_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
         msgu_string_write_frag,
@@ -140,7 +140,7 @@ size_t msgu_share_file_size(const struct msgu_share_file_msg *u) {
 
 
 int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_share_file_msg *u) {
-    static msgu_transfer_read_t msgu_add_share_read_fns[] = {
+    static msgu_obj_read_t msgu_add_share_read_fns[] = {
         msgu_string_read_frag,
     };
     void *layout[] = {
@@ -151,7 +151,7 @@ int msgu_share_file_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_share_file_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_share_file_msg *u) {
-    static msgu_transfer_write_t msgu_add_share_write_fns[] = {
+    static msgu_obj_write_t msgu_add_share_write_fns[] = {
         msgu_string_write_frag,
     };
     const void *layout[] = {
@@ -182,7 +182,7 @@ size_t msgu_mount_node_size(const struct msgu_mount_node_msg *u) {
 
 
 int msgu_mount_node_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_mount_node_msg *u) {
-    static msgu_transfer_read_t msgu_mount_node_read_fns[] = {
+    static msgu_obj_read_t msgu_mount_node_read_fns[] = {
         msgu_string_read_frag,
         msgu_string_read_frag,
     };
@@ -195,7 +195,7 @@ int msgu_mount_node_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_mount_node_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_mount_node_msg *u) {
-    static msgu_transfer_write_t msgu_mount_node_write_fns[] = {
+    static msgu_obj_write_t msgu_mount_node_write_fns[] = {
         msgu_string_write_frag,
         msgu_string_write_frag,
     };
@@ -244,7 +244,7 @@ size_t msgu_node_read_size(const struct msgu_node_read_msg *u) {
 
 
 int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_read_msg *u) {
-    static msgu_transfer_read_t msgu_node_read_read_fns[] = {
+    static msgu_obj_read_t msgu_node_read_read_fns[] = {
         msgu_i32_read_frag,
         msgu_i32_read_frag,
     };
@@ -257,7 +257,7 @@ int msgu_node_read_read(struct msgu_stream *stream, struct msgu_fragment *f, str
 
 
 int msgu_node_read_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_read_msg *u) {
-    static msgu_transfer_write_t msgu_node_read_write_fns[] = {
+    static msgu_obj_write_t msgu_node_read_write_fns[] = {
         msgu_i32_write_frag,
         msgu_i32_write_frag,
     };
@@ -275,7 +275,7 @@ size_t msgu_node_write_size(const struct msgu_node_write_msg *u) {
 
 
 int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, struct msgu_node_write_msg *u) {
-    static msgu_transfer_read_t msgu_node_write_read_fns[] = {
+    static msgu_obj_read_t msgu_node_write_read_fns[] = {
         msgu_i32_read_frag,
         msgu_string_read_frag,
     };
@@ -288,7 +288,7 @@ int msgu_node_write_read(struct msgu_stream *stream, struct msgu_fragment *f, st
 
 
 int msgu_node_write_write(struct msgu_stream *stream, struct msgu_fragment *f, const struct msgu_node_write_msg *u) {
-    static msgu_transfer_write_t msgu_node_write_write_fns[] = {
+    static msgu_obj_write_t msgu_node_write_write_fns[] = {
         msgu_i32_write_frag,
         msgu_string_write_frag,
     };

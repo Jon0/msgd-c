@@ -2,18 +2,37 @@
 #define MSGUTIL_SERIAL_H
 
 #include "hash.h"
-#include "parser.h"
+
+
+struct msgu_stream;
+struct msgu_fragment;
 
 
 /*
- * functions for elements in arrays
+ * transfer stream functions
  */
-struct msgu_element {
-    msgu_transfer_size_t  size;
-    msgu_transfer_read_t  read;
-    msgu_transfer_write_t write;
-    msgu_map_hash_t       hash;
-    msgu_map_cmp_t        cmp;
+typedef size_t (*msgu_obj_size_t)(const void *);
+typedef int (*msgu_obj_read_t)(struct msgu_stream *, struct msgu_fragment *, void *);
+typedef int (*msgu_obj_write_t)(struct msgu_stream *, struct msgu_fragment *, const void *);
+
+
+/*
+ * print object to buffer
+ */
+typedef void (*msgu_obj_print_t)(char *, void *);
+
+
+/*
+ * basic information for each type
+ */
+struct msgu_type {
+    size_t           memory_size;
+    msgu_obj_size_t  serial_size;
+    msgu_obj_read_t  read;
+    msgu_obj_write_t write;
+    msgu_obj_hash_t  hash;
+    msgu_obj_cmp_t   cmp;
+    msgu_obj_print_t print;
 };
 
 
@@ -29,8 +48,8 @@ int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const voi
 /*
  * reads array of read functions object pointers
  */
-int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_transfer_read_t *fns, void **objs, size_t count);
-int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_transfer_write_t *fns, const void **objs, size_t count);
+int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_obj_read_t *fns, void **objs, size_t count);
+int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_obj_write_t *fns, const void **objs, size_t count);
 
 
 /*

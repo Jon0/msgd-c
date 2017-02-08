@@ -1,3 +1,4 @@
+#include "parser.h"
 #include "serial.h"
 
 
@@ -31,7 +32,7 @@ int msgu_write_fixed(struct msgu_stream *out, struct msgu_fragment *f, const voi
 }
 
 
-int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_transfer_read_t *fns, void **objs, size_t count) {
+int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_obj_read_t *fns, void **objs, size_t count) {
     for (int i = f->index; i < count; ++i) {
         int result = fns[i](in, &f[1], objs[i]);
         if (result == msgu_stream_complete) {
@@ -45,7 +46,7 @@ int msgu_read_many(struct msgu_stream *in, struct msgu_fragment *f, msgu_transfe
 }
 
 
-int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_transfer_write_t *fns, const void **objs, size_t count) {
+int msgu_write_many(struct msgu_stream *out, struct msgu_fragment *f, msgu_obj_write_t *fns, const void **objs, size_t count) {
     for (int i = f->index; i < count; ++i) {
         int result = fns[i](out, &f[1], objs[i]);
         if (result == msgu_stream_complete) {
