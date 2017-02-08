@@ -38,10 +38,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
 }
 
 
-void msg_server_mount_event(void *p, struct msgu_mount_event *e) {
-    struct msg_server *serv = p;
-    printf("recv mount event: %d\n", e->id);
-
+void msg_server_mount_event(void *serv, struct msgu_mount_event *e) {
     msg_server_notify_mount(serv, e->id);
 }
 
@@ -75,7 +72,7 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 
         // check connection is active
         if (link->status_bits & msg_host_active) {
-            msgu_mount_add(&serv->mounts, id, &nd, &link->conn);
+            msgu_mount_add(&serv->mounts, id, &nd);
         }
     }
     else {
@@ -85,10 +82,20 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 
 
 void msg_server_notify_mount(struct msg_server *serv, int id) {
-    struct msgu_string mount_name;
+    struct msgu_mount_address addr;
+    union msgu_any_msg data;
 
-    // TODO find name
-    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &mount_name);
+    // TODO find name and connection
+    struct msg_connection *conn;
+    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &addr);
+
+    // TODO find event type
+    struct msgu_mount_msg *msg = NULL;
+
+    // create notifier to accept reply
+
+    // send request
+    msg_connection_send_message(conn, msgtype_file_stream_read, msgdata_node_read, &data);
 }
 
 
@@ -104,7 +111,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
     msgu_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
     msgu_share_set_init(&s->shares, &file_ops);
-    msgu_mount_map_init(&s->mounts);
+    msgu_mount_map_init(&s->mounts, 32);
     msgs_file_cache_init(&s->cache, &s->shares);
     msgs_fuse_static_start(&s->fuse, &s->mounts, &s->emap, "fusemount");
     msgs_table_init(&s->tb, &s->emap);

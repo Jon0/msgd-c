@@ -24,9 +24,9 @@ void *msgs_fuse_thread(void *p) {
 
 
 int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
-	struct msgu_string name;
+	struct msgu_mount_address ma;
+	int len = msgu_mount_address_path(&ma, path);
 	int res = 0;
-	size_t len = msgu_string_split(&name, 1, path, "/");
 
 	printf("fuse getattr: %s\n", path);
     memset(stbuf, 0, sizeof(struct stat));
@@ -35,7 +35,7 @@ int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
         stbuf->st_nlink = 2;
     }
 	else {
-		struct msgu_node *nd = msgu_mount_node(static_fuse.mounts, &name);
+		struct msgu_node *nd = msgu_mount_addr(static_fuse.mounts, &ma);
 		if (nd) {
 			printf("\tstat: %s\n", nd->node_name.buf);
 			stbuf->st_mode = S_IFREG | 0666;
