@@ -39,7 +39,7 @@ int msg_connect(struct msg_client_state *cs, struct msgu_address *addr) {
     msgs_table_init(&cs->tb, &cs->emap);
 
     cs->server_id = msgu_add_recv_handler(&cs->emap);
-    msg_connection_connect(&cs->server, addr, msg_client_message_recv, cs);
+    msg_connection_connect(&cs->server, cs->server_id, addr, msg_client_message_recv, cs);
     msgs_poll_socket(&cs->tb, &cs->server.socket, cs->server_id);
     return 0;
 }

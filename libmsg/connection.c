@@ -3,7 +3,8 @@
 #include "connection.h"
 
 
-void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket, msg_message_recv_t fn, void *arg) {
+void msg_connection_init(struct msg_connection *conn, int id, struct msgs_socket *socket, msg_message_recv_t fn, void *arg) {
+    conn->connection_id = id;
     conn->recv_fn = fn;
     conn->recv_arg = arg;
     conn->socket = *socket;
@@ -17,9 +18,9 @@ void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket
 }
 
 
-int msg_connection_connect(struct msg_connection *conn, struct msgu_address *addr, msg_message_recv_t fn, void *arg) {
+int msg_connection_connect(struct msg_connection *conn, int id, struct msgu_address *addr, msg_message_recv_t fn, void *arg) {
     if (msgs_open_socket(&conn->socket, addr)) {
-        msg_connection_init(conn, &conn->socket, fn, arg);
+        msg_connection_init(conn, id, &conn->socket, fn, arg);
         return 1;
     }
     else {

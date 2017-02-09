@@ -46,7 +46,7 @@ void msgu_host_list_init(struct msg_host_list *list, size_t size, msg_message_re
  */
 int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_map *emap, struct msgs_socket *socket);
 int msg_hostlist_close_connection(struct msg_host_list *list, int id);
-int msg_hostlist_name_connection(struct msg_host_list *list, int id, struct msgu_string *name);
+int msg_hostlist_name_connection(struct msg_host_list *list, int id, const struct msgu_string *name);
 void msg_hostlist_print(struct msg_host_list *list);
 
 
@@ -62,6 +62,7 @@ int msg_hostlist_connection_notify(struct msg_host_list *list, int id);
  * provides a locked mutex, to be unlocked when operations are completed
  */
 struct msg_connection *msg_hostlist_use_id(struct msg_host_list *list, msgs_mutex_t **lock, int id);
+struct msg_connection *msg_hostlist_use_host(struct msg_host_list *list, msgs_mutex_t **lock, const struct msgu_string *hostname);
 
 
 #endif

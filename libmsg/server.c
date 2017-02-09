@@ -39,7 +39,7 @@ void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
 
 
 void msg_server_mount_event(void *serv, struct msgu_mount_event *e) {
-    msg_server_notify_mount(serv, e->id);
+    msg_server_notify_mount(serv, e);
 }
 
 
@@ -68,11 +68,10 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
         nd.node_mode = 7;
         nd.node_size = 4096;
         msgu_string_copy(&nd.node_name, share);
-        int id = msgu_add_mount_handler(&serv->emap);
 
         // check connection is active
         if (link->status_bits & msg_host_active) {
-            msgu_mount_add(&serv->mounts, id, &nd);
+            msgu_mount_add(&serv->mounts, host, &nd);
         }
     }
     else {
@@ -81,13 +80,8 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 }
 
 
-void msg_server_notify_mount(struct msg_server *serv, int id) {
-    struct msgu_mount_address addr;
-    union msgu_any_msg data;
-
-    // TODO find name and connection
-    struct msg_connection *conn;
-    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &addr);
+void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e) {
+    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &e->addr);
 
     // TODO find event type
     struct msgu_mount_msg *msg = NULL;
@@ -95,7 +89,14 @@ void msg_server_notify_mount(struct msg_server *serv, int id) {
     // create notifier to accept reply
 
     // send request
-    msg_connection_send_message(conn, msgtype_file_stream_read, msgdata_node_read, &data);
+    msgs_mutex_t *conn_mutex;
+    struct msg_connection *conn = msg_hostlist_use_host(&serv->hostlist, &conn_mutex, &e->addr.host_name);
+    if (conn) {
+        union msgu_any_msg data;
+        msgu_string_from_static(&data.share_file.share_name, "testfile");
+        msg_connection_send_message(conn, msgtype_file_open, msgdata_share_file, &data);
+        msgs_mutex_unlock(conn_mutex);
+    }
 }
 
 
@@ -219,11 +220,11 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
         status->error = msg_server_connect(serv, msg->buf.data.host_addr.address_str.buf);
         break;
     case msgtype_init_local:
-        msg_connection_set_name(conn, &msg->buf.data.init_local.proc_name);
+        msg_hostlist_name_connection(&serv->hostlist, conn->connection_id, &msg->buf.data.init_local.proc_name);
         break;
     case msgtype_init_remote:
     case msgtype_init_remote_reply:
-        msg_connection_set_name(conn, &msg->buf.data.init_remote.host_name);
+        msg_hostlist_name_connection(&serv->hostlist, conn->connection_id, &msg->buf.data.init_remote.host_name);
         break;
     case msgtype_mount:
         msg_server_init_mount(serv, &msg->buf.data.mount_node.host_name, &msg->buf.data.mount_node.share_name);

@@ -46,7 +46,7 @@ int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_m
         msgu_string_init(datarow[2]);
         struct msg_host_link *link = datarow[3];
         link->status_bits = msg_host_active;
-        msg_connection_init(&link->conn, socket, list->recv_fn, list->recv_arg);
+        msg_connection_init(&link->conn, event_id, socket, list->recv_fn, list->recv_arg);
         msgu_datamap_create_key(&list->id_map, index);
         msgu_datamap_create_key(&list->addr_map, index);
     }
@@ -56,7 +56,7 @@ int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_m
         event_id = *((int *) datarow[0]);
         struct msg_host_link *link = datarow[3];
         link->status_bits |= msg_host_active;
-        msg_connection_init(&link->conn, socket, list->recv_fn, list->recv_arg);
+        msg_connection_init(&link->conn, event_id, socket, list->recv_fn, list->recv_arg);
     }
 
     msgs_mutex_unlock(&list->list_mutex);
@@ -81,7 +81,7 @@ int msg_hostlist_close_connection(struct msg_host_list *list, int id) {
 }
 
 
-int msg_hostlist_name_connection(struct msg_host_list *list, int id, struct msgu_string *name) {
+int msg_hostlist_name_connection(struct msg_host_list *list, int id, const struct msgu_string *name) {
     void *datarow [4];
     int index = msgu_datamap_index(&list->id_map, &id, datarow);
     if (index < 0) {
@@ -91,8 +91,8 @@ int msg_hostlist_name_connection(struct msg_host_list *list, int id, struct msgu
     else {
         struct msg_host_link *link = datarow[3];
         msgu_string_copy(datarow[2], name);
-        msgu_datamap_create_key(&list->name_map, index);
         msg_connection_set_name(&link->conn, datarow[2]);
+        msgu_datamap_create_key(&list->name_map, index);
         return index;
     }
 }
@@ -127,7 +127,7 @@ struct msg_host_link *msg_hostlist_connection_id(struct msg_host_list *list, int
     void *datarow [4];
     int index = msgu_datamap_index(&list->id_map, &id, datarow);
     if (index < 0) {
-        printf("Host id: %lu not found\n", index);
+        printf("Host id: %d not found\n", index);
         return NULL;
     }
     return datarow[3];
@@ -138,7 +138,7 @@ struct msg_host_link *msg_hostlist_connection_name(struct msg_host_list *list, c
     void *datarow [4];
     int index = msgu_datamap_index(&list->name_map, hostname, datarow);
     if (index < 0) {
-        printf("Host id: %lu not found\n", index);
+        printf("Host id: %d not found\n", index);
         return NULL;
     }
     return datarow[3];
@@ -178,6 +178,22 @@ int msg_hostlist_connection_notify(struct msg_host_list *list, int id) {
 struct msg_connection *msg_hostlist_use_id(struct msg_host_list *list, msgs_mutex_t **lock, int id) {
     msgs_mutex_lock(&list->list_mutex);
     struct msg_host_link *link = msg_hostlist_connection_id(list, id);
+    if (link && (link->status_bits & msg_host_active)) {
+        msgs_mutex_lock(&link->conn.read_mutex);
+        msgs_mutex_unlock(&list->list_mutex);
+        *lock = &link->conn.read_mutex;
+        return &link->conn;
+    }
+    else {
+        msgs_mutex_unlock(&list->list_mutex);
+        return NULL;
+    }
+}
+
+
+struct msg_connection *msg_hostlist_use_host(struct msg_host_list *list, msgs_mutex_t **lock, const struct msgu_string *hostname) {
+    msgs_mutex_lock(&list->list_mutex);
+    struct msg_host_link *link = msg_hostlist_connection_name(list, hostname);
     if (link && (link->status_bits & msg_host_active)) {
         msgs_mutex_lock(&link->conn.read_mutex);
         msgs_mutex_unlock(&list->list_mutex);

@@ -36,6 +36,7 @@ void msgu_event_notify(struct msgs_event_map *map, uint32_t type, union msgu_any
  * called from table when new events arrive
  */
 void msgs_event_recv(struct msgs_event_map *map, uint32_t ev, uint32_t type, uint32_t id);
+void msgs_event_recv_mount(struct msgs_event_map *map, struct msgu_mount_event *me);
 
 
 /*

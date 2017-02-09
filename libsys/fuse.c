@@ -25,8 +25,14 @@ void *msgs_fuse_thread(void *p) {
 
 int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
 	struct msgu_mount_address ma;
-	int len = msgu_mount_address_path(&ma, path);
+	struct msgu_string addrstr [2];
+	size_t len = msgu_string_split(addrstr, 2, path, "/");
 	int res = 0;
+	if (len == 2) {
+		ma.host_name = addrstr[0];
+		ma.share_name = addrstr[1];
+	}
+
 
 	printf("fuse getattr: %s\n", path);
     memset(stbuf, 0, sizeof(struct stat));
@@ -34,6 +40,15 @@ int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
         stbuf->st_mode = S_IFDIR | 0755;
         stbuf->st_nlink = 2;
     }
+	else if (len == 1) {
+		if (msgu_mount_by_host(static_fuse.mounts, &addrstr[0]) > 0) {
+			stbuf->st_mode = S_IFDIR | 0755;
+	        stbuf->st_nlink = 2;
+		}
+		else {
+			res = -ENOENT;
+		}
+	}
 	else {
 		struct msgu_node *nd = msgu_mount_addr(static_fuse.mounts, &ma);
 		if (nd) {
@@ -63,43 +78,70 @@ int msgs_fuse_opendir(const char *path, struct fuse_file_info *fileInfo) {
 
 
 int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi) {
+	struct msgu_string addrstr [2];
+	size_t len = msgu_string_split(addrstr, 2, path, "/");
+
 	printf("fuse readdir: %s\n", path);
 
 	// only sharing single files for now
-	if (strcmp(path, "/") != 0) {
-		return -ENOENT;
-	}
-
-	filler(buf, ".", NULL, 0);
-	filler(buf, "..", NULL, 0);
-
-	size_t count = msgu_mount_map_size(static_fuse.mounts);
-	for (int i = 0; i < count; ++i) {
-		struct msgu_node *node = msgu_mount_index(static_fuse.mounts, i);
-		if (node) {
-			printf("\tfilling %s\n", node->node_name.buf);
-			filler(buf, node->node_name.buf, NULL, 0);
+	if (len == 0) {
+		filler(buf, ".", NULL, 0);
+		filler(buf, "..", NULL, 0);
+		size_t count = msgu_mount_map_size(static_fuse.mounts);
+		printf("len 1, %lu\n", count);
+		for (int i = 0; i < count; ++i) {
+			struct msgu_mount_address *addr = msgu_mount_index_addr(static_fuse.mounts, i);
+			if (addr) {
+				printf("\tfilling %s\n", addr->host_name.buf);
+				filler(buf, addr->host_name.buf, NULL, 0);
+			}
 		}
+	}
+	else if (len == 1) {
+		size_t count = msgu_mount_map_size(static_fuse.mounts);
+		for (int i = 0; i < count; ++i) {
+			struct msgu_node *node = msgu_mount_index(static_fuse.mounts, i);
+			struct msgu_mount_address *addr = msgu_mount_index_addr(static_fuse.mounts, i);
+			if (node && addr && (msgu_string_compare(&addrstr[0], &addr->host_name) == 0)) {
+				printf("\tfilling %s\n", node->node_name.buf);
+				filler(buf, node->node_name.buf, NULL, 0);
+			}
+		}
+	}
+	else {
+		return -ENOENT;
 	}
 	return 0;
 }
 
 
 int msgs_fuse_open(const char* path, struct fuse_file_info* fi) {
+	struct msgu_mount_event me;
+
 	printf("fuse open: %s\n", path);
-	int eid = msgu_mount_open_request(static_fuse.mounts, path);
-	msgs_event_recv(static_fuse.emap, 0, msgu_mount_id, eid);
-	return 0;
+	if (msgu_mount_address_path(&me.addr, path)) {
+		me.event_type = msgu_mount_event_open;
+		me.path = path;
+		msgs_event_recv_mount(static_fuse.emap, &me);
+		return 0;
+	}
+	else {
+		return -ENOENT;
+	}
 }
 
 
 int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struct fuse_file_info* fi) {
+	struct msgu_mount_event me;
+
 	printf("fuse read: %s, %lu\n", path, size);
-	int eid = msgu_mount_read_request(static_fuse.mounts, path, size, offset);
-	msgs_event_recv(static_fuse.emap, 0, msgu_mount_id, eid);
-
-
-
+	if (msgu_mount_address_path(&me.addr, path)) {
+		me.event_type = msgu_mount_event_read;
+		me.path = path;
+		me.size = size;
+		me.offset = offset;
+		msgs_event_recv_mount(static_fuse.emap, &me);
+	}
 
 	const char *teststr = "12345\n";
 	size_t count = strlen(teststr);

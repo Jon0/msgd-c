@@ -57,7 +57,7 @@ struct msg_server {
  * manage mounts
  */
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
-void msg_server_notify_mount(struct msg_server *serv, int id);
+void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e);
 
 
 /*

@@ -23,6 +23,7 @@ typedef int (*msg_message_recv_t)(struct msg_connection *, struct msgu_message *
  * uses buffer for loopback, and sockets for external
  */
 struct msg_connection {
+    int                  connection_id;
     msgs_mutex_t         read_mutex;
     msgs_mutex_t         write_mutex;
     msg_message_recv_t   recv_fn;
@@ -41,8 +42,8 @@ struct msg_connection {
 /*
  * init by connecting or accepting
  */
-void msg_connection_init(struct msg_connection *conn, struct msgs_socket *socket, msg_message_recv_t fn, void *arg);
-int msg_connection_connect(struct msg_connection *conn, struct msgu_address *addr, msg_message_recv_t fn, void *arg);
+void msg_connection_init(struct msg_connection *conn, int id, struct msgs_socket *socket, msg_message_recv_t fn, void *arg);
+int msg_connection_connect(struct msg_connection *conn, int id, struct msgu_address *addr, msg_message_recv_t fn, void *arg);
 void msg_connection_set_name(struct msg_connection *conn, const struct msgu_string *name);
 void msg_connection_close(struct msg_connection *conn);
 
