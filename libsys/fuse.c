@@ -88,7 +88,6 @@ int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
 		filler(buf, ".", NULL, 0);
 		filler(buf, "..", NULL, 0);
 		size_t count = msgu_mount_map_size(static_fuse.mounts);
-		printf("len 1, %lu\n", count);
 		for (int i = 0; i < count; ++i) {
 			struct msgu_mount_address *addr = msgu_mount_index_addr(static_fuse.mounts, i);
 			if (addr) {

@@ -83,17 +83,34 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e) {
     struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &e->addr);
 
-    // TODO find event type
-    struct msgu_mount_msg *msg = NULL;
-
-    // create notifier to accept reply
+    // TODO create notifier to accept reply
 
     // send request
     msgs_mutex_t *conn_mutex;
     struct msg_connection *conn = msg_hostlist_use_host(&serv->hostlist, &conn_mutex, &e->addr.host_name);
     if (conn) {
         union msgu_any_msg data;
-        msgu_string_from_static(&data.share_file.share_name, "testfile");
+        int msg_type;
+        int msg_data;
+        switch (e->event_type) {
+        case msgu_mount_event_open:
+            msg_type = msgtype_file_open;
+            msg_data = msgdata_share_file;
+            msgu_string_copy(&data.share_file.share_name, &e->addr.share_name);
+            break;
+        case msgu_mount_event_read:
+            msg_type = msgtype_file_stream_read;
+            msg_data = msgdata_node_read;
+            data.node_read.node_handle = mp->open_handle;
+            data.node_read.count = e->size;
+            break;
+        case msgu_mount_event_write:
+            msg_type = msgtype_file_stream_write;
+            msg_data = msgdata_node_write;
+            data.node_write.node_handle = mp->open_handle;;
+            msgu_string_from_buffer(&data.node_write.data, e->data, e->size);
+            break;
+        }
         msg_connection_send_message(conn, msgtype_file_open, msgdata_share_file, &data);
         msgs_mutex_unlock(conn_mutex);
     }

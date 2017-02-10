@@ -87,6 +87,7 @@ struct msgu_mount_event {
     struct msgu_mount_address addr;
     int event_type;
     const char *path;
+    const char *data;
     size_t size;
     size_t offset;
 };
