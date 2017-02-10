@@ -5,6 +5,7 @@
 
 #include "array.h"
 #include "hash.h"
+#include "parser.h"
 #include "stream.h"
 
 

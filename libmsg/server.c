@@ -81,6 +81,7 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
 
 
 void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e) {
+    printf("server fuse event %d\n", e->event_type);
     struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &e->addr);
 
     // TODO create notifier to accept reply
@@ -111,7 +112,7 @@ void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e
             msgu_string_from_buffer(&data.node_write.data, e->data, e->size);
             break;
         }
-        msg_connection_send_message(conn, msgtype_file_open, msgdata_share_file, &data);
+        msg_connection_send_message(conn, msg_type, msg_data, &data);
         msgs_mutex_unlock(conn_mutex);
     }
 }

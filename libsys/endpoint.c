@@ -156,7 +156,7 @@ void msgs_address_print(char *buf, const struct msgu_address *a) {
     }
     else if (sa->sa_family == AF_INET) {
         struct sockaddr_in *si = (struct sockaddr_in *) &a->data;
-        char *addr = (char *) &si->sin_addr;
+        unsigned char *addr = (unsigned char *) &si->sin_addr;
         sprintf(buf, "%u.%u.%u.%u", addr[0], addr[1], addr[2], addr[3]);
     }
     else {
