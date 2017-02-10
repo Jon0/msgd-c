@@ -4,7 +4,7 @@
 
 
 void msgu_share_debug(struct msgu_share_map *set) {
-    printf("%lu procs, %lu files\n", set->proc_shares, set->file_shares);
+    printf("Sharing: %lu procs, %lu files\n", set->proc_shares, set->file_shares);
     for (int i = 0; i < set->proc_shares; ++i) {
         printf("\tproc %d: %s\n", i, set->procs[i].node.node_name.buf);
     }

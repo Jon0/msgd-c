@@ -3,7 +3,7 @@
 #include "hostlist.h"
 
 
-void msgu_host_list_init(struct msg_host_list *list, size_t size, msg_message_recv_t rf, void *arg) {
+void msg_host_list_init(struct msg_host_list *list, size_t size, msg_message_recv_t rf, void *arg) {
     static size_t value_sizes [] = {
         sizeof(int),
         sizeof(struct msgu_address),

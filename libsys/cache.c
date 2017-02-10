@@ -82,6 +82,7 @@ int msgs_file_read(struct msgs_file_cache *c, struct msgs_cache_key *k, char *bu
         return count;
     }
     else {
+        printf("Resource %s::%d not found\n", k->remote_name, k->handle_id);
         return 0;
     }
 }

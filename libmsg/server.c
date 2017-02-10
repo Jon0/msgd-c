@@ -128,7 +128,8 @@ void msg_server_print_state(struct msg_server *serv) {
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_set_signals();
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
-    msgu_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
+    msg_notify_map_init(&s->notify);
+    msg_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
     msgu_share_set_init(&s->shares, &file_ops);
     msgu_mount_map_init(&s->mounts, 32);
     msgs_file_cache_init(&s->cache, &s->shares);

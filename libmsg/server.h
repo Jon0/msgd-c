@@ -14,6 +14,7 @@
 
 #include "connection.h"
 #include "hostlist.h"
+#include "notify.h"
 
 
 /*
@@ -46,6 +47,7 @@ struct msg_server {
 
 
     // maps events to and from local shares
+    struct msg_notify_map notify;
     struct msgu_share_map shares;
     struct msgu_mount_map mounts;
     struct msgs_file_cache cache;
