@@ -56,6 +56,17 @@ int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *ar
 
 
 /*
+ * condition type
+ */
+typedef pthread_cond_t msgs_condition_t;
+
+
+void msgs_condition_init(msgs_condition_t *cond);
+void msgs_condition_wait(msgs_condition_t *cond, msgs_mutex_t *mutex);
+void msgs_condition_signal(msgs_condition_t *cond);
+
+
+/*
  * a queue with locks preventing ensuring thread safety
  */
 struct ep_event_queue {

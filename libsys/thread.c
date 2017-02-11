@@ -72,6 +72,21 @@ int msgs_mutex_try(msgs_mutex_t *mutex, msgs_mutex_callback_t callback, void *ar
 }
 
 
+void msgs_condition_init(msgs_condition_t *cond) {
+    pthread_cond_init(cond, NULL);
+}
+
+
+void msgs_condition_wait(msgs_condition_t *cond, msgs_mutex_t *mutex) {
+    pthread_cond_wait(cond, mutex);
+}
+
+
+void msgs_condition_signal(msgs_condition_t *cond) {
+    pthread_cond_broadcast(cond);
+}
+
+
 void ep_event_queue_init(struct ep_event_queue *q, struct msgu_type *fns, size_t elem_size) {
     msgu_vector_init(&q->data, fns, elem_size);
     pthread_mutex_init(&q->mutex, NULL);
