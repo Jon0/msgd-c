@@ -24,7 +24,6 @@ struct msgu_mount_point {
     int    open_handle;
     size_t open_count;
     struct msgu_node node;
-    struct msgu_vector requests;
 };
 
 

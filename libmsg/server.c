@@ -55,6 +55,13 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 }
 
 
+int msg_server_mount_callback(void *p, struct msg_connection *conn, const struct msgu_message *msg) {
+    struct msg_server *serv = p;
+    printf("notify callback\n");
+    return 0;
+}
+
+
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share) {
     printf("mounting %s::%s\n", host->buf, share->buf);
 
@@ -112,6 +119,7 @@ void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e
             msgu_string_from_buffer(&data.node_write.data, e->data, e->size);
             break;
         }
+        msg_notify_map_add(&serv->notify, 123, msg_server_mount_callback, serv);
         msg_connection_send_message(conn, msg_type, msg_data, &data);
         msgs_mutex_unlock(conn_mutex);
     }
@@ -128,7 +136,7 @@ void msg_server_print_state(struct msg_server *serv) {
 void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_set_signals();
     msgu_event_map_init(&s->emap, &msg_server_handlers, s);
-    msg_notify_map_init(&s->notify);
+    msg_notify_map_init(&s->notify, 32);
     msg_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
     msgu_share_set_init(&s->shares, &file_ops);
     msgu_mount_map_init(&s->mounts, 32);
@@ -271,6 +279,7 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
 
 int msg_server_notify(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg, const struct msg_status *status) {
     // send notification to any update listeners
+    msg_notify_map_signal(&serv->notify, conn, msg);
     return 1;
 }
 
