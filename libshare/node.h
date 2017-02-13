@@ -29,6 +29,14 @@ struct msgu_node {
 };
 
 
+void msgu_node_dir_init(struct msgu_node *node, const char *name);
+void msgu_node_file_init(struct msgu_node *node, const char *name, size_t size);
+
+
+void msgu_node_free(struct msgu_node *node);
+int msgu_node_is_dir(const struct msgu_node *node);
+
+
 int msgu_node_print(char *buf, const struct msgu_node *n);
 void msgu_node_list_print(char *buf, const struct msgu_vector *q);
 

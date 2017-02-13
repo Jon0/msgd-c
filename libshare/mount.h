@@ -4,16 +4,8 @@
 #include <libutil/datatable.h>
 #include <libutil/string.h>
 
+#include "address.h"
 #include "node.h"
-
-
-struct msgu_mount_address {
-    struct msgu_string host_name;
-    struct msgu_string share_name;
-};
-
-
-int msgu_mount_address_path(struct msgu_mount_address *addr, const char *path);
 
 
 /*
@@ -87,8 +79,11 @@ struct msgu_mount_address *msgu_mount_get_addr(struct msgu_mount_map *m, int id)
  * returns id of mount
  */
 int msgu_mount_open_request(struct msgu_mount_map *m, const char *path);
-int msgu_mount_open_wait(struct msgu_mount_map *m, struct msgu_string *mount_name);
 int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off);
-int msgu_mount_read_wait(struct msgu_mount_map *m, struct msgu_string *mount_name);
+
+
+int msgu_mount_attr(struct msgu_mount_map *m, const char *path, struct msgu_node *node);
+int msgu_mount_list(struct msgu_mount_map *m, const char *path, struct msgu_vector *nodes);
+
 
 #endif

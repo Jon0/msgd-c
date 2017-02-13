@@ -5,6 +5,7 @@
 
 #include <libutil/buffer.h>
 #include <libutil/hash.h>
+#include <libutil/string.h>
 
 
 struct msgu_ipc {
@@ -36,6 +37,20 @@ struct msgu_address {
 
 hash_t msgu_address_hash(const void *p);
 int msgu_address_cmp(const void *a, const void *b);
+
+
+/*
+ * address of a single share
+ */
+struct msgu_mount_address {
+    struct msgu_string host_name;
+    struct msgu_string share_name;
+};
+
+
+hash_t msgu_mount_address_hash(const void *p);
+int msgu_mount_address_cmp(const void *a, const void *b);
+int msgu_mount_address_path(struct msgu_mount_address *addr, const char **remain, const char *path);
 
 
 enum ep_host_flags {

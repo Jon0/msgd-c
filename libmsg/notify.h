@@ -3,7 +3,6 @@
 
 #include <libutil/datatable.h>
 #include <libshare/message.h>
-#include <libsys/thread.h>
 
 #include "connection.h"
 
@@ -19,7 +18,6 @@ struct msg_notify_state {
     int              state;
     void            *arg;
     msg_notify_fn_t  fn;
-    msgs_condition_t cond;
 };
 
 

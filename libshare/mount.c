@@ -3,34 +3,6 @@
 #include "mount.h"
 
 
-hash_t msgu_mount_address_hash(const void *p) {
-    const struct msgu_mount_address *addr = p;
-    return msgu_string_hash(&addr->host_name) ^ msgu_string_hash(&addr->share_name);
-}
-
-
-int msgu_mount_address_cmp(const void *a, const void *b) {
-    const struct msgu_mount_address *addr_a = a;
-    const struct msgu_mount_address *addr_b = b;
-    return msgu_string_cmp(&addr_a->host_name, &addr_b->host_name) ||
-           msgu_string_cmp(&addr_a->share_name, &addr_b->share_name);
-}
-
-
-int msgu_mount_address_path(struct msgu_mount_address *addr, const char *path) {
-    struct msgu_string addrstr [2];
-    size_t len = msgu_string_split(addrstr, 2, path, "/");
-    if (len == 2) {
-        addr->host_name = addrstr[0];
-        addr->share_name = addrstr[1];
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-
 void msgu_mount_map_init(struct msgu_mount_map *m, size_t size) {
     static size_t value_sizes [] = {
         sizeof(int),
@@ -175,8 +147,9 @@ struct msgu_mount_address *msgu_mount_get_addr(struct msgu_mount_map *m, int id)
 
 int msgu_mount_open_request(struct msgu_mount_map *m, const char *path) {
     struct msgu_mount_address ma;
+    const char *remain;
     void *datarow [3];
-    if (msgu_mount_address_path(&ma, path)) {
+    if (msgu_mount_address_path(&ma, &remain, path) == 2) {
         int index = msgu_datamap_index(&m->addr_map, &ma, datarow);
         if (index < 0) {
             return -1;
@@ -193,14 +166,10 @@ int msgu_mount_open_request(struct msgu_mount_map *m, const char *path) {
 }
 
 
-int msgu_mount_open_wait(struct msgu_mount_map *m, struct msgu_string *mount_name) {
-    // wait for reply
-}
-
-
 int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t size, size_t off) {
     struct msgu_mount_address ma;
-    if (msgu_mount_address_path(&ma, path)) {
+    const char *remain;
+    if (msgu_mount_address_path(&ma, &remain, path) == 2) {
         return msgu_mount_get_id(m, &ma);
     }
     else {
@@ -209,6 +178,51 @@ int msgu_mount_read_request(struct msgu_mount_map *m, const char *path, size_t s
 }
 
 
-int msgu_mount_read_wait(struct msgu_mount_map *m, struct msgu_string *mount_name) {
-    return 0;
+int msgu_mount_attr(struct msgu_mount_map *m, const char *path, struct msgu_node *node) {
+    struct msgu_mount_address ma;
+    const char *remain;
+    int len = msgu_mount_address_path(&ma, &remain, path);
+    void *datarow [3];
+    int result = 0;
+    if (len == 0) {
+        msgu_node_dir_init(node, "");
+        result = 1;
+    }
+    else if (len == 1) {
+        if (msgu_mount_by_host(m, &ma.host_name) > 0) {
+            result = 1;
+        }
+    }
+    else {
+        int index = msgu_datamap_index(&m->addr_map, &ma, datarow);
+        if (index >= 0) {
+            struct msgu_mount_point *mp = datarow[2];
+            *node = mp->node;
+        }
+    }
+    return result;
+}
+
+
+int msgu_mount_list(struct msgu_mount_map *m, const char *path, struct msgu_vector *nodes) {
+    struct msgu_mount_address ma;
+    const char *remain;
+    int len = msgu_mount_address_path(&ma, &remain, path);
+    void *datarow [3];
+    int result = 0;
+    if (len == 0) {
+        result = 1;
+    }
+    else if (len == 1) {
+        if (msgu_mount_by_host(m, &ma.host_name) > 0) {
+            result = 1;
+        }
+    }
+    else {
+        int index = msgu_datamap_index(&m->addr_map, &ma, datarow);
+        if (index >= 0) {
+            struct msgu_mount_point *mp = datarow[2];
+        }
+    }
+    return result;
 }

@@ -3,6 +3,32 @@
 #include "node.h"
 
 
+void msgu_node_free(struct msgu_node *node) {
+    msgu_string_free(&node->node_name);
+}
+
+
+void msgu_node_dir_init(struct msgu_node *node, const char *name) {
+    node->node_type = msgnode_dir;
+    node->node_mode = 7;
+    node->node_size = 0;
+    msgu_string_from_static(&node->node_name, name);
+}
+
+
+void msgu_node_file_init(struct msgu_node *node, const char *name, size_t size) {
+    node->node_type = msgnode_file;
+    node->node_mode = 7;
+    node->node_size = size;
+    msgu_string_from_static(&node->node_name, name);
+}
+
+
+int msgu_node_is_dir(const struct msgu_node *node) {
+    return (node->node_type == msgnode_dir);
+}
+
+
 int msgu_node_print(char *buf, const struct msgu_node *n) {
     return sprintf(buf, "(%s, type: %d, mode %d)", n->node_name.buf, n->node_type, n->node_mode);
 }

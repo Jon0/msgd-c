@@ -28,6 +28,12 @@ size_t msgu_string_split(struct msgu_string *dest, size_t count, const char *src
 
 
 /*
+ * string length, size - 1
+ */
+size_t msgu_string_length(const struct msgu_string *str);
+
+
+/*
  * compare / order strings
  */
 int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b);

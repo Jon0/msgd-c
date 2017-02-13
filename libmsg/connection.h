@@ -72,7 +72,7 @@ int msg_connection_poll(struct msg_connection *conn);
 /*
  * sends any update type
  */
-int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, const union msgu_any_msg *data);
+int msg_connection_send_message(struct msg_connection *conn, int event_id, int event_type, int data_type, const union msgu_any_msg *data);
 
 
 #endif

@@ -51,7 +51,7 @@ struct msg_server {
     struct msgu_share_map shares;
     struct msgu_mount_map mounts;
     struct msgs_file_cache cache;
-    struct msgs_fuse_files fuse;
+    struct msgs_fuse_files *fuse;
 };
 
 

@@ -23,7 +23,6 @@ int msg_notify_map_add(struct msg_notify_map *n, int msg_id, msg_notify_fn_t fn,
     ns->state = 0;
     ns->fn = fn;
     ns->arg = arg;
-    msgs_condition_init(&ns->cond);
     msgu_datamap_create_key(&n->id_map, index);
     return index;
 }

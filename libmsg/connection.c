@@ -93,11 +93,11 @@ int msg_connection_poll(struct msg_connection *conn) {
 }
 
 
-int msg_connection_send_message(struct msg_connection *conn, int event_type, int data_type, const union msgu_any_msg *data) {
+int msg_connection_send_message(struct msg_connection *conn, int event_id, int event_type, int data_type, const union msgu_any_msg *data) {
     struct msgu_message *to_send = &conn->write_part;
     if (msgu_stream_is_open(&conn->stream)) {
         to_send->event_type = event_type;
-        to_send->event_id = 123;
+        to_send->event_id = event_id;
         to_send->data_size = msgu_msgdata_size(data_type, data);
         to_send->data_hash = 0x00ff00ff;
         to_send->buf.data_type = data_type;

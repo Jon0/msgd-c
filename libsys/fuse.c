@@ -24,44 +24,39 @@ void *msgs_fuse_thread(void *p) {
 
 
 int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
-	struct msgu_mount_address ma;
-	struct msgu_string addrstr [2];
-	size_t len = msgu_string_split(addrstr, 2, path, "/");
-	int res = 0;
-	if (len == 2) {
-		ma.host_name = addrstr[0];
-		ma.share_name = addrstr[1];
-	}
-
+	struct msgu_mount_event me;
+	me.event_type = msgu_mount_event_attr;
+	me.path = path;
+	int result = 0;
 
 	printf("fuse getattr: %s\n", path);
-    memset(stbuf, 0, sizeof(struct stat));
-    if (len == 0) {
-        stbuf->st_mode = S_IFDIR | 0755;
-        stbuf->st_nlink = 2;
-    }
-	else if (len == 1) {
-		if (msgu_mount_by_host(static_fuse.mounts, &addrstr[0]) > 0) {
+	memset(stbuf, 0, sizeof(struct stat));
+	pthread_mutex_lock(&static_fuse.fuse_mutex);
+	static_fuse.reply.ready = 0;
+	msgs_event_recv_mount(static_fuse.emap, &me);
+
+	// wait for reply
+	if (!static_fuse.reply.ready) {
+		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
+	}
+	struct msgs_fuse_response *reply = &static_fuse.reply;
+	printf("attr exists = %d\n", reply->exists);
+	if (reply->exists) {
+		if (msgu_node_is_dir(&reply->node)) {
 			stbuf->st_mode = S_IFDIR | 0755;
 	        stbuf->st_nlink = 2;
 		}
 		else {
-			res = -ENOENT;
+			stbuf->st_mode = S_IFREG | 0666;
+			stbuf->st_nlink = 1;
+			stbuf->st_size = reply->node.node_size;
 		}
 	}
 	else {
-		struct msgu_node *nd = msgu_mount_addr(static_fuse.mounts, &ma);
-		if (nd) {
-			printf("\tstat: %s\n", nd->node_name.buf);
-			stbuf->st_mode = S_IFREG | 0666;
-			stbuf->st_nlink = 1;
-			stbuf->st_size = nd->node_size;
-		}
-		else {
-			res = -ENOENT;
-		}
-    }
-	return res;
+		result = -ENOENT;
+	}
+	pthread_mutex_unlock(&static_fuse.fuse_mutex);
+	return result;
 }
 
 
@@ -78,75 +73,86 @@ int msgs_fuse_opendir(const char *path, struct fuse_file_info *fileInfo) {
 
 
 int msgs_fuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi) {
-	struct msgu_string addrstr [2];
-	size_t len = msgu_string_split(addrstr, 2, path, "/");
+	struct msgu_mount_event me;
+	me.event_type = msgu_mount_event_list;
+	me.path = path;
 
 	printf("fuse readdir: %s\n", path);
+	pthread_mutex_lock(&static_fuse.fuse_mutex);
+	static_fuse.reply.ready = 0;
+	msgs_event_recv_mount(static_fuse.emap, &me);
 
-	// only sharing single files for now
-	if (len == 0) {
+	// wait for reply
+	if (!static_fuse.reply.ready) {
+		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
+	}
+	struct msgs_fuse_response *reply = &static_fuse.reply;
+	int result = 0;
+
+	if (reply->exists) {
 		filler(buf, ".", NULL, 0);
 		filler(buf, "..", NULL, 0);
-		size_t count = msgu_mount_map_size(static_fuse.mounts);
+		size_t count = msgu_vector_size(&reply->nodes);
 		for (int i = 0; i < count; ++i) {
-			struct msgu_mount_address *addr = msgu_mount_index_addr(static_fuse.mounts, i);
-			if (addr) {
-				printf("\tfilling %s\n", addr->host_name.buf);
-				filler(buf, addr->host_name.buf, NULL, 0);
-			}
-		}
-	}
-	else if (len == 1) {
-		size_t count = msgu_mount_map_size(static_fuse.mounts);
-		for (int i = 0; i < count; ++i) {
-			struct msgu_node *node = msgu_mount_index(static_fuse.mounts, i);
-			struct msgu_mount_address *addr = msgu_mount_index_addr(static_fuse.mounts, i);
-			if (node && addr && (msgu_string_compare(&addrstr[0], &addr->host_name) == 0)) {
-				printf("\tfilling %s\n", node->node_name.buf);
-				filler(buf, node->node_name.buf, NULL, 0);
-			}
+			struct msgu_node *node = msgu_vector_access(&reply->nodes, i);
+			printf("\tfilling %s\n", node->node_name.buf);
+			filler(buf, node->node_name.buf, NULL, 0);
 		}
 	}
 	else {
-		return -ENOENT;
+		result = -ENOENT;
 	}
-	return 0;
+	pthread_mutex_unlock(&static_fuse.fuse_mutex);
+	return result;
 }
 
 
 int msgs_fuse_open(const char* path, struct fuse_file_info* fi) {
 	struct msgu_mount_event me;
+	me.event_type = msgu_mount_event_open;
+	me.path = path;
 
 	printf("fuse open: %s\n", path);
-	if (msgu_mount_address_path(&me.addr, path)) {
-		me.event_type = msgu_mount_event_open;
-		me.path = path;
-		msgs_event_recv_mount(static_fuse.emap, &me);
-		return 0;
+	pthread_mutex_lock(&static_fuse.fuse_mutex);
+	static_fuse.reply.ready = 0;
+	msgs_event_recv_mount(static_fuse.emap, &me);
+
+	// wait for reply
+	if (!static_fuse.reply.ready) {
+		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
 	}
-	else {
-		return -ENOENT;
-	}
+	struct msgs_fuse_response *reply = &static_fuse.reply;
+	pthread_mutex_unlock(&static_fuse.fuse_mutex);
+	return 0;
 }
 
 
 int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct msgu_mount_event me;
+	me.event_type = msgu_mount_event_read;
+	me.path = path;
+	me.size = size;
+	me.offset = offset;
+
 
 	printf("fuse read: %s, %lu\n", path, size);
-	if (msgu_mount_address_path(&me.addr, path)) {
-		me.event_type = msgu_mount_event_read;
-		me.path = path;
-		me.size = size;
-		me.offset = offset;
-		msgs_event_recv_mount(static_fuse.emap, &me);
+	pthread_mutex_lock(&static_fuse.fuse_mutex);
+	static_fuse.reply.ready = 0;
+	msgs_event_recv_mount(static_fuse.emap, &me);
+
+	// wait for reply
+	if (!static_fuse.reply.ready) {
+		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
 	}
+	struct msgs_fuse_response *reply = &static_fuse.reply;
 
 	const char *teststr = "12345\n";
 	size_t count = strlen(teststr);
 
 	memcpy(buf, teststr, count);
 	printf("\tlength = %lu\n", count);
+
+	pthread_mutex_unlock(&static_fuse.fuse_mutex);
 	return count;
 }
 
@@ -180,14 +186,15 @@ static struct fuse_operations msgs_fuse_ops = {
 };
 
 
-void msgs_fuse_static_start(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct msgs_event_map *em, const char *subdir) {
-	if (msgs_fuse_init(&static_fuse, map, em, subdir) == 0) {
+struct msgs_fuse_files *msgs_fuse_static_start(struct msgs_event_map *em, const char *subdir) {
+	if (msgs_fuse_init(&static_fuse, em, subdir) == 0) {
 		msgs_fuse_loop(&static_fuse);
 	}
+	return &static_fuse;
 }
 
 
-int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct msgs_event_map *em, const char *subdir) {
+int msgs_fuse_init(struct msgs_fuse_files *f, struct msgs_event_map *em, const char *subdir) {
 	char *argv[1];
     argv[0] = "msgd";
 	struct fuse_args args = FUSE_ARGS_INIT(1, argv);
@@ -201,11 +208,11 @@ int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct
 	}
 
 	// init state
+	pthread_cond_init(&f->fuse_cond, NULL);
+	pthread_mutex_init(&f->fuse_mutex, NULL);
 	f->ch = NULL;
 	f->fuse = NULL;
-	f->mounts = map;
 	f->emap = em;
-
 	fuse_unmount(f->mountpoint, f->ch);
 	f->ch = fuse_mount(f->mountpoint, &args);
 	f->fuse = fuse_new(f->ch, &args, &msgs_fuse_ops, sizeof(msgs_fuse_ops), f);
@@ -214,8 +221,10 @@ int msgs_fuse_init(struct msgs_fuse_files *f, struct msgu_mount_map *map, struct
 }
 
 
-
-
+void msgs_fuse_free(struct msgs_fuse_files *f) {
+	pthread_join(f->fuse_thread, NULL);
+	fuse_unmount(f->mountpoint, f->ch);
+}
 
 void msgs_fuse_loop(struct msgs_fuse_files *f) {
 	int err = pthread_create(&f->fuse_thread, NULL, msgs_fuse_thread, f);
@@ -225,7 +234,8 @@ void msgs_fuse_loop(struct msgs_fuse_files *f) {
 }
 
 
-void msgs_fuse_free(struct msgs_fuse_files *f) {
-	pthread_join(f->fuse_thread, NULL);
-	fuse_unmount(f->mountpoint, f->ch);
+void msgs_fuse_notify(struct msgs_fuse_files *f) {
+	printf("broadcasting\n");
+	f->reply.ready = 1;
+	pthread_cond_broadcast(&f->fuse_cond);
 }

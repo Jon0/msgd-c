@@ -23,6 +23,7 @@ size_t msgu_vector_element_size(const struct msgu_vector *q);
 size_t msgu_vector_element_serial_size(const struct msgu_vector *q, size_t index);
 size_t msgu_vector_pop(struct msgu_vector *q, void *e, size_t count);
 size_t msgu_vector_push(struct msgu_vector *q, void *e, size_t count);
+void *msgu_vector_access(struct msgu_vector *q, size_t index);
 
 
 /*

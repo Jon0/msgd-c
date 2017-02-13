@@ -58,6 +58,11 @@ size_t msgu_string_split(struct msgu_string *dest, size_t count, const char *src
 }
 
 
+size_t msgu_string_length(const struct msgu_string *str) {
+    return strlen(str->buf);
+}
+
+
 int msgu_string_compare(const struct msgu_string *a, const struct msgu_string *b) {
     return msgu_binary_cmp(a->buf, b->buf, a->count, b->count);
 }

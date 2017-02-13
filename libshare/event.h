@@ -7,7 +7,6 @@
 #include <libutil/map.h>
 
 #include "address.h"
-#include "mount.h"
 #include "update.h"
 
 
@@ -24,6 +23,8 @@ enum msgu_event_type {
 
 
 enum msgu_mount_event_type {
+    msgu_mount_event_attr,
+    msgu_mount_event_list,
     msgu_mount_event_open,
     msgu_mount_event_read,
     msgu_mount_event_write,
@@ -84,7 +85,6 @@ struct msgu_share_event {
  * fuse
  */
 struct msgu_mount_event {
-    struct msgu_mount_address addr;
     int event_type;
     const char *path;
     const char *data;

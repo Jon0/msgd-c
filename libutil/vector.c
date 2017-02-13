@@ -54,6 +54,12 @@ size_t msgu_vector_push(struct msgu_vector *q, void *e, size_t count) {
 }
 
 
+void *msgu_vector_access(struct msgu_vector *q, size_t index) {
+    size_t arr_index = (q->begin + index) % q->arr.allocated;
+    return &q->arr.data[q->arr.esize * arr_index];
+}
+
+
 size_t msgu_vector_frag_size(const void *q) {
     const struct msgu_vector *queue = q;
     return sizeof(queue->size) + msgu_array_serial_size(&queue->arr, queue->begin, queue->size);
