@@ -11,6 +11,7 @@ struct msgs_fuse_response {
     int exists;
     struct msgu_node node;
     struct msgu_vector nodes;
+    struct msgu_string data;
 };
 
 

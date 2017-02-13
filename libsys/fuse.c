@@ -40,7 +40,6 @@ int msgs_fuse_getattr(const char *path, struct stat *stbuf) {
 		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
 	}
 	struct msgs_fuse_response *reply = &static_fuse.reply;
-	printf("attr exists = %d\n", reply->exists);
 	if (reply->exists) {
 		if (msgu_node_is_dir(&reply->node)) {
 			stbuf->st_mode = S_IFDIR | 0755;
@@ -145,15 +144,9 @@ int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struc
 		pthread_cond_wait(&static_fuse.fuse_cond, &static_fuse.fuse_mutex);
 	}
 	struct msgs_fuse_response *reply = &static_fuse.reply;
-
-	const char *teststr = "12345\n";
-	size_t count = strlen(teststr);
-
-	memcpy(buf, teststr, count);
-	printf("\tlength = %lu\n", count);
-
+	memcpy(buf, reply->data.buf, reply->data.count);
 	pthread_mutex_unlock(&static_fuse.fuse_mutex);
-	return count;
+	return reply->data.count;
 }
 
 
@@ -226,6 +219,7 @@ void msgs_fuse_free(struct msgs_fuse_files *f) {
 	fuse_unmount(f->mountpoint, f->ch);
 }
 
+
 void msgs_fuse_loop(struct msgs_fuse_files *f) {
 	int err = pthread_create(&f->fuse_thread, NULL, msgs_fuse_thread, f);
 	if (err) {
@@ -235,7 +229,6 @@ void msgs_fuse_loop(struct msgs_fuse_files *f) {
 
 
 void msgs_fuse_notify(struct msgs_fuse_files *f) {
-	printf("broadcasting\n");
 	f->reply.ready = 1;
 	pthread_cond_broadcast(&f->fuse_cond);
 }

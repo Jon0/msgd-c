@@ -75,6 +75,7 @@ int msgs_path_handle(struct msgs_file_cache *c, struct msgs_cache_key *k, const 
 
 
 int msgs_file_read(struct msgs_file_cache *c, struct msgs_cache_key *k, char *buf, size_t count) {
+    printf("Reading file %s::%d\n", k->remote_name.buf, k->handle_id);
     struct msgs_cache_handle *hdl = msgu_map_get(&c->filemap, k);
     if (hdl) {
         struct msgs_cache_resource *res = &c->resources[hdl->resource_index];
@@ -82,7 +83,7 @@ int msgs_file_read(struct msgs_file_cache *c, struct msgs_cache_key *k, char *bu
         return count;
     }
     else {
-        printf("Resource %s::%d not found\n", k->remote_name, k->handle_id);
+        printf("Resource %s::%d not found\n", k->remote_name.buf, k->handle_id);
         return 0;
     }
 }

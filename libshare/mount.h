@@ -9,6 +9,16 @@
 
 
 /*
+ * path is empty for single files
+ */
+struct msgu_mount_handle_map {
+    struct msgu_mount_address addr;
+    struct msgu_string        path;
+    int                       handle_id;
+};
+
+
+/*
  * lists events which require handling
  * TODO should be sorted by name, not id
  */
@@ -37,6 +47,12 @@ void msgu_mount_map_init(struct msgu_mount_map *m, size_t size);
  *
  */
 void msgu_mount_add(struct msgu_mount_map *m, const struct msgu_string *host, const struct msgu_node *node);
+
+
+/*
+ * need to find which file the handle is for...
+ */
+void msgu_mount_set_handle(struct msgu_mount_map *m, const struct msgu_string *host, int hdl);
 
 
 /*

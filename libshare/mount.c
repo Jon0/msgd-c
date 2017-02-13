@@ -36,6 +36,19 @@ void msgu_mount_add(struct msgu_mount_map *m, const struct msgu_string *host, co
 }
 
 
+void msgu_mount_set_handle(struct msgu_mount_map *m, const struct msgu_string *host, int hdl) {
+    void *datarow[3];
+    for (int i = 0; i < m->data.row_count; ++i) {
+        msgu_datatable_get(&m->data, datarow, i);
+        struct msgu_mount_address *addr = datarow[1];
+        struct msgu_mount_point *mp = datarow[2];
+        if (msgu_string_compare(host, &addr->host_name) == 0) {
+            mp->open_handle = hdl;
+        }
+    }
+}
+
+
 size_t msgu_mount_map_size(struct msgu_mount_map *m) {
     return m->data.row_count;
 }
@@ -190,6 +203,7 @@ int msgu_mount_attr(struct msgu_mount_map *m, const char *path, struct msgu_node
     }
     else if (len == 1) {
         if (msgu_mount_by_host(m, &ma.host_name) > 0) {
+            msgu_node_dir_init(node, ma.host_name.buf);
             result = 1;
         }
     }
@@ -198,6 +212,7 @@ int msgu_mount_attr(struct msgu_mount_map *m, const char *path, struct msgu_node
         if (index >= 0) {
             struct msgu_mount_point *mp = datarow[2];
             *node = mp->node;
+            result = 1;
         }
     }
     return result;
@@ -208,20 +223,30 @@ int msgu_mount_list(struct msgu_mount_map *m, const char *path, struct msgu_vect
     struct msgu_mount_address ma;
     const char *remain;
     int len = msgu_mount_address_path(&ma, &remain, path);
+    struct msgu_node newnode;
+    msgu_vector_init(nodes, &msgu_node_element, sizeof(struct msgu_node));
+    msgu_vector_alloc(nodes, 32);
     void *datarow [3];
     int result = 0;
     if (len == 0) {
+        // remove duplicates
+        for (int i = 0; i < m->data.row_count; ++i) {
+            msgu_datatable_get(&m->data, datarow, i);
+            struct msgu_mount_address *addr = datarow[1];
+            msgu_node_dir_init(&newnode, addr->host_name.buf);
+            msgu_vector_push(nodes, &newnode, 1);
+        }
         result = 1;
     }
     else if (len == 1) {
-        if (msgu_mount_by_host(m, &ma.host_name) > 0) {
-            result = 1;
-        }
-    }
-    else {
-        int index = msgu_datamap_index(&m->addr_map, &ma, datarow);
-        if (index >= 0) {
+        for (int i = 0; i < m->data.row_count; ++i) {
+            msgu_datatable_get(&m->data, datarow, i);
+            struct msgu_mount_address *addr = datarow[1];
             struct msgu_mount_point *mp = datarow[2];
+            if (msgu_string_compare(&ma.host_name, &addr->host_name) == 0) {
+                msgu_vector_push(nodes, &mp->node, 1);
+                result = 1;
+            }
         }
     }
     return result;

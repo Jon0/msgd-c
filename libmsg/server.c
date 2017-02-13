@@ -57,9 +57,15 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 
 int msg_server_mount_callback(void *p, struct msg_connection *conn, const struct msgu_message *msg) {
     struct msg_server *serv = p;
-    printf("notify callback\n");
-
-    msgs_fuse_notify(serv->fuse);
+    switch (msg->event_type) {
+    case msgtype_return_node_handle:
+        msgs_fuse_notify(serv->fuse);
+        break;
+    case msgtype_return_node_content:
+        msgu_string_copy(&serv->fuse->reply.data, &msg->buf.data.node_write.data);
+        msgs_fuse_notify(serv->fuse);
+        break;
+    }
     return 0;
 }
 
@@ -124,14 +130,15 @@ void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e) 
         case msgu_mount_event_write:
             msg_type = msgtype_file_stream_write;
             msg_data = msgdata_node_write;
-            data.node_write.node_handle = mp->open_handle;;
+            data.node_write.node_handle = mp->open_handle;
             msgu_string_from_buffer(&data.node_write.data, e->data, e->size);
             break;
         }
 
         // create notifier to accept reply
-        msg_notify_map_add(&serv->notify, 40, msg_server_mount_callback, serv);
-        msg_connection_send_message(conn, 40, msg_type, msg_data, &data);
+        int msg_id = serv->msg_id++;
+        msg_notify_map_add(&serv->notify, msg_id, msg_server_mount_callback, serv);
+        msg_connection_send_message(conn, msg_id, msg_type, msg_data, &data);
         msgs_mutex_unlock(conn_mutex);
     }
 }
@@ -174,6 +181,7 @@ void msg_server_init(struct msg_server *s, const char *sockpath) {
     msgs_file_cache_init(&s->cache, &s->shares);
     msgs_table_init(&s->tb, &s->emap);
     msgs_host_init_self(&s->self);
+    s->msg_id = 1;
 
 
     // create a local acceptor
@@ -217,7 +225,7 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     int cid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &socket);
     struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
     if (conn) {
-        msg_connection_send_message(conn, 165, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
+        msg_connection_send_message(conn, serv->msg_id++, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
         msgs_mutex_unlock(lock);
         msgs_poll_socket(&serv->tb, &socket, cid);
     }
@@ -302,6 +310,9 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
         else {
             status->count = 0;
         }
+        break;
+    case msgtype_return_node_handle:
+        msgu_mount_set_handle(&serv->mounts, &conn->remote_name, msg->buf.data.node_handle.node_handle);
         break;
     }
     return 1;
