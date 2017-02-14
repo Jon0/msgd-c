@@ -205,3 +205,8 @@ struct msg_connection *msg_hostlist_use_host(struct msg_host_list *list, msgs_mu
         return NULL;
     }
 }
+
+
+void msg_hostlist_broadcast(struct msg_host_list *list, int event_id, int event_type, int data_type, const union msgu_any_msg *data) {
+    // only send to remote connections
+}

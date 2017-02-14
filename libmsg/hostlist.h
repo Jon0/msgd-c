@@ -65,4 +65,9 @@ struct msg_connection *msg_hostlist_use_id(struct msg_host_list *list, msgs_mute
 struct msg_connection *msg_hostlist_use_host(struct msg_host_list *list, msgs_mutex_t **lock, const struct msgu_string *hostname);
 
 
+/*
+ * send to all active connections
+ */
+void msg_hostlist_broadcast(struct msg_host_list *list, int event_id, int event_type, int data_type, const union msgu_any_msg *data);
+
 #endif

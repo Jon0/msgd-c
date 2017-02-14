@@ -134,7 +134,7 @@ int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struc
 	me.offset = offset;
 
 
-	printf("fuse read: %s, %lu\n", path, size);
+	printf("fuse read: %s, %lu, %lu\n", path, size, offset);
 	pthread_mutex_lock(&static_fuse.fuse_mutex);
 	static_fuse.reply.ready = 0;
 	msgs_event_recv_mount(static_fuse.emap, &me);
@@ -147,6 +147,12 @@ int msgs_fuse_read(const char* path, char *buf, size_t size, off_t offset, struc
 	memcpy(buf, reply->data.buf, reply->data.count);
 	pthread_mutex_unlock(&static_fuse.fuse_mutex);
 	return reply->data.count;
+}
+
+
+int msgs_fuse_write(const char* path, char *buf, size_t size, off_t offset, struct fuse_file_info* fi) {
+	printf("fuse write: %s, %lu, %lu\n", path, size, offset);
+	return size;
 }
 
 
