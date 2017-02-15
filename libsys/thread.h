@@ -68,6 +68,7 @@ void msgs_condition_signal(msgs_condition_t *cond);
 
 /*
  * a queue with locks preventing ensuring thread safety
+ * queue events cause socket data to get parsed into messages
  */
 struct ep_event_queue {
     struct msgu_vector data;
