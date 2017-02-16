@@ -5,10 +5,14 @@
 
 #include <libutil/vector.h>
 
+#include "thread.h"
+
 
 /*
  * a queue with locks preventing ensuring thread safety
  * queue events cause socket data to get parsed into messages
+ * or just handle loopback event here
+ * leave other events handled by epoll or fuse
  */
 struct msgs_event_queue {
     struct msgu_vector data;
