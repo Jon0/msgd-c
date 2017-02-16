@@ -1,9 +1,7 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef LIBSYS_THREAD_H
+#define LIBSYS_THREAD_H
 
 #include <pthread.h>
-
-#include <libutil/vector.h>
 
 
 /*
@@ -66,32 +64,6 @@ void msgs_condition_wait(msgs_condition_t *cond, msgs_mutex_t *mutex);
 void msgs_condition_signal(msgs_condition_t *cond);
 
 
-/*
- * a queue with locks preventing ensuring thread safety
- * queue events cause socket data to get parsed into messages
- */
-struct ep_event_queue {
-    struct msgu_vector data;
-    pthread_cond_t    empty;
-    pthread_mutex_t   mutex;
-};
-
-
-void ep_event_queue_init(struct ep_event_queue *q, struct msgu_type *fns, size_t elem_size);
-void ep_event_queue_alloc(struct ep_event_queue *q, size_t max_queue);
-
-
-/*
- * remove element from front of queue, copy to e
- * blocks until an event is recieved
- */
-size_t ep_event_queue_pop(struct ep_event_queue *q, void *e, size_t count);
-
-
-/*
- * add events to the back of the queue
- */
-size_t ep_event_queue_push(struct ep_event_queue *q, void *e, size_t count);
 
 
 #endif
