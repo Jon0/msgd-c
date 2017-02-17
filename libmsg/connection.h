@@ -14,6 +14,7 @@ struct msg_connection;
 
 /*
  * function to handle new messages
+ * updates the state of server
  */
 typedef int (*msg_message_recv_t)(struct msg_connection *, struct msgu_message *, void *);
 

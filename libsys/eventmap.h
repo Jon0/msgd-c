@@ -7,7 +7,11 @@
 
 
 /*
- * contains a list of each type of event
+ * Maps each type of event to a callback function.
+ * Events cause socket data to get parsed into messages.
+ * sources of events handle threads:
+ * some threads are driven by epoll,
+ * others are from loopback events.
  */
 struct msgs_event_map {
     pthread_mutex_t        map_mutex;

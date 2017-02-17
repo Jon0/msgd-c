@@ -146,6 +146,8 @@ void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e) 
 
 void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e) {
     printf("server fuse event: %d, %s\n", e->event_type, e->path);
+
+    // TODO convert mount events to messages
     switch (e->event_type) {
     case msgu_mount_event_attr:
         serv->fuse->reply.exists = msgu_mount_attr(&serv->mounts, e->path, &serv->fuse->reply.node);
@@ -314,6 +316,8 @@ int msg_server_modify(struct msg_server *serv, struct msg_connection *conn, cons
     case msgtype_return_node_handle:
         msgu_mount_set_handle(&serv->mounts, &conn->remote_name, msg->buf.data.node_handle.node_handle);
         break;
+    default:
+     printf("Modify not implemented\n");
     }
     return 1;
 }
