@@ -7,7 +7,13 @@
 #include "connection.h"
 
 
-typedef int (*msg_notify_fn_t)(void *, struct msg_connection *, const struct msgu_message *);
+struct msg_server;
+
+
+/*
+ * callback for recieved events
+ */
+typedef int (*msg_notify_fn_t)(struct msg_server *, void *, const struct msgu_message *);
 
 
 /*

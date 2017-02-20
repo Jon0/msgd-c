@@ -55,8 +55,8 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 }
 
 
-int msg_server_mount_callback(void *p, struct msg_connection *conn, const struct msgu_message *msg) {
-    struct msg_server *serv = p;
+int msg_server_mount_callback(struct msg_server *serv, void *intf, const struct msgu_message *msg) {
+    struct msg_connection *conn = intf;
     switch (msg->event_type) {
     case msgtype_return_node_handle:
         msgs_fuse_notify(serv->fuse);
