@@ -6,10 +6,12 @@
 #include <libsys/table.h>
 #include <libsys/thread.h>
 
-
 #include "server.h"
 
 
+/*
+ * runs the server
+ */
 struct msg_process {
     struct msg_server state;
 
@@ -26,6 +28,13 @@ struct msg_process {
 
     struct msgs_fuse_files *fuse;
 };
+
+
+/*
+ * run generic server
+ */
+void msg_main_init(struct msg_process *proc, const char *sockpath);
+void msg_main_run(struct msg_process *proc);
 
 
 #endif

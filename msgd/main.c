@@ -1,19 +1,19 @@
 #include <stdio.h>
 
-#include <libmsg/server.h>
+#include <libmsg/process.h>
 
 
 int main(int argc, const char *argv[]) {
-    struct msg_server cs;
-    msg_server_init(&cs, "msgd-local");
+    struct msg_process cs;
+    msg_main_init(&cs, "msgd-local");
     for (int i = 1; i < argc; ++i) {
         printf("connecting to %s\n", argv[i]);
-        int id = msg_server_connect(&cs, argv[i]);
+        int id = msg_server_connect(&cs.state, argv[i]);
         if (id < 0) {
             printf("error connecting %s\n", argv[i]);
         }
     }
-    msg_server_run(&cs);
+    msg_main_run(&cs);
     printf("exiting\n");
     return 0;
 }

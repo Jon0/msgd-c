@@ -4,52 +4,6 @@
 #include "server.h"
 
 
-void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
-    struct msg_server *serv = p;
-    struct msgs_socket newsocket;
-    char sockname [128];
-
-    // which acceptor was updated?
-    if (e->id == serv->local_acc_id) {
-        while (msgs_accept_socket(&serv->local_acc, &newsocket)) {
-            msgs_address_print(sockname, &newsocket.addr);
-            printf("[server] accept: %s from %d (local)\n", sockname, e->id);
-            int newid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &newsocket);
-            msgs_poll_socket(&serv->tb, &newsocket, newid);
-        }
-    }
-    else if (e->id == serv->remote_acc_id) {
-        while (msgs_accept_socket(&serv->remote_acc, &newsocket)) {
-            msgs_address_print(sockname, &newsocket.addr);
-            printf("[server] accept: %s from %d (remote)\n", sockname, e->id);
-            int newid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &newsocket);
-            msgs_poll_socket(&serv->tb, &newsocket, newid);
-        }
-    }
-    else {
-        printf("[server] accept: %d (unknown)\n", e->id);
-    }
-}
-
-
-void msg_server_recv_event(void *p, struct msgu_recv_event *e) {
-    struct msg_server *serv = p;
-    msg_hostlist_connection_notify(&serv->hostlist, e->id);
-}
-
-
-void msg_server_mount_event(void *serv, struct msgu_mount_event *e) {
-    msg_server_notify_mount(serv, e);
-}
-
-
-static struct msgu_handlers msg_server_handlers = {
-    .connect_event    = msg_server_connect_event,
-    .recv_event       = msg_server_recv_event,
-    .mount_event      = msg_server_mount_event,
-};
-
-
 int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *msg, void *serv) {
     return msg_server_recv(serv, conn, msg);
 }
@@ -67,6 +21,54 @@ int msg_server_mount_callback(struct msg_server *serv, void *intf, const struct 
         break;
     }
     return 0;
+}
+
+
+void msg_server_init(struct msg_server *serv) {
+    msg_notify_map_init(&serv->notify, 32);
+    msg_host_list_init(&serv->hostlist, 32, msg_server_message_recv, serv);
+    msgu_share_set_init(&serv->shares, &file_ops);
+    msgu_mount_map_init(&serv->mounts, 32);
+    msgs_file_cache_init(&serv->cache, &serv->shares);
+    msgs_host_init_self(&serv->self);
+    serv->msg_id = 1;
+}
+
+
+int msg_server_connect(struct msg_server *serv, const char *addr) {
+    msgs_mutex_t *lock;
+    struct msgu_address raddr;
+    struct msgs_socket socket;
+    struct msgu_init_remote_msg init_msg;
+    init_msg.version_maj = 0;
+    init_msg.version_min = 1;
+    msgu_string_from_static(&init_msg.host_name, serv->self.hostname);
+
+    // try connecting
+    msgu_init_remote_addr(&raddr, addr, 2204);
+    int fd = msgs_open_socket(&socket, &raddr);
+    if (fd == -1) {
+        return -1;
+    }
+    int cid = msg_hostlist_init_connection(&serv->hostlist, serv->emap, &socket);
+    struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
+    if (conn) {
+        msg_connection_send_message(conn, serv->msg_id++, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
+        msgs_mutex_unlock(lock);
+        msgs_poll_socket(serv->tb, &socket, cid);
+    }
+    else {
+        printf("failed to add connection\n");
+        return -1;
+    }
+    return cid;
+}
+
+
+void msg_server_print_state(struct msg_server *serv) {
+    printf("[server state] ");
+    msg_hostlist_print(&serv->hostlist);
+    msgu_share_debug(&serv->shares);
 }
 
 
@@ -166,84 +168,8 @@ void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e
 }
 
 
-void msg_server_print_state(struct msg_server *serv) {
-    printf("[server state] ");
-    msg_hostlist_print(&serv->hostlist);
-    msgu_share_debug(&serv->shares);
-}
-
-
-void msg_server_init(struct msg_server *s, const char *sockpath) {
-    msgs_set_signals();
-    msgu_event_map_init(&s->emap, &msg_server_handlers, s);
-    msg_notify_map_init(&s->notify, 32);
-    msg_host_list_init(&s->hostlist, 32, msg_server_message_recv, s);
-    msgu_share_set_init(&s->shares, &file_ops);
-    msgu_mount_map_init(&s->mounts, 32);
-    msgs_file_cache_init(&s->cache, &s->shares);
-    msgs_table_init(&s->tb, &s->emap);
-    msgs_host_init_self(&s->self);
-    s->msg_id = 1;
-
-
-    // create a local acceptor
-    struct msgu_address local_addr;
-    ep_unlink("msgd-ipc");
-    ep_local(&local_addr, "msgd-ipc");
-    msgs_open_acceptor(&s->local_acc, &local_addr);
-    s->local_acc_id = msgu_add_connect_handler(&s->emap);
-    msgs_poll_acceptor(&s->tb, &s->local_acc, s->local_acc_id);
-
-
-    // create a remote acceptor
-    struct msgu_address raddr;
-    ep_listen_remote(&raddr, 2204);
-    msgs_open_acceptor(&s->remote_acc, &raddr);
-    s->remote_acc_id = msgu_add_connect_handler(&s->emap);
-    msgs_poll_acceptor(&s->tb, &s->remote_acc, s->remote_acc_id);
-
-
-    // create loopback connection
-    msg_server_connect(s, "127.0.0.1");
-    s->fuse = msgs_fuse_static_start(&s->emap, "fusemount");
-}
-
-
-int msg_server_connect(struct msg_server *serv, const char *addr) {
-    msgs_mutex_t *lock;
-    struct msgu_address raddr;
-    struct msgs_socket socket;
-    struct msgu_init_remote_msg init_msg;
-    init_msg.version_maj = 0;
-    init_msg.version_min = 1;
-    msgu_string_from_static(&init_msg.host_name, serv->self.hostname);
-
-    // try connecting
-    msgu_init_remote_addr(&raddr, addr, 2204);
-    int fd = msgs_open_socket(&socket, &raddr);
-    if (fd == -1) {
-        return -1;
-    }
-    int cid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &socket);
-    struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
-    if (conn) {
-        msg_connection_send_message(conn, serv->msg_id++, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
-        msgs_mutex_unlock(lock);
-        msgs_poll_socket(&serv->tb, &socket, cid);
-    }
-    else {
-        printf("failed to add connection\n");
-        return -1;
-    }
-    return cid;
-}
-
-
-void msg_server_run(struct msg_server *serv) {
-
-    // waits until threads complete
-    msgs_table_start(&serv->tb, 4);
-    msgs_table_free(&serv->tb);
+int msg_server_recv_mount(struct msg_server *serv, struct msgu_mount_point *mnt, struct msgu_message *msg) {
+    // TODO
 }
 
 

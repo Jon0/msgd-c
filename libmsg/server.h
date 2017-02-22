@@ -35,19 +35,16 @@ struct msg_status {
  * allow connection lookup by host name or id
  */
 struct msg_server {
-    struct msgs_event_map emap;
-    struct msgs_table     tb;
+
+    // for creating new connections
+    struct msgs_event_map *emap;
+    struct msgs_table     *tb;
     struct msgu_host      self;
     int                  msg_id;
 
-    int                  local_acc_id;
-    struct msgs_acceptor local_acc;
-    int                  remote_acc_id;
-    struct msgs_acceptor remote_acc;
-    struct msg_host_list hostlist;
-
 
     // maps events to and from local shares
+    struct msg_host_list hostlist;
     struct msg_notify_map notify;
     struct msgu_share_map shares;
     struct msgu_mount_map mounts;
@@ -56,24 +53,27 @@ struct msg_server {
 };
 
 
-/*
- * manage mounts
- */
-void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
-void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e);
+void msg_server_init(struct msg_server *serv);
+int msg_server_connect(struct msg_server *serv, const char *addr);
 
 
 /*
- * run generic server
+ * print state
  */
 void msg_server_print_state(struct msg_server *serv);
-void msg_server_init(struct msg_server *serv, const char *sockpath);
-int msg_server_connect(struct msg_server *serv, const char *addr);
-void msg_server_run(struct msg_server *serv);
 
 
 /*
- * server responding to events
+ * manage mounts, respond to events
+ */
+void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
+void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e);
+void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e);
+int msg_server_recv_mount(struct msg_server *serv, struct msgu_mount_point *mnt, struct msgu_message *msg);
+
+
+/*
+ * server responding to socket events
  */
 int msg_server_recv(struct msg_server *serv, struct msg_connection *conn, struct msgu_message *msg);
 int msg_server_apply(struct msg_server *serv, struct msg_connection *conn, const struct msgu_message *msg);
