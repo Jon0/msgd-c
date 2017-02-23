@@ -37,8 +37,8 @@ struct msg_status {
 struct msg_server {
 
     // for creating new connections
-    struct msgs_event_map *emap;
-    struct msgs_table     *tb;
+    struct msgs_event_map emap;
+    struct msgs_table     tb;
     struct msgu_host      self;
     int                  msg_id;
 

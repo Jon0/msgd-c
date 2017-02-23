@@ -52,8 +52,6 @@ static struct msgu_handlers msg_server_handlers = {
 
 void msg_main_init(struct msg_process *proc, const char *sockpath) {
     msgs_set_signals();
-    msgu_event_map_init(&proc->emap, &msg_server_handlers, proc);
-    msgs_table_init(&proc->tb, &proc->emap);
     msg_server_init(&proc->state);
 
 

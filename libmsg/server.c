@@ -25,6 +25,8 @@ int msg_server_mount_callback(struct msg_server *serv, void *intf, const struct 
 
 
 void msg_server_init(struct msg_server *serv) {
+    //msgu_event_map_init(&serv->emap, &msg_server_handlers, p);
+    //msgs_table_init(&serv->tb, &serv->emap);
     msg_notify_map_init(&serv->notify, 32);
     msg_host_list_init(&serv->hostlist, 32, msg_server_message_recv, serv);
     msgu_share_set_init(&serv->shares, &file_ops);
@@ -50,12 +52,12 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     if (fd == -1) {
         return -1;
     }
-    int cid = msg_hostlist_init_connection(&serv->hostlist, serv->emap, &socket);
+    int cid = msg_hostlist_init_connection(&serv->hostlist, &serv->emap, &socket);
     struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
     if (conn) {
         msg_connection_send_message(conn, serv->msg_id++, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
         msgs_mutex_unlock(lock);
-        msgs_poll_socket(serv->tb, &socket, cid);
+        msgs_poll_socket(&serv->tb, &socket, cid);
     }
     else {
         printf("failed to add connection\n");
