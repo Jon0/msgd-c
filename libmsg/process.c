@@ -13,16 +13,14 @@ void msg_server_connect_event(void *p, struct msgu_connect_event *e) {
         while (msgs_accept_socket(&proc->local_acc, &newsocket)) {
             msgs_address_print(sockname, &newsocket.addr);
             printf("[server] accept: %s from %d (local)\n", sockname, e->id);
-            int newid = msg_hostlist_init_connection(&proc->state.hostlist, &proc->emap, &newsocket);
-            msgs_poll_socket(&proc->tb, &newsocket, newid);
+            msg_server_accept(&proc->state, &newsocket);
         }
     }
     else if (e->id == proc->remote_acc_id) {
         while (msgs_accept_socket(&proc->remote_acc, &newsocket)) {
             msgs_address_print(sockname, &newsocket.addr);
             printf("[server] accept: %s from %d (remote)\n", sockname, e->id);
-            int newid = msg_hostlist_init_connection(&proc->state.hostlist, &proc->emap, &newsocket);
-            msgs_poll_socket(&proc->tb, &newsocket, newid);
+            msg_server_accept(&proc->state, &newsocket);
         }
     }
     else {
@@ -52,7 +50,9 @@ static struct msgu_handlers msg_server_handlers = {
 
 void msg_main_init(struct msg_process *proc, const char *sockpath) {
     msgs_set_signals();
-    msg_server_init(&proc->state);
+    msgu_event_map_init(&proc->emap, &msg_server_handlers, proc);
+    msgs_table_init(&proc->tb, &proc->emap);
+    msg_server_init(&proc->state, &proc->tb);
 
 
     // create a local acceptor

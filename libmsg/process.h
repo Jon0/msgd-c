@@ -11,13 +11,13 @@
 
 /*
  * runs the server
+ * controls interfaces which modify the server state
  */
 struct msg_process {
-    struct msg_server state;
-
-    // event handling
     struct msgs_event_map emap;
     struct msgs_table     tb;
+    struct msg_server     state;
+
 
     // listening sockets
     int                  local_acc_id;

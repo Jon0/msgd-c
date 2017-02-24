@@ -37,10 +37,9 @@ struct msg_status {
 struct msg_server {
 
     // for creating new connections
-    struct msgs_event_map emap;
-    struct msgs_table     tb;
-    struct msgu_host      self;
-    int                  msg_id;
+    struct msgs_table     *tb;
+    struct msgu_host       self;
+    int                    msg_id;
 
 
     // maps events to and from local shares
@@ -53,7 +52,8 @@ struct msg_server {
 };
 
 
-void msg_server_init(struct msg_server *serv);
+void msg_server_init(struct msg_server *serv, struct msgs_table *tb);
+int msg_server_accept(struct msg_server *serv, struct msgs_socket *socket);
 int msg_server_connect(struct msg_server *serv, const char *addr);
 
 
