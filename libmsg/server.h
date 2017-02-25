@@ -48,7 +48,6 @@ struct msg_server {
     struct msgu_share_map shares;
     struct msgu_mount_map mounts;
     struct msgs_file_cache cache;
-    struct msgs_fuse_files *fuse;
 };
 
 
@@ -67,9 +66,6 @@ void msg_server_print_state(struct msg_server *serv);
  * manage mounts, respond to events
  */
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
-void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e);
-void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e);
-int msg_server_recv_mount(struct msg_server *serv, struct msgu_mount_point *mnt, struct msgu_message *msg);
 
 
 /*

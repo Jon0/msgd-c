@@ -235,6 +235,7 @@ void msgs_fuse_loop(struct msgs_fuse_files *f) {
 
 
 void msgs_fuse_notify(struct msgs_fuse_files *f) {
+	printf("fuse_notify\n");
 	f->reply.ready = 1;
 	pthread_cond_broadcast(&f->fuse_cond);
 }

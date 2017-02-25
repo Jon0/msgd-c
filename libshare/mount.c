@@ -62,6 +62,7 @@ size_t msgu_mount_by_host(struct msgu_mount_map *m, const struct msgu_string *ho
             count++;
         }
     }
+    printf("host %s, mount count: %lu\n", hostname->buf, count);
     return count;
 }
 
