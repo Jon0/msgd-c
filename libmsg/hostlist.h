@@ -5,6 +5,7 @@
 #include <libsys/eventmap.h>
 
 #include "connection.h"
+#include "system.h"
 
 
 enum msg_host_status {
@@ -44,7 +45,7 @@ void msg_host_list_init(struct msg_host_list *list, size_t size, msg_message_rec
 /*
  * manage connections
  */
-int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_map *emap, struct msgs_socket *socket);
+int msg_hostlist_init_connection(struct msg_host_list *list, struct msg_system *ext, struct msgs_socket *socket);
 int msg_hostlist_close_connection(struct msg_host_list *list, int id);
 int msg_hostlist_name_connection(struct msg_host_list *list, int id, const struct msgu_string *name);
 void msg_hostlist_print(struct msg_host_list *list);

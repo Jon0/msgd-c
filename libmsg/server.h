@@ -7,7 +7,6 @@
 #include <libshare/network.h>
 #include <libshare/share.h>
 #include <libsys/file.h>
-#include <libsys/fuse.h>
 #include <libsys/network.h>
 #include <libsys/table.h>
 #include <libsys/thread.h>
@@ -15,6 +14,7 @@
 #include "connection.h"
 #include "hostlist.h"
 #include "notify.h"
+#include "system.h"
 
 
 /*
@@ -37,7 +37,10 @@ struct msg_status {
 struct msg_server {
 
     // for creating new connections
-    struct msgs_table     *tb;
+    struct msg_system     *external;
+
+
+    // server state
     struct msgu_host       self;
     int                    msg_id;
 
@@ -51,7 +54,7 @@ struct msg_server {
 };
 
 
-void msg_server_init(struct msg_server *serv, struct msgs_table *tb);
+void msg_server_init(struct msg_server *serv, struct msg_system *sys);
 int msg_server_accept(struct msg_server *serv, struct msgs_socket *socket);
 int msg_server_connect(struct msg_server *serv, const char *addr);
 
@@ -66,6 +69,8 @@ void msg_server_print_state(struct msg_server *serv);
  * manage mounts, respond to events
  */
 void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *host, const struct msgu_string *share);
+void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e);
+void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e);
 
 
 /*

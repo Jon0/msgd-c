@@ -9,21 +9,36 @@ int msg_server_message_recv(struct msg_connection *conn, struct msgu_message *ms
 }
 
 
-void msg_server_init(struct msg_server *serv, struct msgs_table *tb) {
+int msg_server_mount_callback(struct msg_server *serv, void *intf, const struct msgu_message *msg) {
+    // called from notify table
+    struct msg_connection *conn = intf;
+    switch (msg->event_type) {
+    case msgtype_return_node_handle:
+        msg_mount_notify(serv->external);
+        break;
+    case msgtype_return_node_content:
+        msg_mount_notify_str(serv->external, &msg->buf.data.node_write.data);
+        break;
+    }
+    return 0;
+}
+
+
+void msg_server_init(struct msg_server *serv, struct msg_system *sys) {
     msg_notify_map_init(&serv->notify, 32);
     msg_host_list_init(&serv->hostlist, 32, msg_server_message_recv, serv);
     msgu_share_set_init(&serv->shares, &file_ops);
     msgu_mount_map_init(&serv->mounts, 32);
     msgs_file_cache_init(&serv->cache, &serv->shares);
     msgs_host_init_self(&serv->self);
-    serv->tb = tb;
+    serv->external = sys;
     serv->msg_id = 1;
 }
 
 
 int msg_server_accept(struct msg_server *serv, struct msgs_socket *socket) {
-    int newid = msg_hostlist_init_connection(&serv->hostlist, serv->tb->emap, socket);
-    msgs_poll_socket(serv->tb, socket, newid);
+    int newid = msg_hostlist_init_connection(&serv->hostlist, serv->external, socket);
+    msg_system_poll_handler(serv->external, socket, newid);
     return newid;
 }
 
@@ -43,12 +58,12 @@ int msg_server_connect(struct msg_server *serv, const char *addr) {
     if (fd == -1) {
         return -1;
     }
-    int cid = msg_hostlist_init_connection(&serv->hostlist, serv->tb->emap, &socket);
+    int cid = msg_hostlist_init_connection(&serv->hostlist, serv->external, &socket);
     struct msg_connection *conn = msg_hostlist_use_id(&serv->hostlist, &lock, cid);
     if (conn) {
         msg_connection_send_message(conn, serv->msg_id++, msgtype_init_remote, msgdata_init_remote, (union msgu_any_msg *) &init_msg);
         msgs_mutex_unlock(lock);
-        msgs_poll_socket(serv->tb, &socket, cid);
+        msg_system_poll_handler(serv->external, &socket, cid);
     }
     else {
         printf("failed to add connection\n");
@@ -86,6 +101,80 @@ void msg_server_init_mount(struct msg_server *serv, const struct msgu_string *ho
     }
     else {
         printf("not found: %s\n", host->buf);
+    }
+}
+
+
+void msg_server_mount_pass(struct msg_server *serv, struct msgu_mount_event *e) {
+    struct msgu_mount_address ma;
+    const char *remain;
+    int len = msgu_mount_address_path(&ma, &remain, e->path);
+    if (len != 2) {
+        return;
+    }
+
+    struct msgu_mount_point *mp = msgu_mount_get(&serv->mounts, &ma);
+    if (mp == NULL) {
+        return;
+    }
+
+    // send request
+    msgs_mutex_t *conn_mutex;
+    struct msg_connection *conn = msg_hostlist_use_host(&serv->hostlist, &conn_mutex, &ma.host_name);
+    if (conn) {
+        union msgu_any_msg data;
+        int msg_type;
+        int msg_data;
+        switch (e->event_type) {
+        case msgu_mount_event_open:
+            msg_type = msgtype_file_open;
+            msg_data = msgdata_share_file;
+            msgu_string_copy(&data.share_file.share_name, &ma.share_name);
+            break;
+        case msgu_mount_event_read:
+            msg_type = msgtype_file_stream_read;
+            msg_data = msgdata_node_read;
+            data.node_read.node_handle = mp->open_handle;
+            data.node_read.count = e->size;
+            break;
+        case msgu_mount_event_write:
+            msg_type = msgtype_file_stream_write;
+            msg_data = msgdata_node_write;
+            data.node_write.node_handle = mp->open_handle;
+            msgu_string_from_buffer(&data.node_write.data, e->data, e->size);
+            break;
+        }
+
+        // create notifier to accept reply
+        int msg_id = serv->msg_id++;
+        msg_notify_map_add(&serv->notify, msg_id, msg_server_mount_callback, serv);
+        msg_connection_send_message(conn, msg_id, msg_type, msg_data, &data);
+        msgs_mutex_unlock(conn_mutex);
+    }
+}
+
+
+void msg_server_notify_mount(struct msg_server *serv, struct msgu_mount_event *e) {
+    int exists = 0;
+    struct msgu_node node;
+    struct msgu_vector nodes;
+    printf("server fuse event: %d, %s\n", e->event_type, e->path);
+
+    // TODO convert mount events to messages
+    switch (e->event_type) {
+    case msgu_mount_event_attr:
+        exists = msgu_mount_attr(&serv->mounts, e->path, &node);
+        msg_mount_notify_node(serv->external, exists, &node);
+        break;
+    case msgu_mount_event_list:
+        exists = msgu_mount_list(&serv->mounts, e->path, &nodes);
+        msg_mount_notify_nodes(serv->external, exists, &nodes);
+        break;
+    case msgu_mount_event_open:
+    case msgu_mount_event_read:
+    case msgu_mount_event_write:
+        msg_server_mount_pass(serv, e);
+        break;
     }
 }
 

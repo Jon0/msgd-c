@@ -24,7 +24,7 @@ void msg_host_list_init(struct msg_host_list *list, size_t size, msg_message_rec
 }
 
 
-int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_map *emap, struct msgs_socket *socket) {
+int msg_hostlist_init_connection(struct msg_host_list *list, struct msg_system *ext, struct msgs_socket *socket) {
     struct msgu_address addr;
     void *datarow [4];
     msgs_get_address(socket, &addr);
@@ -40,7 +40,7 @@ int msg_hostlist_init_connection(struct msg_host_list *list, struct msgs_event_m
 
         // new entry:  assign id, addr, name and connection
         index = msgu_datatable_emplace(&list->data, datarow);
-        event_id = msgu_add_recv_handler(emap);
+        event_id = msg_system_create_handler(ext);
         *((int *) datarow[0]) = event_id;
         msgs_get_address(socket, datarow[1]);
         msgu_string_init(datarow[2]);
