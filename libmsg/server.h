@@ -19,6 +19,7 @@
 
 /*
  * result of applying message
+ * TODO use a different type per message type
  */
 struct msg_status {
     int error;

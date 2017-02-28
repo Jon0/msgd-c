@@ -128,6 +128,7 @@ size_t msgu_recv_event_callback(struct msgu_recv_event *re, struct msgu_buffer *
 
 /*
  * callbacks for each event type
+ * TODO use messages, along with the event source
  */
 struct msgu_handlers {
     void (*connect_event)(void *, struct msgu_connect_event *);
