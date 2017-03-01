@@ -15,6 +15,7 @@
  * Includes basic routing of recieved data to handlers
  *
  * no need to store list of endpoints here
+ * TODO table should control sockets and parsing of recieved messages
  */
 struct msgs_table {
     pthread_mutex_t        ctl_mutex;
