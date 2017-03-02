@@ -146,6 +146,9 @@ union msgu_any_msg {
 };
 
 
+/*
+ * TODO create message objects to transform server state
+ */
 struct msgu_msgdata {
     int32_t            data_type;
     union msgu_any_msg data;
