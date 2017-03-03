@@ -131,6 +131,9 @@ struct msgu_broadcast_msg {
 };
 
 
+/*
+ * allocates memory for any message type
+ */
 union msgu_any_msg {
     struct msgu_empty_msg       empty;
     struct msgu_host_addr_msg   host_addr;
