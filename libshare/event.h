@@ -7,6 +7,7 @@
 #include <libutil/map.h>
 
 #include "address.h"
+#include "message.h"
 #include "update.h"
 
 
@@ -127,13 +128,23 @@ size_t msgu_recv_event_callback(struct msgu_recv_event *re, struct msgu_buffer *
 
 
 /*
- * callbacks for each event type
- * TODO use messages, along with the event source
+ * old callbacks for each event type
  */
 struct msgu_handlers {
     void (*connect_event)(void *, struct msgu_connect_event *);
     void (*recv_event)(void *, struct msgu_recv_event *);
     void (*mount_event)(void *, struct msgu_mount_event *);
+};
+
+
+/*
+ * new callbacks for each event type
+ * TODO use messages, along with the event source
+ */
+struct msgu_event_handlers {
+    void (*connect_event)(void *, struct msgu_connect_event *, struct msgu_message *);
+    void (*recv_event)(void *, struct msgu_recv_event *, struct msgu_message *);
+    void (*mount_event)(void *, struct msgu_mount_event *, struct msgu_message *);
 };
 
 
