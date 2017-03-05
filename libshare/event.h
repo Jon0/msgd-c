@@ -137,15 +137,4 @@ struct msgu_handlers {
 };
 
 
-/*
- * new callbacks for each event type
- * TODO use messages, along with the event source
- */
-struct msgu_event_handlers {
-    void (*connect_event)(void *, struct msgu_connect_event *, struct msgu_message *);
-    void (*recv_event)(void *, struct msgu_recv_event *, struct msgu_message *);
-    void (*mount_event)(void *, struct msgu_mount_event *, struct msgu_message *);
-};
-
-
 #endif

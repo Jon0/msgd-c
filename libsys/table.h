@@ -16,6 +16,7 @@
  *
  * no need to store list of endpoints here
  * TODO table should control sockets and parsing of recieved messages
+ * TODO replace with simpler epoll
  */
 struct msgs_table {
     pthread_mutex_t        ctl_mutex;
